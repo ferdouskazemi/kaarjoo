@@ -16,6 +16,8 @@
     "pino": "^9.6.0",
     "p-queue": "^8.1.0",
     "cheerio": "^1.0.0",
+    "chrono-node": "^2.7.7",
+    "libphonenumber-js": "^1.11.19",
     "undici": "^7.3.0"
   },
   "devDependencies": {
