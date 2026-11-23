@@ -1,0 +1,51 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+dist/
+build/
+.esbuild/
+
+# Rust / Cargo
+target/
+**/*.rs.bk
+Cargo.lock
+
+# Tauri
+apps/desktop/src-tauri/target/
+
+# Local databases and user app data
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+files/
+storage/
+temp/
+
+# AI Models and weights
+models/
+*.gguf
+*.bin
+*.onnx
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# OS and Editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

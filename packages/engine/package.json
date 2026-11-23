@@ -1,0 +1,26 @@
+{
+  "name": "@kaarjoo/engine",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b && esbuild src/index.ts --bundle --platform=node --target=node22 --format=esm --outfile=dist/bundle.mjs --external:playwright-core --external:node-llama-cpp",
+    "dev": "tsx src/index.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@kaarjoo/shared": "workspace:*",
+    "playwright-core": "^1.50.1",
+    "pino": "^9.6.0",
+    "p-queue": "^8.1.0",
+    "cheerio": "^1.0.0",
+    "undici": "^7.3.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.2",
+    "esbuild": "^0.25.0",
+    "@types/node": "^22.13.5"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "app": {
+    "name": "Kaarjoo",
+    "tagline": "Local-First AI Job Application Assistant"
+  },
+  "nav": {
+    "home": "Dashboard",
+    "profile": "Profile & Résumé",
+    "jobs": "Job Matches",
+    "queue": "Review Queue",
+    "applications": "Application Tracker",
+    "settings": "Settings"
+  },
+  "command": {
+    "placeholder": "Search jobs, commands, or navigate... (Ctrl+K)",
+    "noResults": "No results found."
+  },
+  "status": {
+    "engineConnected": "Local Engine Connected",
+    "engineDisconnected": "Engine Disconnected",
+    "aiTier": "AI Tier"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "apply": "Apply",
+    "review": "Review",
+    "edit": "Edit",
+    "delete": "Delete",
+    "search": "Search",
+    "language": "Language",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  }
+}

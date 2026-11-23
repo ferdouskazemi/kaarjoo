@@ -1,0 +1,20 @@
+{
+  "name": "kaarjoo-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Kaarjoo (کارجو) - Local-first AI job application desktop app",
+  "scripts": {
+    "dev": "pnpm --filter desktop dev",
+    "build": "pnpm --filter shared build && pnpm --filter engine build && pnpm --filter desktop build",
+    "test": "vitest run",
+    "lint": "eslint . && prettier --check .",
+    "format": "prettier --write .",
+    "eval": "tsx eval/scripts/run-eval.ts"
+  },
+  "devDependencies": {
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.7",
+    "tsx": "^4.19.3"
+  }
+}
