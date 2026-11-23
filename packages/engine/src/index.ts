@@ -3,7 +3,8 @@ import { StdioRpcServer } from './rpc.js';
 import { discoverSystemBrowsers } from './utils/discovery.js';
 import { processAndExtractProfile } from './ingestion/pipeline.js';
 import { mergeProfiles } from './ingestion/merger.js';
-import { HardwareSpecs } from '@kaarjoo/shared';
+import { defaultJobSourcesManager } from './sources/handler.js';
+import type { HardwareSpecs } from '@kaarjoo/shared';
 
 const server = new StdioRpcServer();
 
@@ -52,9 +53,39 @@ server.register('system.getHardwareSpecs', (): HardwareSpecs => {
     cpuCores,
     cpuModel,
     isAppleSilicon,
-    hasGpuAcceleration: isAppleSilicon, // On Apple Silicon Metal is always available
+    hasGpuAcceleration: isAppleSilicon,
     recommendedTier,
   };
+});
+
+// --- Phase 2: Sources & Job Discovery ---
+server.register('jobs.getCompanyBoards', () => {
+  return defaultJobSourcesManager.getCompanyBoards();
+});
+
+server.register('jobs.addCompanyBoard', (params: { board: any }) => {
+  defaultJobSourcesManager.addCompanyBoard(params.board);
+  return { success: true };
+});
+
+server.register('jobs.detectAts', async (params: { url: string }) => {
+  return defaultJobSourcesManager.detectAts(params.url);
+});
+
+server.register('jobs.checkHealth', async () => {
+  return defaultJobSourcesManager.checkHealth();
+});
+
+server.register('jobs.search', async (params: { query?: any; adapterId?: string; companySlug?: string }) => {
+  return defaultJobSourcesManager.searchJobs(params || {});
+});
+
+server.register('jobs.fetchDetail', async (params: { stub: any }) => {
+  return defaultJobSourcesManager.fetchDetail(params.stub);
+});
+
+server.register('jobs.importFromHtml', async (params: { html: string; url: string }) => {
+  return defaultJobSourcesManager.importFromHtml(params);
 });
 
 // Start listening on stdio

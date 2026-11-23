@@ -1,0 +1,25 @@
+{
+  "name": "@kaarjoo/adapters",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b",
+    "dev": "tsc -b -w",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@kaarjoo/shared": "workspace:*",
+    "cheerio": "^1.0.0",
+    "p-queue": "^8.1.0",
+    "turndown": "^7.2.0",
+    "undici": "^7.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.5",
+    "@types/turndown": "^5.0.6",
+    "typescript": "^5.8.2"
+  }
+}

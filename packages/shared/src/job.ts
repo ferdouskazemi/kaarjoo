@@ -14,6 +14,9 @@ export const SalaryRangeSchema = z.object({
 });
 export type SalaryRange = z.infer<typeof SalaryRangeSchema>;
 
+export const AtsTypeSchema = z.enum(['greenhouse', 'lever', 'ashby', 'workable', 'generic']);
+export type AtsType = z.infer<typeof AtsTypeSchema>;
+
 export const JobPostingSchema = z.object({
   id: z.string(),
   sourceId: z.string(),
@@ -30,12 +33,83 @@ export const JobPostingSchema = z.object({
   requirements: z.array(z.string()).default([]),
   postedAt: z.string().optional(),
   expiresAt: z.string().optional(),
-  atsType: z.enum(['greenhouse', 'lever', 'ashby', 'workable', 'generic']).default('generic'),
+  atsType: AtsTypeSchema.default('generic'),
   contentHash: z.string(),
   simHash: z.string().optional(),
   rawJsonLd: z.record(z.unknown()).optional(),
 });
 export type JobPosting = z.infer<typeof JobPostingSchema>;
+
+export const JobStubSchema = z.object({
+  id: z.string(),
+  sourceId: z.string(),
+  url: z.string(),
+  title: z.string(),
+  company: z.string(),
+  location: z.string().optional(),
+  remoteType: RemoteTypeSchema.optional(),
+  postedAt: z.string().optional(),
+  atsType: AtsTypeSchema.default('generic'),
+  extra: z.record(z.unknown()).optional(),
+});
+export type JobStub = z.infer<typeof JobStubSchema>;
+
+export const SearchQuerySchema = z.object({
+  keywords: z.array(z.string()).optional(),
+  locations: z.array(z.string()).optional(),
+  remoteOnly: z.boolean().optional(),
+  company: z.string().optional(),
+  atsType: AtsTypeSchema.optional(),
+  limit: z.number().optional().default(50),
+  since: z.string().optional(),
+});
+export type SearchQuery = z.infer<typeof SearchQuerySchema>;
+
+export const AdapterModeSchema = z.enum(['auto-apply', 'assist', 'link-only']);
+export type AdapterMode = z.infer<typeof AdapterModeSchema>;
+
+export interface AdapterMetadata {
+  id: string;
+  name: string;
+  homepage: string;
+  mode: AdapterMode;
+  termsReviewed: {
+    date: string;
+    notes: string;
+  };
+  rateLimit: {
+    requestsPerMinute: number;
+    concurrency: number;
+  };
+  needsBrowser: boolean;
+  applyAdapter?: string;
+}
+
+export const CompanyBoardSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  domain: z.string(),
+  atsType: AtsTypeSchema,
+  boardSlug: z.string(),
+  boardUrl: z.string().url(),
+  country: z.string().default('US'),
+  headquarters: z.string().optional(),
+  industry: z.string().optional(),
+  active: z.boolean().default(true),
+  lastSyncedAt: z.string().optional(),
+  jobCount: z.number().default(0),
+});
+export type CompanyBoard = z.infer<typeof CompanyBoardSchema>;
+
+export const SourceHealthStatusSchema = z.object({
+  adapterId: z.string(),
+  name: z.string(),
+  status: z.enum(['healthy', 'degraded', 'failing']),
+  lastCheckedAt: z.string(),
+  latencyMs: z.number(),
+  message: z.string().optional(),
+});
+export type SourceHealthStatus = z.infer<typeof SourceHealthStatusSchema>;
 
 export const MatchResultSchema = z.object({
   jobId: z.string(),

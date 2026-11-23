@@ -1,0 +1,29 @@
+[
+  {
+    "id": "lever-figma-001",
+    "text": "Principal Product Designer - Editor",
+    "createdAt": 1740050000000,
+    "hostedUrl": "https://jobs.lever.co/figma/lever-figma-001",
+    "applyUrl": "https://jobs.lever.co/figma/lever-figma-001/apply",
+    "workplaceType": "remote",
+    "categories": {
+      "commitment": "Full time",
+      "location": "San Francisco, CA",
+      "team": "Design",
+      "department": "Product"
+    },
+    "description": "<p>Figma is looking for a Principal Product Designer to lead design systems.</p>",
+    "lists": [
+      {
+        "text": "What you'll achieve",
+        "content": "<li>Define the future of visual collaboration</li>"
+      }
+    ],
+    "salaryRange": {
+      "min": 210000,
+      "max": 275000,
+      "currency": "USD",
+      "interval": "per-year-interval"
+    }
+  }
+]

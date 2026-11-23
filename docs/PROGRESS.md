@@ -59,11 +59,57 @@
 
 ---
 
-## Phase 2: Sources and Discovery
+## Phase 2: Sources and Discovery (US & Europe Priority)
+- **Status:** COMPLETED
+- **Focus & Achievements:**
+  - **Zero Paid/Keyed APIs Policy Enforced:** 100% local polite crawlers and public syndicate APIs.
+  - **Polite Network Architecture (`packages/adapters/src/network/`):**
+    - Domain-isolated concurrency and rate limiting via `p-queue`.
+    - Random jittered delays (150-350ms) to prevent lockstep server hammering.
+    - Honest User-Agent: `Kaarjoo/1.0 (+https://github.com/ferdouskazemi/kaarjoo; Desktop Job Search Tool)`.
+    - Native `robots.txt` compliance parser and 24-hour cache.
+    - Conditional HTTP requests via `ETag` and `If-Modified-Since` (304 Not Modified caching).
+    - Exponential backoff and Retry-After handling on 429 status codes; polite cessation on 403 (no fingerprint spoofing, no stealth plugins, no captcha breaking).
+  - **3-Tier Deduplication Pipeline (`packages/adapters/src/dedup/`):**
+    - 1) Canonical URL normalization (strips `utm_*`, `gh_src`, `ref`, `lever-source`, `ashby_jid`) + SHA-256 hash.
+    - 2) Normalized `company|title|location` tuple hash with legal suffix stripping (`Inc`, `LLC`, `GmbH`, `Corp`).
+    - 3) 64-bit SimHash (Charikar algorithm) with term-frequency weighting for near-duplicate detection (Hamming distance $\le 3$).
+  - **Extraction Pipeline (`packages/adapters/src/extractors/`):**
+    - Schema.org `JobPosting` JSON-LD parser extracting title, company, location, remote status (`TELECOMMUTE`), salary range, employment type, and validThrough.
+    - Sanitized HTML to clean Markdown converter via `turndown`.
+  - **US & European Job Adapters (`packages/adapters/src/adapters/`):**
+    - `GreenhouseAdapter`: Public syndication API (`boards-api.greenhouse.io/v1/boards/{company}/jobs?content=true`).
+    - `LeverAdapter`: Public postings API (`api.lever.co/v0/postings/{company}?mode=json`).
+    - `AshbyAdapter`: Public job-board API (`api.ashbyhq.com/posting-api/job-board/{company}`).
+    - `WorkableAdapter`: Public widget API (`apply.workable.com/api/v1/widget/accounts/{company}`).
+    - `WeWorkRemotelyAdapter`: Public RSS feed syndication for remote tech engineering jobs.
+    - `AssistJobAdapter`: Assist-mode parser for manual LinkedIn/Indeed imports without forbidden crawling or logins.
+  - **Company Directory & Auto-Detection (`packages/adapters/src/companies/`):**
+    - Seeded directory of 18 premier US & European tech companies (Stripe, Figma, OpenAI, Spotify, Datadog, Klarna, DeepL, Revolut, Vercel, GitLab, etc.).
+    - Automated ATS detector identifying Greenhouse, Lever, Ashby, and Workable from careers page URLs or embedded iframes.
+  - **Database & RPC Integration:**
+    - SQLite migration `20260201_sources_and_simhash.sql` adding `sim_hash`, `tuple_hash`, `company_boards` table, and performance indexes.
+    - Node Engine JSON-RPC handlers registered: `jobs.search`, `jobs.fetchDetail`, `jobs.getCompanyBoards`, `jobs.addCompanyBoard`, `jobs.detectAts`, `jobs.checkHealth`, `jobs.importFromHtml`.
+  - **Desktop Job Discovery UI (`apps/desktop/src/views/JobsView.tsx`):**
+    - Bilingual (English / Persian RTL) responsive interface.
+    - Live Polite Crawler health badge ("Sources Online (Polite Crawler)").
+    - Filter bar: Keyword search, Region tabs (🇺🇸 US, 🇪🇺 Europe, 🌍 Remote Worldwide), Workplace pills (Remote, Hybrid, On-site), ATS Provider pills (Greenhouse, Lever, Ashby, Workable).
+    - `JobCard`: Company gradient avatar, title, location, remote badge, ATS provider tag, and interactive circular Match Score ring.
+    - `JobDetailDrawer`: Match breakdown (matched vs missing skills), salary banner, full Markdown description, and "Apply with Review" CTA.
+    - `CompanyBoardsModal`: Monitored company manager with toggle switches and URL ATS auto-detection.
+  - **Verification:**
+    - 42 out of 42 tests passing across 13 test suites in `vitest`.
+    - Profile extraction evaluation harness passing with **100.0%** accuracy.
+    - Rust core compiling cleanly with `cargo check` in 0.87s.
+    - Desktop React application building cleanly in 3.9s.
+
+---
+
+## Phase 3: Matching and Ranking (Local AI)
 - **Status:** Next Up
 - **Focus:**
-  - Source adapter framework (`SourceAdapter` interface, rate limiting with `p-queue`, `robots-parser`).
-  - Initial adapters: ACBAR.org, Jobs.af, Greenhouse, Lever.
-  - Schema.org `JobPosting` JSON-LD first extraction.
-  - Job deduplication (canonical URL, normalized hash, SimHash).
-  - Background scheduler & desktop job feed UI.
+  - Hard filters engine (location, remote preference, seniority, salary floor).
+  - Local AI semantic embeddings (GGUF embedding model via `node-llama-cpp` or lightweight transformer).
+  - Canonical ESCO skill coverage calculation (matched / missing / transferable).
+  - LLM re-ranking of top N candidates with structured scoring.
+  - Calibrated weighted blend score with interactive user feedback.

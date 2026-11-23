@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@kaarjoo/shared": "workspace:*",
+    "@kaarjoo/adapters": "workspace:*",
     "playwright-core": "^1.50.1",
     "pino": "^9.6.0",
     "p-queue": "^8.1.0",

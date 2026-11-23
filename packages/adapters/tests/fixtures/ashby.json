@@ -1,0 +1,15 @@
+{
+  "jobs": [
+    {
+      "id": "ashby-openai-101",
+      "title": "Research Engineer - Alignment",
+      "department": "Research",
+      "location": "San Francisco, CA",
+      "isRemote": true,
+      "employmentType": "FullTime",
+      "publishedAt": "2026-02-18T18:00:00Z",
+      "jobUrl": "https://jobs.ashbyhq.com/openai/ashby-openai-101",
+      "descriptionHtml": "<h2>Overview</h2><p>Advance the frontier of safe AI alignment and reinforcement learning.</p><h3>Qualifications</h3><ul><li>Strong track record in deep learning</li></ul>"
+    }
+  ]
+}

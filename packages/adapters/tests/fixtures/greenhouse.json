@@ -1,0 +1,24 @@
+{
+  "jobs": [
+    {
+      "id": 501234,
+      "title": "Staff Software Engineer - Global Payments",
+      "updated_at": "2026-02-20T14:30:00Z",
+      "absolute_url": "https://boards.greenhouse.io/stripe/jobs/501234",
+      "location": {
+        "name": "San Francisco, CA (Remote - US)"
+      },
+      "content": "&lt;h2&gt;About Stripe&lt;/h2&gt;&lt;p&gt;Stripe builds economic infrastructure for the internet.&lt;/p&gt;&lt;h3&gt;Requirements&lt;/h3&gt;&lt;ul&gt;&lt;li&gt;7+ years distributed systems&lt;/li&gt;&lt;li&gt;Experience with high-throughput payment architectures&lt;/li&gt;&lt;/ul&gt;"
+    },
+    {
+      "id": 501235,
+      "title": "Senior Frontend Engineer",
+      "updated_at": "2026-02-21T09:15:00Z",
+      "absolute_url": "https://boards.greenhouse.io/stripe/jobs/501235",
+      "location": {
+        "name": "Dublin, Ireland"
+      },
+      "content": "&lt;h2&gt;Role&lt;/h2&gt;&lt;p&gt;Design user interfaces for billing.&lt;/p&gt;"
+    }
+  ]
+}

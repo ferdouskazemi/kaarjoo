@@ -1,18 +1,18 @@
 {
   "app": {
     "name": "Kaarjoo",
-    "tagline": "Local-First AI Job Application Assistant"
+    "tagline": "Local-First AI Job Search & Application Assistant"
   },
   "nav": {
     "home": "Dashboard",
     "profile": "Profile & Résumé",
-    "jobs": "Job Matches",
-    "queue": "Review Queue",
-    "applications": "Application Tracker",
+    "jobs": "Job Feed",
+    "queue": "Apply Queue",
+    "applications": "Applications",
     "settings": "Settings"
   },
   "command": {
-    "placeholder": "Search jobs, commands, or navigate... (Ctrl+K)",
+    "placeholder": "Search jobs, commands or navigation... (Ctrl+K)",
     "noResults": "No results found."
   },
   "status": {
@@ -33,5 +33,35 @@
     "light": "Light",
     "dark": "Dark",
     "system": "System"
+  },
+  "jobs": {
+    "title": "International Tech Jobs",
+    "subtitle": "Direct discovery from US & European company boards without paid APIs",
+    "syncFeed": "Sync Feed",
+    "syncing": "Syncing...",
+    "companyBoards": "Monitored Companies",
+    "addCompany": "Add Company Board",
+    "assistImport": "Assist Import",
+    "sourcesHealthy": "Sources Online (Polite Crawler)",
+    "allRegions": "All Regions",
+    "us": "United States",
+    "europe": "Europe / UK",
+    "worldwide": "Worldwide Remote",
+    "allTypes": "All Workplaces",
+    "remoteOnly": "Remote Only",
+    "hybrid": "Hybrid",
+    "onSite": "On-Site",
+    "matchScore": "Match Score",
+    "matchedSkills": "Matched Skills",
+    "missingSkills": "Missing Skills",
+    "viewDetails": "View Details",
+    "applyReview": "Apply with Review",
+    "viewOriginal": "View on Careers Board",
+    "noJobsFound": "No jobs found matching your filters.",
+    "monitoredCompanies": "Monitored Company Boards",
+    "monitoredDesc": "Direct public syndication boards without logins or anti-bot scraping",
+    "pasteUrl": "Company careers board URL (e.g. boards.greenhouse.io/stripe)",
+    "detectAts": "Detect ATS",
+    "detectedAs": "Detected Provider:"
   }
 }
