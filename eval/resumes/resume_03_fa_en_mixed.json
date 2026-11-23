@@ -1,0 +1,65 @@
+{
+  "id": "golden_resume_03_fa_en",
+  "contact": {
+    "fullName": "سارا موسوی",
+    "email": "sara.mousavi@ai-corp.ir",
+    "phone": "+98 912 987 6543",
+    "location": "تهران، ایران",
+    "linkedinUrl": "https://www.linkedin.com/in/sara-mousavi"
+  },
+  "summary": "محقق و توسعه‌دهنده یادگیری عمیق با تمرکز بر پردازش زبان طبیعی (NLP) و مدل‌های بزرگ زبانی (LLM). تجربه پیاده‌سازی سیستم‌های RAG و بهینه‌سازی مدل‌های GGUF و Quantization.",
+  "targetTitles": [
+    "مهندس هوش مصنوعی و یادگیری ماشین",
+    "AI & Machine Learning Engineer"
+  ],
+  "experiences": [
+    {
+      "id": "exp_03_1",
+      "title": "مهندس ارشد یادگیری ماشین",
+      "company": "شرکت فناوری داده شریف",
+      "startDate": "1400",
+      "isCurrent": true,
+      "achievements": [
+        "توسعه و فاین‌تیون مدل‌های زبانی چندزبانه برای فهم متون حقوقی و اداری",
+        "پیاده‌سازی پایپ‌لاین ارزیابی دقت مدل با بنچمارک‌های استاندارد",
+        "کاهش تاخیر پاسخ‌دهی سیستم تا ۴۰٪ با کوانتیزاسیون ۴ بیتی"
+      ],
+      "skillsUsed": ["Python", "PyTorch", "LLM Fine-tuning", "Transformers"]
+    },
+    {
+      "id": "exp_03_2",
+      "title": "پژوهشگر هوش مصنوعی",
+      "company": "آزمایشگاه پردازش داده دانشگاه تهران",
+      "startDate": "1397",
+      "endDate": "1400",
+      "isCurrent": false,
+      "achievements": [
+        "پیاده‌سازی معماری‌های نوین پردازش متن با PyTorch و Hugging Face",
+        "انتشار ۲ مقاله پژوهشی در ژورنال‌های معتبر بین‌المللی"
+      ],
+      "skillsUsed": ["PyTorch", "Hugging Face", "NLP"]
+    }
+  ],
+  "education": [
+    {
+      "id": "edu_03_1",
+      "institution": "دانشگاه صنعتی شریف",
+      "degree": "کارشناسی ارشد",
+      "fieldOfStudy": "هوش مصنوعی",
+      "startDate": "1395",
+      "endDate": "1397"
+    }
+  ],
+  "skills": [
+    { "id": "sk_301", "name": "Python" },
+    { "id": "sk_302", "name": "PyTorch" },
+    { "id": "sk_303", "name": "Hugging Face" },
+    { "id": "sk_304", "name": "Transformers" },
+    { "id": "sk_305", "name": "LLM Fine-tuning" },
+    { "id": "sk_306", "name": "RAG" },
+    { "id": "sk_307", "name": "LangChain" },
+    { "id": "sk_308", "name": "SQLite" },
+    { "id": "sk_309", "name": "Docker" },
+    { "id": "sk_310", "name": "Git" }
+  ]
+}

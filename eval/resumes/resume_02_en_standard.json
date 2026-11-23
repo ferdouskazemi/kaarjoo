@@ -1,0 +1,67 @@
+{
+  "id": "golden_resume_02_en",
+  "contact": {
+    "fullName": "Ahmad Wahidi",
+    "email": "ahmad.wahidi@example.com",
+    "phone": "+93 70 987 6543",
+    "location": "Herat, Afghanistan",
+    "linkedinUrl": "https://www.linkedin.com/in/ahmad-wahidi",
+    "githubUrl": "https://github.com/ahmadwahidi"
+  },
+  "summary": "Results-driven software engineer with 5+ years of experience specializing in high-throughput distributed systems, API architecture, and microservices using Go, Node.js, and PostgreSQL.",
+  "targetTitles": [
+    "Senior Backend Engineer",
+    "Senior Backend Developer"
+  ],
+  "experiences": [
+    {
+      "id": "exp_02_1",
+      "title": "Senior Backend Developer",
+      "company": "TechSolutions Inc",
+      "startDate": "2021",
+      "isCurrent": true,
+      "achievements": [
+        "Architected event-driven microservices handling 10,000+ requests per second using Kafka and Node.js",
+        "Reduced cloud infrastructure costs by 25% through container optimization and database indexing",
+        "Mentored 3 junior developers and conducted rigorous code reviews"
+      ],
+      "skillsUsed": ["Go", "Node.js", "Kafka", "PostgreSQL", "Docker"]
+    },
+    {
+      "id": "exp_02_2",
+      "title": "Backend Developer",
+      "company": "Khorasan IT Services",
+      "startDate": "2019",
+      "endDate": "2021",
+      "isCurrent": false,
+      "achievements": [
+        "Developed REST and GraphQL APIs for enterprise financial clients",
+        "Integrated Stripe and regional payment gateways with automated reconciliation",
+        "Maintained 99.9% uptime across production clusters"
+      ],
+      "skillsUsed": ["Node.js", "GraphQL", "REST APIs"]
+    }
+  ],
+  "education": [
+    {
+      "id": "edu_02_1",
+      "institution": "Herat University",
+      "degree": "Bachelor of Science",
+      "fieldOfStudy": "Computer Science",
+      "startDate": "2015",
+      "endDate": "2019"
+    }
+  ],
+  "skills": [
+    { "id": "sk_201", "name": "Go" },
+    { "id": "sk_202", "name": "Node.js" },
+    { "id": "sk_203", "name": "TypeScript" },
+    { "id": "sk_204", "name": "PostgreSQL" },
+    { "id": "sk_205", "name": "Redis" },
+    { "id": "sk_206", "name": "Apache Kafka" },
+    { "id": "sk_207", "name": "Docker" },
+    { "id": "sk_208", "name": "Kubernetes" },
+    { "id": "sk_209", "name": "AWS" },
+    { "id": "sk_210", "name": "REST APIs" }
+  ]
+}

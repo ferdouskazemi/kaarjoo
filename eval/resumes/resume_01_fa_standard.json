@@ -1,0 +1,64 @@
+{
+  "id": "golden_resume_01_fa",
+  "contact": {
+    "fullName": "فردوس کاظمی",
+    "email": "ferdous.kazemi@example.com",
+    "phone": "+93 79 123 4567",
+    "location": "کابل، افغانستان",
+    "linkedinUrl": "https://www.linkedin.com/in/ferdous-kazemi",
+    "githubUrl": "https://github.com/ferdouskazemi"
+  },
+  "summary": "توسعه‌دهنده با بیش از ۶ سال تجربه در طراحی و پیاده‌سازی سامانه‌های نرم‌افزاری مقیاس‌پذیر و اتوماسیون فرایندها.",
+  "targetTitles": [
+    "مهندس ارشد نرم‌افزار",
+    "توسعه‌دهنده ارشد فول‌استک"
+  ],
+  "experiences": [
+    {
+      "id": "exp_01_1",
+      "title": "توسعه‌دهنده ارشد فول‌استک",
+      "company": "داده‌پردازان آریا",
+      "startDate": "1399",
+      "isCurrent": true,
+      "achievements": [
+        "بازطراحی معماری میکروسرویس‌ها با بهره‌گیری از Node.js و Docker",
+        "افزایش توان پردازش تراکنش‌ها تا ۳ برابر در سیستم پرداخت آنلاین",
+        "رهبری تیم فنی ۴ نفره در فرایند مهاجرت داده‌ها"
+      ],
+      "skillsUsed": ["Node.js", "Docker"]
+    },
+    {
+      "id": "exp_01_2",
+      "title": "برنامه‌نویس وب",
+      "company": "شرکت فناوری نوین",
+      "startDate": "1396",
+      "endDate": "1399",
+      "isCurrent": false,
+      "achievements": [
+        "توسعه بیش از ۱۰ وب‌اپلیکیشن شرکتی با React و TypeScript",
+        "پیاده‌سازی تست‌های واحد و یکپارچه‌سازی مستمر با Vitest"
+      ],
+      "skillsUsed": ["React", "TypeScript", "Vitest"]
+    }
+  ],
+  "education": [
+    {
+      "id": "edu_01_1",
+      "institution": "دانشگاه کابل",
+      "degree": "کارشناسی",
+      "fieldOfStudy": "مهندسی نرم‌افزار",
+      "startDate": "1392",
+      "endDate": "1396"
+    }
+  ],
+  "skills": [
+    { "id": "sk_1", "name": "JavaScript" },
+    { "id": "sk_2", "name": "TypeScript" },
+    { "id": "sk_3", "name": "React" },
+    { "id": "sk_4", "name": "Node.js" },
+    { "id": "sk_5", "name": "SQLite" },
+    { "id": "sk_6", "name": "PostgreSQL" },
+    { "id": "sk_7", "name": "Docker" },
+    { "id": "sk_8", "name": "Git" }
+  ]
+}

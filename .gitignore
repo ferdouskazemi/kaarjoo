@@ -25,6 +25,7 @@ apps/desktop/src-tauri/target/
 files/
 storage/
 temp/
+check-tauri.ps1
 
 # AI Models and weights
 models/
