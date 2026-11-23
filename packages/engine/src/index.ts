@@ -4,6 +4,7 @@ import { discoverSystemBrowsers } from './utils/discovery.js';
 import { processAndExtractProfile } from './ingestion/pipeline.js';
 import { mergeProfiles } from './ingestion/merger.js';
 import { defaultJobSourcesManager } from './sources/handler.js';
+import { defaultMatchingService } from './matching/handler.js';
 import type { HardwareSpecs } from '@kaarjoo/shared';
 
 const server = new StdioRpcServer();
@@ -86,6 +87,23 @@ server.register('jobs.fetchDetail', async (params: { stub: any }) => {
 
 server.register('jobs.importFromHtml', async (params: { html: string; url: string }) => {
   return defaultJobSourcesManager.importFromHtml(params);
+});
+
+// --- Phase 3: Matching and Ranking ---
+server.register('matching.scoreJob', (params: { profile: any; job: any; preferences?: any }) => {
+  return defaultMatchingService.scoreJob(params.profile, params.job, params.preferences);
+});
+
+server.register('matching.rankAllJobs', (params: { profile: any; jobs: any[]; preferences?: any }) => {
+  return defaultMatchingService.rankAllJobs(params.profile, params.jobs, params.preferences);
+});
+
+server.register('matching.recordFeedback', (params: { jobId: string; profileId: string; feedback: 'relevant' | 'irrelevant' }) => {
+  return defaultMatchingService.recordFeedback(params.jobId, params.profileId, params.feedback);
+});
+
+server.register('matching.getWeights', (params: { profileId?: string }) => {
+  return defaultMatchingService.getWeights(params?.profileId);
 });
 
 // Start listening on stdio

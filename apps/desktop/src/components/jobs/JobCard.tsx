@@ -5,6 +5,8 @@ import {
   MapPin,
   Sparkles,
   ShieldCheck,
+  ThumbsUp,
+  ThumbsDown,
 } from 'lucide-react';
 import type { JobPosting, RemoteType, AtsType } from '@kaarjoo/shared';
 
@@ -21,12 +23,22 @@ export interface DisplayJob extends Partial<JobPosting> {
   matchScore?: number;
   matchedSkills?: string[];
   missingSkills?: string[];
+  topReasons?: string[];
+  whyNotHigher?: string;
+  userFeedback?: 'relevant' | 'irrelevant';
+  breakdown?: {
+    hardFilterScore: number;
+    semanticScore: number;
+    skillCoverageScore: number;
+    llmRerankScore: number;
+  };
 }
 
 interface JobCardProps {
   job: DisplayJob;
   onSelect: (job: DisplayJob) => void;
   onApply: (job: DisplayJob) => void;
+  onFeedback?: (jobId: string, feedback: 'relevant' | 'irrelevant') => void;
 }
 
 const ATS_COLORS: Record<AtsType, { bg: string; text: string; border: string }> = {
@@ -50,7 +62,7 @@ function getInitialsColor(name: string): string {
   return colors[sum % colors.length];
 }
 
-export const JobCard: React.FC<JobCardProps> = ({ job, onSelect, onApply }) => {
+export const JobCard: React.FC<JobCardProps> = ({ job, onSelect, onApply, onFeedback }) => {
   const { t } = useTranslation();
   const atsStyle = ATS_COLORS[job.atsType] || ATS_COLORS.generic;
   const score = job.matchScore ?? 85;
@@ -90,11 +102,11 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onSelect, onApply }) => {
 
         {/* Match Ring */}
         <div className="flex flex-col items-center shrink-0">
-          <div className="relative w-11 h-11 flex items-center justify-center">
+          <div className="relative w-12 h-12 flex items-center justify-center">
             <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
               <path
                 className="text-slate-800"
-                strokeWidth="3"
+                strokeWidth="3.2"
                 stroke="currentColor"
                 fill="none"
                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
@@ -102,7 +114,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onSelect, onApply }) => {
               <path
                 className={score >= 85 ? 'text-emerald-500' : score >= 70 ? 'text-sky-500' : 'text-amber-500'}
                 strokeDasharray={`${score}, 100`}
-                strokeWidth="3"
+                strokeWidth="3.2"
                 strokeLinecap="round"
                 stroke="currentColor"
                 fill="none"
@@ -111,14 +123,21 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onSelect, onApply }) => {
             </svg>
             <span className="absolute text-[11px] font-bold text-slate-200">{score}%</span>
           </div>
-          <span className="text-[10px] text-slate-500 mt-0.5 font-medium">تطابق</span>
+          <span className="text-[10px] text-slate-400 mt-0.5 font-medium">{t('jobs.matchScore')}</span>
         </div>
       </div>
+
+      {/* Top Reasons / Highlights Preview */}
+      {job.topReasons && job.topReasons.length > 0 && (
+        <div className="bg-slate-950/40 rounded-lg p-2.5 border border-slate-800/60 text-xs text-slate-300 flex items-start gap-2">
+          <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+          <span className="line-clamp-1 text-slate-300 font-medium">{job.topReasons[0]}</span>
+        </div>
+      )}
 
       {/* Tags & Salary */}
       <div className="flex items-center justify-between gap-2 flex-wrap pt-1 border-t border-slate-800/50">
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Remote Badge */}
           <span
             className={`text-xs px-2.5 py-0.5 rounded-full font-medium border ${
               job.remoteType === 'remote'
@@ -131,7 +150,6 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onSelect, onApply }) => {
             {job.remoteType === 'remote' ? 'دورکاری (Remote)' : job.remoteType === 'hybrid' ? 'ترکیبی (Hybrid)' : 'حضوری'}
           </span>
 
-          {/* ATS Provider Chip */}
           <span className={`text-xs px-2 py-0.5 rounded font-mono uppercase text-[10px] border ${atsStyle.bg} ${atsStyle.text} ${atsStyle.border}`}>
             {job.atsType}
           </span>
@@ -143,11 +161,39 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onSelect, onApply }) => {
           )}
         </div>
 
-        {/* Matched skills preview */}
-        {job.matchedSkills && job.matchedSkills.length > 0 && (
-          <div className="flex items-center gap-1.5 text-xs text-slate-400">
-            <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="text-emerald-400 font-medium">+{job.matchedSkills.length} مهارت منطبق</span>
+        {/* Feedback buttons */}
+        {onFeedback && (
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              title="تطابق عالی بود"
+              onClick={(e) => {
+                e.stopPropagation();
+                onFeedback(job.id, 'relevant');
+              }}
+              className={`p-1.5 rounded-md transition-colors ${
+                job.userFeedback === 'relevant'
+                  ? 'bg-emerald-950 text-emerald-400 border border-emerald-800'
+                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800'
+              }`}
+            >
+              <ThumbsUp className="w-3.5 h-3.5" />
+            </button>
+            <button
+              type="button"
+              title="تطابق غیرمرتبط بود"
+              onClick={(e) => {
+                e.stopPropagation();
+                onFeedback(job.id, 'irrelevant');
+              }}
+              className={`p-1.5 rounded-md transition-colors ${
+                job.userFeedback === 'irrelevant'
+                  ? 'bg-red-950 text-red-400 border border-red-800'
+                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800'
+              }`}
+            >
+              <ThumbsDown className="w-3.5 h-3.5" />
+            </button>
           </div>
         )}
       </div>

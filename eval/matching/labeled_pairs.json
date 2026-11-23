@@ -1,0 +1,135 @@
+{
+  "testCases": [
+    {
+      "id": "candidate_backend_lead",
+      "profile": {
+        "id": "cand_01",
+        "contact": { "fullName": "Farhad Rostami", "email": "farhad@example.com" },
+        "targetTitles": ["Senior Backend Engineer", "Staff Software Engineer", "Distributed Systems Engineer"],
+        "skills": [
+          { "id": "s1", "name": "Go", "escoId": "esco_go" },
+          { "id": "s2", "name": "TypeScript", "escoId": "esco_ts" },
+          { "id": "s3", "name": "PostgreSQL", "escoId": "esco_pg" },
+          { "id": "s4", "name": "Docker", "escoId": "esco_docker" },
+          { "id": "s5", "name": "Kubernetes", "escoId": "esco_k8s" },
+          { "id": "s6", "name": "Apache Kafka", "escoId": "esco_kafka" }
+        ],
+        "experiences": [
+          {
+            "id": "exp1",
+            "title": "Senior Backend Engineer",
+            "company": "Fintech Global",
+            "startDate": "2020-01-01",
+            "isCurrent": true,
+            "description": "Architected high-throughput payment processing APIs in Go and PostgreSQL, handling 20,000 req/sec.",
+            "achievements": ["Scaled database cluster", "Implemented Kafka event bus", "Maintained 99.99% uptime"],
+            "skillsUsed": ["Go", "PostgreSQL", "Kafka", "Docker", "Kubernetes"]
+          }
+        ],
+        "preferences": {
+          "targetTitles": ["Staff Software Engineer", "Senior Backend Engineer"],
+          "remoteTypes": ["remote"],
+          "excludedCompanies": ["BadCorp"],
+          "minSalary": 150000,
+          "salaryCurrency": "USD"
+        }
+      },
+      "jobs": [
+        {
+          "id": "job_stripe_payments",
+          "title": "Staff Software Engineer - Global Payments",
+          "company": "Stripe",
+          "remoteType": "remote",
+          "salary": { "min": 220000, "max": 280000, "currency": "USD", "period": "year" },
+          "descriptionMarkdown": "Build high-throughput distributed payment processing systems in Go and PostgreSQL with Kafka streaming.",
+          "requirements": ["Go", "Distributed Systems", "Kafka", "PostgreSQL", "Kubernetes"],
+          "canonicalUrl": "https://boards.greenhouse.io/stripe/jobs/1",
+          "applyUrl": "https://boards.greenhouse.io/stripe/jobs/1",
+          "sourceId": "greenhouse",
+          "sourceName": "Greenhouse",
+          "atsType": "greenhouse",
+          "contentHash": "h1",
+          "groundTruth": "relevant"
+        },
+        {
+          "id": "job_spotify_infra",
+          "title": "Senior Backend Engineer - Event Infrastructure",
+          "company": "Spotify",
+          "remoteType": "remote",
+          "salary": { "min": 160000, "max": 200000, "currency": "USD", "period": "year" },
+          "descriptionMarkdown": "Scale our distributed streaming backbones using Kafka, Kubernetes, and high-performance microservices.",
+          "requirements": ["Backend Engineering", "Kafka", "Docker", "Kubernetes"],
+          "canonicalUrl": "https://boards.greenhouse.io/spotify/jobs/2",
+          "applyUrl": "https://boards.greenhouse.io/spotify/jobs/2",
+          "sourceId": "greenhouse",
+          "sourceName": "Greenhouse",
+          "atsType": "greenhouse",
+          "contentHash": "h2",
+          "groundTruth": "relevant"
+        },
+        {
+          "id": "job_gitlab_backend",
+          "title": "Staff Backend Engineer, Distributed Architecture",
+          "company": "GitLab",
+          "remoteType": "remote",
+          "salary": { "min": 170000, "max": 230000, "currency": "USD", "period": "year" },
+          "descriptionMarkdown": "Work on scalable asynchronous processing, PostgreSQL query optimization, and microservice decoupling.",
+          "requirements": ["Go", "PostgreSQL", "Microservices", "Docker"],
+          "canonicalUrl": "https://boards.greenhouse.io/gitlab/jobs/3",
+          "applyUrl": "https://boards.greenhouse.io/gitlab/jobs/3",
+          "sourceId": "greenhouse",
+          "sourceName": "Greenhouse",
+          "atsType": "greenhouse",
+          "contentHash": "h3",
+          "groundTruth": "relevant"
+        },
+        {
+          "id": "job_badcorp_excluded",
+          "title": "Staff Software Engineer",
+          "company": "BadCorp",
+          "remoteType": "remote",
+          "descriptionMarkdown": "Work on backend systems.",
+          "requirements": ["Go"],
+          "canonicalUrl": "https://example.com/badcorp",
+          "applyUrl": "https://example.com/badcorp",
+          "sourceId": "generic",
+          "sourceName": "Generic",
+          "atsType": "generic",
+          "contentHash": "h4",
+          "groundTruth": "irrelevant"
+        },
+        {
+          "id": "job_onsite_berlin_mismatch",
+          "title": "Senior Backend Developer",
+          "company": "LocalShop",
+          "location": "Berlin, Germany",
+          "remoteType": "on-site",
+          "descriptionMarkdown": "Mandatory on-site attendance in our Berlin office 5 days a week.",
+          "requirements": ["Go", "PostgreSQL"],
+          "canonicalUrl": "https://example.com/localshop",
+          "applyUrl": "https://example.com/localshop",
+          "sourceId": "generic",
+          "sourceName": "Generic",
+          "atsType": "generic",
+          "contentHash": "h5",
+          "groundTruth": "irrelevant"
+        },
+        {
+          "id": "job_designer_mismatch",
+          "title": "Principal Product Designer",
+          "company": "Figma",
+          "remoteType": "remote",
+          "descriptionMarkdown": "Lead design tokens, design systems, and Figma UI/UX architecture.",
+          "requirements": ["Design Systems", "Figma", "UI/UX"],
+          "canonicalUrl": "https://example.com/figma",
+          "applyUrl": "https://example.com/figma",
+          "sourceId": "generic",
+          "sourceName": "Generic",
+          "atsType": "generic",
+          "contentHash": "h6",
+          "groundTruth": "irrelevant"
+        }
+      ]
+    }
+  ]
+}

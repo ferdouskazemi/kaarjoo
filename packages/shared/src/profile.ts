@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { RemoteTypeSchema } from './job.js';
 
 export const BoundingBoxSchema = z.object({
   x: z.number(),
@@ -76,6 +77,35 @@ export const LanguageItemSchema = z.object({
 });
 export type LanguageItem = z.infer<typeof LanguageItemSchema>;
 
+export const SeniorityLevelSchema = z.enum([
+  'intern',
+  'junior',
+  'mid',
+  'senior',
+  'lead',
+  'staff',
+  'principal',
+  'manager',
+  'director',
+]);
+export type SeniorityLevel = z.infer<typeof SeniorityLevelSchema>;
+
+export const UserPreferencesSchema = z.object({
+  targetTitles: z.array(z.string()).default([]),
+  seniorityLevels: z.array(SeniorityLevelSchema).default(['senior', 'lead', 'staff']),
+  locations: z.array(z.string()).default([]),
+  remoteTypes: z.array(RemoteTypeSchema).default(['remote']),
+  workAuthorizationCountries: z.array(z.string()).default(['US', 'EU', 'Worldwide']),
+  visaSponsorshipRequired: z.boolean().default(false),
+  minSalary: z.number().optional(),
+  salaryCurrency: z.string().default('USD'),
+  excludedCompanies: z.array(z.string()).default([]),
+  excludedKeywords: z.array(z.string()).default([]),
+  maxApplicationsPerDay: z.number().default(10),
+  autoApplyScoreThreshold: z.number().default(85),
+});
+export type UserPreferences = z.infer<typeof UserPreferencesSchema>;
+
 export const UserProfileSchema = z.object({
   id: z.string(),
   version: z.number().default(1),
@@ -90,5 +120,6 @@ export const UserProfileSchema = z.object({
   certifications: z.array(z.string()).default([]),
   targetTitles: z.array(z.string()).default([]),
   workAuthorization: z.array(z.string()).default([]),
+  preferences: UserPreferencesSchema.optional(),
 });
 export type UserProfile = z.infer<typeof UserProfileSchema>;

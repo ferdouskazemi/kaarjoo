@@ -9,7 +9,8 @@
     "test": "vitest run",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
-    "eval": "tsx eval/scripts/run-eval.ts"
+    "eval": "tsx eval/scripts/run-eval.ts",
+    "eval:matching": "tsx eval/scripts/run-matching-eval.ts"
   },
   "devDependencies": {
     "prettier": "^3.5.3",

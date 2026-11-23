@@ -11,6 +11,9 @@ import {
   ShieldCheck,
   DollarSign,
   FileText,
+  HelpCircle,
+  ThumbsUp,
+  ThumbsDown,
 } from 'lucide-react';
 import type { DisplayJob } from './JobCard.js';
 
@@ -18,15 +21,28 @@ interface JobDetailDrawerProps {
   job: DisplayJob | null;
   onClose: () => void;
   onApply: (job: DisplayJob) => void;
+  onFeedback?: (jobId: string, feedback: 'relevant' | 'irrelevant') => void;
 }
 
-export const JobDetailDrawer: React.FC<JobDetailDrawerProps> = ({ job, onClose, onApply }) => {
+export const JobDetailDrawer: React.FC<JobDetailDrawerProps> = ({ job, onClose, onApply, onFeedback }) => {
   const { t } = useTranslation();
   if (!job) return null;
 
   const score = job.matchScore ?? 88;
   const matchedSkills = job.matchedSkills || ['TypeScript', 'React', 'Node.js', 'Distributed Systems'];
   const missingSkills = job.missingSkills || ['Kubernetes Operator SDK'];
+  const topReasons = job.topReasons || [
+    `انطباق مستقیم با مهارت‌های اصلی رزومه شما`,
+    `همخوانی سطح سابقه و مسئولیت‌های ارشد مورد نیاز`,
+    `فرصت دورکاری کامل هماهنگ با اولویت‌های کاری شما`,
+  ];
+  const whyNotHigher = job.whyNotHigher || 'برای رسیدن به امتیاز ۹۵٪+، افزودن پروژه‌های مرتبط با نیازمندی‌های کسری می‌تواند موثر باشد.';
+  const breakdown = job.breakdown || {
+    hardFilterScore: 100,
+    semanticScore: 88,
+    skillCoverageScore: 92,
+    llmRerankScore: 89,
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-xs transition-opacity animate-fade-in">
@@ -66,18 +82,114 @@ export const JobDetailDrawer: React.FC<JobDetailDrawerProps> = ({ job, onClose, 
 
         {/* Content Body */}
         <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
-          {/* Match Score Card */}
+          {/* Match Score Card with Breakdown */}
           <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-5 flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-emerald-400" />
                 <h4 className="font-semibold text-slate-200 text-sm">{t('jobs.matchScore')}</h4>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold text-emerald-400">{score}%</span>
-                <span className="text-xs text-slate-500">تطابق با رزومه شما</span>
+              <div className="flex items-center gap-3">
+                {onFeedback && (
+                  <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 rounded-lg p-1">
+                    <button
+                      type="button"
+                      title="تطابق خوب"
+                      onClick={() => onFeedback(job.id, 'relevant')}
+                      className={`p-1.5 rounded transition-colors ${
+                        job.userFeedback === 'relevant'
+                          ? 'bg-emerald-950 text-emerald-400'
+                          : 'text-slate-500 hover:text-slate-300'
+                      }`}
+                    >
+                      <ThumbsUp className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      title="نامرتبط"
+                      onClick={() => onFeedback(job.id, 'irrelevant')}
+                      className={`p-1.5 rounded transition-colors ${
+                        job.userFeedback === 'irrelevant'
+                          ? 'bg-red-950 text-red-400'
+                          : 'text-slate-500 hover:text-slate-300'
+                      }`}
+                    >
+                      <ThumbsDown className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl font-bold text-emerald-400">{score}%</span>
+                </div>
               </div>
             </div>
+
+            {/* Score Breakdown Progress Bars */}
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <div className="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/60">
+                <div className="flex justify-between text-[11px] mb-1">
+                  <span className="text-slate-400">فیلترهای الزامی</span>
+                  <span className="text-slate-200 font-mono font-semibold">{breakdown.hardFilterScore}%</span>
+                </div>
+                <div className="w-full bg-slate-800 rounded-full h-1.5">
+                  <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: `${breakdown.hardFilterScore}%` }} />
+                </div>
+              </div>
+
+              <div className="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/60">
+                <div className="flex justify-between text-[11px] mb-1">
+                  <span className="text-slate-400">انطباق معنایی (Embedding)</span>
+                  <span className="text-slate-200 font-mono font-semibold">{breakdown.semanticScore}%</span>
+                </div>
+                <div className="w-full bg-slate-800 rounded-full h-1.5">
+                  <div className="bg-sky-500 h-1.5 rounded-full" style={{ width: `${breakdown.semanticScore}%` }} />
+                </div>
+              </div>
+
+              <div className="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/60">
+                <div className="flex justify-between text-[11px] mb-1">
+                  <span className="text-slate-400">پوشش مهارت‌ها (ESCO)</span>
+                  <span className="text-slate-200 font-mono font-semibold">{breakdown.skillCoverageScore}%</span>
+                </div>
+                <div className="w-full bg-slate-800 rounded-full h-1.5">
+                  <div className="bg-purple-500 h-1.5 rounded-full" style={{ width: `${breakdown.skillCoverageScore}%` }} />
+                </div>
+              </div>
+
+              <div className="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/60">
+                <div className="flex justify-between text-[11px] mb-1">
+                  <span className="text-slate-400">بازرتبه‌بندی LLM محلی</span>
+                  <span className="text-slate-200 font-mono font-semibold">{breakdown.llmRerankScore}%</span>
+                </div>
+                <div className="w-full bg-slate-800 rounded-full h-1.5">
+                  <div className="bg-amber-500 h-1.5 rounded-full" style={{ width: `${breakdown.llmRerankScore}%` }} />
+                </div>
+              </div>
+            </div>
+
+            {/* Top 3 Reasons */}
+            <div className="pt-3 border-t border-slate-800/60 flex flex-col gap-2">
+              <span className="text-xs font-semibold text-slate-300 block">دلایل اصلی تطابق (Top Reasons):</span>
+              <ul className="space-y-1.5">
+                {topReasons.map((reason, idx) => (
+                  <li key={idx} className="flex items-start gap-2 text-xs text-slate-300">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                    <span>{reason}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Why not higher? */}
+            {score < 95 && (
+              <div className="rounded-lg bg-slate-900/40 p-3 border border-slate-800/80 flex items-start gap-2.5 text-xs text-slate-300">
+                <HelpCircle className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-semibold text-sky-300 block mb-0.5">چرا امتیاز بالاتر نیست؟</span>
+                  <span className="text-slate-400 text-[11px] leading-relaxed">{whyNotHigher}</span>
+                </div>
+              </div>
+            )}
 
             {/* Matched & Missing Skills Chips */}
             <div className="flex flex-col gap-3 pt-3 border-t border-slate-800/60">

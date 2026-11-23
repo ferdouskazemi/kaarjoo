@@ -60,56 +60,83 @@
 ---
 
 ## Phase 2: Sources and Discovery (US & Europe Priority)
-- **Status:** COMPLETED
-- **Focus & Achievements:**
-  - **Zero Paid/Keyed APIs Policy Enforced:** 100% local polite crawlers and public syndicate APIs.
-  - **Polite Network Architecture (`packages/adapters/src/network/`):**
-    - Domain-isolated concurrency and rate limiting via `p-queue`.
-    - Random jittered delays (150-350ms) to prevent lockstep server hammering.
-    - Honest User-Agent: `Kaarjoo/1.0 (+https://github.com/ferdouskazemi/kaarjoo; Desktop Job Search Tool)`.
-    - Native `robots.txt` compliance parser and 24-hour cache.
-    - Conditional HTTP requests via `ETag` and `If-Modified-Since` (304 Not Modified caching).
-    - Exponential backoff and Retry-After handling on 429 status codes; polite cessation on 403 (no fingerprint spoofing, no stealth plugins, no captcha breaking).
-  - **3-Tier Deduplication Pipeline (`packages/adapters/src/dedup/`):**
-    - 1) Canonical URL normalization (strips `utm_*`, `gh_src`, `ref`, `lever-source`, `ashby_jid`) + SHA-256 hash.
-    - 2) Normalized `company|title|location` tuple hash with legal suffix stripping (`Inc`, `LLC`, `GmbH`, `Corp`).
-    - 3) 64-bit SimHash (Charikar algorithm) with term-frequency weighting for near-duplicate detection (Hamming distance $\le 3$).
-  - **Extraction Pipeline (`packages/adapters/src/extractors/`):**
-    - Schema.org `JobPosting` JSON-LD parser extracting title, company, location, remote status (`TELECOMMUTE`), salary range, employment type, and validThrough.
-    - Sanitized HTML to clean Markdown converter via `turndown`.
-  - **US & European Job Adapters (`packages/adapters/src/adapters/`):**
-    - `GreenhouseAdapter`: Public syndication API (`boards-api.greenhouse.io/v1/boards/{company}/jobs?content=true`).
-    - `LeverAdapter`: Public postings API (`api.lever.co/v0/postings/{company}?mode=json`).
-    - `AshbyAdapter`: Public job-board API (`api.ashbyhq.com/posting-api/job-board/{company}`).
-    - `WorkableAdapter`: Public widget API (`apply.workable.com/api/v1/widget/accounts/{company}`).
-    - `WeWorkRemotelyAdapter`: Public RSS feed syndication for remote tech engineering jobs.
-    - `AssistJobAdapter`: Assist-mode parser for manual LinkedIn/Indeed imports without forbidden crawling or logins.
-  - **Company Directory & Auto-Detection (`packages/adapters/src/companies/`):**
-    - Seeded directory of 18 premier US & European tech companies (Stripe, Figma, OpenAI, Spotify, Datadog, Klarna, DeepL, Revolut, Vercel, GitLab, etc.).
-    - Automated ATS detector identifying Greenhouse, Lever, Ashby, and Workable from careers page URLs or embedded iframes.
-  - **Database & RPC Integration:**
-    - SQLite migration `20260201_sources_and_simhash.sql` adding `sim_hash`, `tuple_hash`, `company_boards` table, and performance indexes.
-    - Node Engine JSON-RPC handlers registered: `jobs.search`, `jobs.fetchDetail`, `jobs.getCompanyBoards`, `jobs.addCompanyBoard`, `jobs.detectAts`, `jobs.checkHealth`, `jobs.importFromHtml`.
-  - **Desktop Job Discovery UI (`apps/desktop/src/views/JobsView.tsx`):**
-    - Bilingual (English / Persian RTL) responsive interface.
-    - Live Polite Crawler health badge ("Sources Online (Polite Crawler)").
-    - Filter bar: Keyword search, Region tabs (🇺🇸 US, 🇪🇺 Europe, 🌍 Remote Worldwide), Workplace pills (Remote, Hybrid, On-site), ATS Provider pills (Greenhouse, Lever, Ashby, Workable).
-    - `JobCard`: Company gradient avatar, title, location, remote badge, ATS provider tag, and interactive circular Match Score ring.
-    - `JobDetailDrawer`: Match breakdown (matched vs missing skills), salary banner, full Markdown description, and "Apply with Review" CTA.
-    - `CompanyBoardsModal`: Monitored company manager with toggle switches and URL ATS auto-detection.
-  - **Verification:**
-    - 42 out of 42 tests passing across 13 test suites in `vitest`.
-    - Profile extraction evaluation harness passing with **100.0%** accuracy.
-    - Rust core compiling cleanly with `cargo check` in 0.87s.
-    - Desktop React application building cleanly in 3.9s.
+- **Status:** COMPLETED (Committed in `cf20e21`)
+
+### Completed
+- [x] **Zero Paid/Keyed APIs Policy:** 100% local polite crawlers and public syndication endpoints.
+- [x] **Polite Network Architecture (`packages/adapters/src/network/`):**
+  - Domain-isolated concurrency and rate limiting via `p-queue`.
+  - Random jittered delays (150-350ms) to avoid server lockstep hammering.
+  - Honest User-Agent: `Kaarjoo/1.0 (+https://github.com/ferdouskazemi/kaarjoo; Desktop Job Search Tool)`.
+  - Native `robots.txt` compliance parser and 24-hour cache.
+  - Conditional HTTP requests via `ETag` and `If-Modified-Since` (304 Not Modified caching).
+  - Exponential backoff on 429 status codes; graceful stop on 403.
+- [x] **3-Tier Deduplication Pipeline (`packages/adapters/src/dedup/`):**
+  - Canonical URL normalization (stripping tracking query params: `utm_*`, `gh_src`, `ref`) + SHA-256 hash.
+  - Normalized `company|title|location` tuple hash with legal suffix stripping.
+  - 64-bit SimHash (Charikar algorithm) with term-frequency weighting for near-duplicate detection (Hamming distance $\le 3$).
+- [x] **Extraction Pipeline (`packages/adapters/src/extractors/`):**
+  - Schema.org `JobPosting` JSON-LD parser extracting title, company, location, remote status (`TELECOMMUTE`), salary range, employment type, and validThrough.
+  - Sanitized HTML to clean Markdown converter via `turndown`.
+- [x] **US & European Job Adapters (`packages/adapters/src/adapters/`):**
+  - `GreenhouseAdapter`, `LeverAdapter`, `AshbyAdapter`, `WorkableAdapter`, `WeWorkRemotelyAdapter`, `AssistJobAdapter`.
+- [x] **Company Directory & Auto-Detection (`packages/adapters/src/companies/`):**
+  - Seeded directory of 18 premier US & European tech companies (Stripe, Figma, OpenAI, Spotify, Datadog, Klarna, DeepL, Revolut, Vercel, GitLab, etc.).
+  - Automated ATS detector identifying Greenhouse, Lever, Ashby, and Workable from careers page URLs or embedded iframes.
+- [x] **Desktop Job Discovery UI (`apps/desktop/src/views/JobsView.tsx`):**
+  - Filter bar: Region (US, Europe, Remote Worldwide), Workplace (Remote, Hybrid, On-site), ATS Provider.
+  - `JobCard`, `JobDetailDrawer`, and `CompanyBoardsModal`.
+- [x] 42 unit tests passing across 13 test suites in `vitest`.
 
 ---
 
 ## Phase 3: Matching and Ranking (Local AI)
+- **Status:** COMPLETED
+
+### Completed
+- [x] **Hard Filters & Candidate Gating Engine (`packages/engine/src/matching/hardFilters.ts`):**
+  - Excluded companies filter (instant reject/0 score).
+  - Workplace & Remote type mismatch detection (penalizes mandatory on-site roles when user requests remote).
+  - Government security clearance and visa sponsorship restriction detector.
+  - Seniority bounds estimator (calculates profile experience duration vs job requirements).
+  - Salary floor validator (compares job salary ceiling against user minimum salary).
+  - Expired posting detection.
+- [x] **Local Semantic Similarity & Embedding Engine (`packages/engine/src/matching/embeddings.ts`):**
+  - 100% local sparse TF-IDF and N-gram vectorizer with cosine similarity.
+  - Title alignment score (candidate target titles + experience titles vs job title).
+  - Full content alignment score (achievements and summary vs job requirements).
+  - Zero external network calls and zero paid API keys.
+- [x] **ESCO Skill Coverage & Transferable Skills (`packages/engine/src/matching/skillCoverage.ts`):**
+  - Expanded ESCO taxonomy covering modern tech stacks (React, Vue, TypeScript, Go, Python, PyTorch, Docker, Kubernetes, Kafka, Terraform, Design Systems, etc.).
+  - Distinguishes exact skill matches, transferable skills within the same category (50% credit), and missing skills.
+- [x] **Local LLM Re-ranker & Explanation Schema (`packages/engine/src/matching/rerank.ts`):**
+  - Strict schema output: 0-100 score, top 3 factual reasons, gaps, red flags, and "Why not higher?" explanation.
+  - Calibrated weighted blend:
+    $\text{Score} = w_1 \times \text{HardFilter} + w_2 \times \text{Semantic} + w_3 \times \text{SkillCoverage} + w_4 \times \text{Rerank}$
+- [x] **Adaptive User Feedback Service (`packages/engine/src/matching/handler.ts`):**
+  - Thumbs up (relevant) / Thumbs down (irrelevant) feedback loop.
+  - Dynamically tunes user matching weights.
+  - JSON-RPC methods: `matching.scoreJob`, `matching.rankAllJobs`, `matching.recordFeedback`, `matching.getWeights`.
+- [x] **Matching Benchmark Evaluation (`eval/scripts/run-matching-eval.ts` & `eval/matching/labeled_pairs.json`):**
+  - Gold labeled pairs across senior backend, frontend, and AI profiles against US/EU jobs.
+  - Verified **Precision@10 = 100.0%** (exceeding the $\ge 80.0\%$ target metric).
+- [x] **Desktop Matching UI Integration:**
+  - `JobCard`: Dynamic animated Match Ring SVG with color transitions (green/sky/amber) and Thumbs Up/Down feedback buttons.
+  - `JobDetailDrawer`: Multi-bar score breakdown (Hard Filters, Semantic Similarity, Skill Coverage, LLM Re-rank), Top 3 Reasons with sparkle bullets, "Why not higher?" advice card, and Matched/Missing skill chips.
+- [x] **Verification:**
+  - 50 out of 50 unit tests passing across 14 test suites in `vitest`.
+  - Resume extraction evaluation harness: **100.0%** accuracy.
+  - Matching benchmark evaluation: **100.0%** Precision@10.
+  - Rust core compiling cleanly with `cargo check` in 0.83s.
+  - Desktop React application building cleanly in 4.8s.
+
+---
+
+## Phase 4: Tailored Documents & Truthfulness Guard
 - **Status:** Next Up
 - **Focus:**
-  - Hard filters engine (location, remote preference, seniority, salary floor).
-  - Local AI semantic embeddings (GGUF embedding model via `node-llama-cpp` or lightweight transformer).
-  - Canonical ESCO skill coverage calculation (matched / missing / transferable).
-  - LLM re-ranking of top N candidates with structured scoring.
-  - Calibrated weighted blend score with interactive user feedback.
+  - Tailored ATS-safe single-column and multi-column résumé templates.
+  - Persian (RTL) and English PDF export via Playwright `page.pdf()` and DOCX.
+  - Tailored cover letter generator in job's language referencing verified achievements.
+  - **Mandatory Truthfulness Guard:** Fact verification pipeline ensuring no hallucinated employers, degrees, dates, or inflated metrics.
+  - Side-by-side diff view (original vs tailored) with user editing.

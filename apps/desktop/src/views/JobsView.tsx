@@ -155,11 +155,20 @@ export const JobsView: React.FC = () => {
   const { t } = useTranslation();
 
   // State
-  const [jobs] = useState<DisplayJob[]>(INITIAL_JOBS);
+  const [jobs, setJobs] = useState<DisplayJob[]>(INITIAL_JOBS);
   const [companyBoards, setCompanyBoards] = useState<CompanyBoard[]>(SEEDED_BOARDS_DEFAULT);
   const [selectedJob, setSelectedJob] = useState<DisplayJob | null>(null);
   const [isBoardsModalOpen, setIsBoardsModalOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+
+  const handleFeedback = (jobId: string, feedback: 'relevant' | 'irrelevant') => {
+    setJobs((prev) =>
+      prev.map((j) => (j.id === jobId ? { ...j, userFeedback: feedback } : j))
+    );
+    if (selectedJob && selectedJob.id === jobId) {
+      setSelectedJob((prev) => (prev ? { ...prev, userFeedback: feedback } : null));
+    }
+  };
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -390,6 +399,7 @@ export const JobsView: React.FC = () => {
               job={job}
               onSelect={setSelectedJob}
               onApply={handleApply}
+              onFeedback={handleFeedback}
             />
           ))}
         </div>
@@ -408,6 +418,7 @@ export const JobsView: React.FC = () => {
         job={selectedJob}
         onClose={() => setSelectedJob(null)}
         onApply={handleApply}
+        onFeedback={handleFeedback}
       />
 
       {/* Monitored Company Boards Modal */}
