@@ -11,21 +11,22 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@kaarjoo/shared": "workspace:*",
     "@kaarjoo/adapters": "workspace:*",
-    "playwright-core": "^1.50.1",
-    "pino": "^9.6.0",
-    "p-queue": "^8.1.0",
+    "@kaarjoo/shared": "workspace:*",
     "cheerio": "^1.0.0",
     "chrono-node": "^2.7.7",
+    "docx": "^9.16.0",
     "libphonenumber-js": "^1.11.19",
     "mammoth": "^1.9.0",
+    "p-queue": "^8.1.0",
     "pdfjs-dist": "^4.10.38",
+    "pino": "^9.6.0",
+    "playwright-core": "^1.50.1",
     "undici": "^7.3.0"
   },
   "devDependencies": {
-    "typescript": "^5.8.2",
+    "@types/node": "^22.13.5",
     "esbuild": "^0.25.0",
-    "@types/node": "^22.13.5"
+    "typescript": "^5.8.2"
   }
 }

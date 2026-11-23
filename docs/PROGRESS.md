@@ -91,7 +91,7 @@
 ---
 
 ## Phase 3: Matching and Ranking (Local AI)
-- **Status:** COMPLETED
+- **Status:** COMPLETED (Committed in `c86332e`)
 
 ### Completed
 - [x] **Hard Filters & Candidate Gating Engine (`packages/engine/src/matching/hardFilters.ts`):**
@@ -123,20 +123,63 @@
 - [x] **Desktop Matching UI Integration:**
   - `JobCard`: Dynamic animated Match Ring SVG with color transitions (green/sky/amber) and Thumbs Up/Down feedback buttons.
   - `JobDetailDrawer`: Multi-bar score breakdown (Hard Filters, Semantic Similarity, Skill Coverage, LLM Re-rank), Top 3 Reasons with sparkle bullets, "Why not higher?" advice card, and Matched/Missing skill chips.
-- [x] **Verification:**
-  - 50 out of 50 unit tests passing across 14 test suites in `vitest`.
-  - Resume extraction evaluation harness: **100.0%** accuracy.
-  - Matching benchmark evaluation: **100.0%** Precision@10.
-  - Rust core compiling cleanly with `cargo check` in 0.83s.
-  - Desktop React application building cleanly in 4.8s.
+- [x] 50 unit tests passing across 14 test suites in `vitest`.
 
 ---
 
 ## Phase 4: Tailored Documents & Truthfulness Guard
+- **Status:** COMPLETED
+- **Focus & Achievements:**
+  - **ATS-Safe Résumé Templates (`packages/engine/src/documents/templates/`):**
+    - `ats-clean`: Pure single-column linear hierarchy, zero complex floats or tables, standard heading hierarchy (Contact, Summary, Experience, Skills, Education). Fully compatible with Workday, Greenhouse, Lever, Taleo, and Ashby ATS parsers.
+    - `modern-minimal`: High-taste engineering design with subtle left-border accents and skill pills.
+    - `compact-technical`: High-density layout tailored for senior engineers.
+    - Complete bilingual support: English (LTR, Inter) and Persian (RTL, Vazirmatn).
+  - **Document Tailoring Engine (`packages/engine/src/documents/tailor.ts`):**
+    - `tailorResume`: Reorders relevant skills and experience bullets to emphasize job requirements. Rewrites bullets for job terminology while keeping every factual claim true.
+    - `generateCoverLetter`: Short, specific, in target company's language, referencing 2 real verified achievements from candidate profile.
+  - **Mandatory Truthfulness Guard (`packages/engine/src/documents/truthfulness.ts`):**
+    - Ground truth fact extraction from profile (verified employers, degrees, institutions, duration, metrics).
+    - Cross-verification pipeline checking for:
+      - Hallucinated employers (e.g. inventing Google/Apple).
+      - Invented degrees or institutions (e.g. fake PhDs or unverified universities).
+      - Duration inflation (claiming 15+ years when profile has ~3.5 years).
+      - Quantitative metric inflation (inventing unverified dollar figures or team sizes).
+    - Automated flagging with severity levels (`high`, `medium`, `low`) and confidence score.
+  - **Screening Answer Bank (`packages/engine/src/documents/answerBank.ts`):**
+    - Approved answer repository for common screening questions:
+      - `notice_period` (2 weeks default).
+      - `salary` (formatted from user preferences).
+      - `work_auth` (visa sponsorship/remote authorization status).
+      - `relocation` (remote preference).
+      - `experience_years` (computed dynamically from profile experience dates for requested tech).
+      - `eeo_demographic` (strict default: "Decline to self-identify").
+  - **Multi-Format Document Exporters (`packages/engine/src/documents/exporters/`):**
+    - High-resolution PDF export via host system Chrome/Edge (`page.pdf()`).
+    - Microsoft Word (`.docx`) export via `docx` library with clean typography and ATS bullet lists.
+  - **Desktop Tailored Documents Studio (`TailoredDocumentsModal.tsx`):**
+    - Side-by-side Diff View: Original profile reference on Left, Tailored editable resume on Right.
+    - Real-time Truthfulness Guard banner with 🟢/⚠️ live verification.
+    - Language switcher (English / فارسی).
+    - Template switcher (ATS-Safe, Modern Minimal, Compact Technical).
+    - One-click PDF and DOCX export.
+    - Dedicated tabs for Cover Letter (with Copy to clipboard) and Screening Answer Bank.
+  - **Verification:**
+    - 61 out of 61 unit tests passing across 15 test suites in `vitest`.
+    - Unit tests covering 4 adversarial hallucination/inflation attacks.
+    - Profile extraction evaluation: **100.0%** accuracy.
+    - Matching evaluation: **100.0%** Precision@10.
+    - Rust core compiling cleanly with `cargo check` in 0.89s.
+    - Desktop React application building cleanly in 4.4s.
+
+---
+
+## Phase 5: Application Engine (Form Filling & ATS Drivers)
 - **Status:** Next Up
 - **Focus:**
-  - Tailored ATS-safe single-column and multi-column résumé templates.
-  - Persian (RTL) and English PDF export via Playwright `page.pdf()` and DOCX.
-  - Tailored cover letter generator in job's language referencing verified achievements.
-  - **Mandatory Truthfulness Guard:** Fact verification pipeline ensuring no hallucinated employers, degrees, dates, or inflated metrics.
-  - Side-by-side diff view (original vs tailored) with user editing.
+  - ATS form fillers: Greenhouse, Lever, Ashby, Workable, plus generic HTML form filler.
+  - Local mock ATS forms in `fixtures/ats/` for automated testing.
+  - Field mapping pipeline (name, email, phone, resume upload, cover letter, screening answers, EEO defaults).
+  - Review Mode (default): fills form, pauses on final step with screenshot and verification checklist before user submits.
+  - Auto-apply mode (opt-in per source, daily cap, score threshold).
+  - Stop & ask user triggers: CAPTCHA detection, login wall, unknown required field (never bypass bot checks).

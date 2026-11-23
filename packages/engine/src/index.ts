@@ -5,6 +5,15 @@ import { processAndExtractProfile } from './ingestion/pipeline.js';
 import { mergeProfiles } from './ingestion/merger.js';
 import { defaultJobSourcesManager } from './sources/handler.js';
 import { defaultMatchingService } from './matching/handler.js';
+import {
+  tailorResume,
+  generateCoverLetter,
+  TruthfulnessGuard,
+  defaultAnswerBank,
+  exportResumeToPdf,
+  exportCoverLetterToPdf,
+  exportResumeToDocx,
+} from './documents/index.js';
 import type { HardwareSpecs } from '@kaarjoo/shared';
 
 const server = new StdioRpcServer();
@@ -104,6 +113,43 @@ server.register('matching.recordFeedback', (params: { jobId: string; profileId: 
 
 server.register('matching.getWeights', (params: { profileId?: string }) => {
   return defaultMatchingService.getWeights(params?.profileId);
+});
+
+// --- Phase 4: Tailored Documents & Truthfulness Guard ---
+server.register('documents.tailorResume', (params: { profile: any; job: any; options?: any }) => {
+  const tailored = tailorResume(params.profile, params.job, params.options);
+  const check = TruthfulnessGuard.verifyTailoredResume(params.profile, tailored);
+  tailored.truthfulnessScore = check.score;
+  tailored.unsupportedClaimsCount = check.unsupportedClaims.length;
+  return { tailored, check };
+});
+
+server.register('documents.generateCoverLetter', (params: { profile: any; job: any; language?: any }) => {
+  return generateCoverLetter(params.profile, params.job, params.language);
+});
+
+server.register('documents.getScreeningAnswer', (params: { question: string; profile: any }) => {
+  return defaultAnswerBank.getAnswer(params.question, params.profile);
+});
+
+server.register('documents.verifyTruthfulness', (params: { profile: any; tailored: any }) => {
+  return TruthfulnessGuard.verifyTailoredResume(params.profile, params.tailored);
+});
+
+server.register('documents.exportPdf', async (params: { resume?: any; coverLetter?: any; outputPath?: string }) => {
+  if (params.resume) {
+    const buffer = await exportResumeToPdf(params.resume, { outputPath: params.outputPath });
+    return { success: true, size: buffer.length, outputPath: params.outputPath };
+  } else if (params.coverLetter) {
+    const buffer = await exportCoverLetterToPdf(params.coverLetter, { outputPath: params.outputPath });
+    return { success: true, size: buffer.length, outputPath: params.outputPath };
+  }
+  throw new Error('Neither resume nor coverLetter provided for PDF export');
+});
+
+server.register('documents.exportDocx', async (params: { resume: any; outputPath?: string }) => {
+  const buffer = await exportResumeToDocx(params.resume, { outputPath: params.outputPath });
+  return { success: true, size: buffer.length, outputPath: params.outputPath };
 });
 
 // Start listening on stdio

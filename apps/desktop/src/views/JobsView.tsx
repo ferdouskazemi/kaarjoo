@@ -9,6 +9,7 @@ import {
 import { JobCard, type DisplayJob } from '../components/jobs/JobCard.js';
 import { JobDetailDrawer } from '../components/jobs/JobDetailDrawer.js';
 import { CompanyBoardsModal } from '../components/jobs/CompanyBoardsModal.js';
+import { TailoredDocumentsModal } from '../components/documents/TailoredDocumentsModal.js';
 import type { CompanyBoard, AtsType } from '@kaarjoo/shared';
 
 // Initial high-quality US & European tech job postings seeded for discovery
@@ -158,7 +159,9 @@ export const JobsView: React.FC = () => {
   const [jobs, setJobs] = useState<DisplayJob[]>(INITIAL_JOBS);
   const [companyBoards, setCompanyBoards] = useState<CompanyBoard[]>(SEEDED_BOARDS_DEFAULT);
   const [selectedJob, setSelectedJob] = useState<DisplayJob | null>(null);
+  const [tailoringJob, setTailoringJob] = useState<DisplayJob | null>(null);
   const [isBoardsModalOpen, setIsBoardsModalOpen] = useState(false);
+  const [isTailoringModalOpen, setIsTailoringModalOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
 
   const handleFeedback = (jobId: string, feedback: 'relevant' | 'irrelevant') => {
@@ -221,7 +224,8 @@ export const JobsView: React.FC = () => {
 
   const handleApply = (job: DisplayJob) => {
     setSelectedJob(null);
-    alert(`آماده‌سازی درخواست و فرم برای موقعیت:\n"${job.title}" در شرکت ${job.company}\n\nفرم با رعایت قوانین Review Mode در فاز ۳ و ۴ با نظارت شما تکمیل خواهد شد.`);
+    setTailoringJob(job);
+    setIsTailoringModalOpen(true);
   };
 
   // Filtered jobs
@@ -429,6 +433,17 @@ export const JobsView: React.FC = () => {
         onToggleBoard={handleToggleBoard}
         onAddBoard={handleAddBoard}
         onDetectAts={handleDetectAts}
+      />
+
+      {/* Tailored Documents Studio Modal (Phase 4) */}
+      <TailoredDocumentsModal
+        isOpen={isTailoringModalOpen}
+        onClose={() => setIsTailoringModalOpen(false)}
+        job={tailoringJob}
+        onProceedToApply={() => {
+          setIsTailoringModalOpen(false);
+          alert('مدارک اختصاصی با موفقیت تایید و ذخیره شدند! آماده ارسال در فاز ۵ (فرم‌های ATS).');
+        }}
       />
     </div>
   );

@@ -1,1 +1,1 @@
-{"root":["./src/index.ts","./src/job.ts","./src/profile.ts","./src/rpc.ts","./src/system.ts"],"version":"5.9.3"}
+{"root":["./src/document.ts","./src/index.ts","./src/job.ts","./src/profile.ts","./src/rpc.ts","./src/system.ts"],"version":"5.9.3"}
