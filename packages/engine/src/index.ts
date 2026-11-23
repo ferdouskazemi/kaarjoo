@@ -1,6 +1,8 @@
 import os from 'node:os';
 import { StdioRpcServer } from './rpc.js';
 import { discoverSystemBrowsers } from './utils/discovery.js';
+import { processAndExtractProfile } from './ingestion/pipeline.js';
+import { mergeProfiles } from './ingestion/merger.js';
 import { HardwareSpecs } from '@kaarjoo/shared';
 
 const server = new StdioRpcServer();
@@ -16,6 +18,16 @@ server.register('system.ping', () => ({
 // Browser Discovery (Adapted from open-antigravity-patcher heuristics)
 server.register('system.discoverBrowsers', () => {
   return discoverSystemBrowsers();
+});
+
+// Profile Extraction
+server.register('profile.parseAndExtract', async (params: { filePath: string }) => {
+  return processAndExtractProfile(params.filePath);
+});
+
+// Profile Merging
+server.register('profile.merge', (params: { profiles: any[]; sourceNames?: string[] }) => {
+  return mergeProfiles(params.profiles, params.sourceNames);
 });
 
 // Hardware specs and AI tier recommendation

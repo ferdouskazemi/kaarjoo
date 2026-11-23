@@ -18,6 +18,8 @@
     "cheerio": "^1.0.0",
     "chrono-node": "^2.7.7",
     "libphonenumber-js": "^1.11.19",
+    "mammoth": "^1.9.0",
+    "pdfjs-dist": "^4.10.38",
     "undici": "^7.3.0"
   },
   "devDependencies": {
