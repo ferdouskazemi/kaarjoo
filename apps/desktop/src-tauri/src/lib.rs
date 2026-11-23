@@ -7,13 +7,17 @@ pub struct SystemStatus {
     pub is_ready: bool,
 }
 
-#[tauri::command]
-pub fn get_system_status() -> Result<SystemStatus, String> {
-    Ok(SystemStatus {
-        app_version: "0.1.0".to_string(),
-        os: std::env::consts::OS.to_string(),
-        is_ready: true,
-    })
+mod commands {
+    use super::*;
+
+    #[tauri::command]
+    pub fn get_system_status() -> Result<SystemStatus, String> {
+        Ok(SystemStatus {
+            app_version: "0.1.0".to_string(),
+            os: std::env::consts::OS.to_string(),
+            is_ready: true,
+        })
+    }
 }
 
 pub fn run() {
@@ -23,7 +27,7 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_process::init())
-        .invoke_handler(tauri::generate_handler![get_system_status])
+        .invoke_handler(tauri::generate_handler![commands::get_system_status])
         .run(tauri::generate_context!())
         .expect("error while running kaarjoo desktop application");
 }
