@@ -26,7 +26,8 @@ const LIVE_COMPANY_BOARDS_DEFAULT: CompanyBoard[] = [
 ];
 
 export const JobsView: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isRtl = i18n.dir() === 'rtl';
   const { setCurrentView } = useAppStore();
   const { queueJobApplication } = useApplicationStore();
 
@@ -221,7 +222,11 @@ export const JobsView: React.FC = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="جستجو در عنوان شغل، نام شرکت یا مهارت (مثلاً Distributed Systems, Go, React)..."
+              placeholder={
+                isRtl
+                  ? 'جستجو در عنوان شغل، نام شرکت یا مهارت (مثلاً Distributed Systems, Go, React)...'
+                  : 'Search job title, company, or skills (e.g. Distributed Systems, Go, React)...'
+              }
               className="w-full ps-9 pe-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-sky-500 transition-colors"
             />
           </div>
@@ -241,10 +246,10 @@ export const JobsView: React.FC = () => {
                 {r === 'all'
                   ? t('jobs.allRegions')
                   : r === 'us'
-                    ? '🇺🇸 آمریکا'
+                    ? isRtl ? '🇺🇸 آمریکا' : '🇺🇸 US'
                     : r === 'eu'
-                      ? '🇪🇺 اروپا'
-                      : '🌍 فقط ریموت'}
+                      ? isRtl ? '🇪🇺 اروپا' : '🇪🇺 Europe'
+                      : isRtl ? '🌍 فقط ریموت' : '🌍 Remote Only'}
               </button>
             ))}
           </div>
@@ -252,13 +257,15 @@ export const JobsView: React.FC = () => {
 
         {/* Quick Tech Stack Filter Ribbon (Sub-millisecond instant matching) */}
         <div className="flex items-center gap-1.5 flex-wrap pt-2 border-t border-slate-800/40">
-          <span className="text-[11px] text-slate-400 font-medium me-1">تخصص شما:</span>
+          <span className="text-[11px] text-slate-400 font-medium me-1">
+            {isRtl ? 'تخصص شما:' : 'Your Stack:'}
+          </span>
           {[
-            { id: 'all', label: 'همه موقعیت‌ها' },
-            { id: 'frontend', label: '⚛️ فرانت‌اند (React / Web)' },
+            { id: 'all', label: isRtl ? 'همه موقعیت‌ها' : 'All Roles' },
+            { id: 'frontend', label: isRtl ? '⚛️ فرانت‌اند (React / Web)' : '⚛️ Frontend (React / Web)' },
             { id: 'typescript', label: '📘 TypeScript / JavaScript' },
-            { id: 'fullstack', label: '🌐 فول‌استک (Fullstack)' },
-            { id: 'design', label: '🎨 محصول و UI/UX' },
+            { id: 'fullstack', label: isRtl ? '🌐 فول‌استک (Fullstack)' : '🌐 Fullstack' },
+            { id: 'design', label: isRtl ? '🎨 محصول و UI/UX' : '🎨 Product & Design' },
           ].map((stack) => (
             <button
               key={stack.id}
@@ -279,7 +286,7 @@ export const JobsView: React.FC = () => {
           <div className="flex items-center gap-3 flex-wrap">
             {/* Workplace / Remote Type */}
             <div className="flex items-center gap-1 text-xs">
-              <span className="text-slate-500 me-1">محیط کار:</span>
+              <span className="text-slate-500 me-1">{isRtl ? 'محیط کار:' : 'Workplace:'}</span>
               {(['all', 'remote', 'hybrid', 'on-site'] as const).map((rt) => (
                 <button
                   key={rt}
@@ -290,14 +297,20 @@ export const JobsView: React.FC = () => {
                       : 'bg-slate-900/60 text-slate-400 border-slate-800 hover:border-slate-700'
                   }`}
                 >
-                  {rt === 'all' ? 'همه' : rt === 'remote' ? 'دورکاری' : rt === 'hybrid' ? 'هیبرید' : 'حضوری'}
+                  {rt === 'all'
+                    ? isRtl ? 'همه' : 'All'
+                    : rt === 'remote'
+                      ? isRtl ? 'دورکاری' : 'Remote'
+                      : rt === 'hybrid'
+                        ? isRtl ? 'هیبرید' : 'Hybrid'
+                        : isRtl ? 'حضوری' : 'On-Site'}
                 </button>
               ))}
             </div>
 
             {/* ATS Provider Filter */}
             <div className="flex items-center gap-1 text-xs">
-              <span className="text-slate-500 me-1">سیستم ATS:</span>
+              <span className="text-slate-500 me-1">{isRtl ? 'سیستم ATS:' : 'ATS:'}</span>
               {(['all', 'greenhouse', 'lever', 'ashby', 'workable'] as const).map((ats) => (
                 <button
                   key={ats}
@@ -314,8 +327,8 @@ export const JobsView: React.FC = () => {
             </div>
           </div>
 
-          <span className="text-xs text-slate-500 font-medium">
-            نمایش {filteredJobs.length} موقعیت شغلی
+          <span className="text-xs text-slate-500 font-medium font-mono">
+            {isRtl ? `نمایش ${filteredJobs.length} موقعیت شغلی` : `Showing ${filteredJobs.length} live openings`}
           </span>
         </div>
       </div>
@@ -324,9 +337,13 @@ export const JobsView: React.FC = () => {
       {isLoadingLive && jobs.length === 0 ? (
         <div className="rounded-2xl border border-sky-500/20 bg-slate-900/40 p-16 text-center flex flex-col items-center justify-center gap-3">
           <Loader2 className="w-10 h-10 text-sky-400 animate-spin" />
-          <h3 className="text-base font-bold text-slate-100">در حال خزش و دریافت مشاغل ۱۰۰٪ واقعی و زنده...</h3>
+          <h3 className="text-base font-bold text-slate-100">
+            {isRtl ? 'در حال خزش و دریافت مشاغل ۱۰۰٪ واقعی و زنده...' : 'Crawling 100% Real Live Career Boards...'}
+          </h3>
           <p className="text-xs text-slate-400 max-w-md leading-relaxed">
-            سیستم کارجو در حال اتصال زنده به APIهای عمومی و رسمی <strong>Linear</strong>، <strong>Ramp</strong>، <strong>OpenAI</strong> (Ashby) و <strong>GitLab</strong>، <strong>Cloudflare</strong> (Greenhouse) است. تمام داده‌ها تازه و کاملاً بدون Seed هستند.
+            {isRtl
+              ? 'سیستم کارجو در حال اتصال زنده به APIهای عمومی و رسمی Linear، Ramp، OpenAI (Ashby) و GitLab، Cloudflare (Greenhouse) است.'
+              : 'Streaming live job openings from Ashby (Linear, Ramp, OpenAI) and Greenhouse (GitLab, Cloudflare, Canonical) with zero seed data.'}
           </p>
         </div>
       ) : filteredJobs.length > 0 ? (
@@ -346,7 +363,9 @@ export const JobsView: React.FC = () => {
           <Briefcase className="w-12 h-12 text-slate-600 mb-4" />
           <h3 className="text-base font-semibold text-slate-200">{t('jobs.noJobsFound')}</h3>
           <p className="text-xs text-slate-400 mt-1 max-w-sm">
-            فیلترهای انتخابی را تغییر دهید یا دکمه «خزش و بروزرسانی زنده» را کلیک نمایید.
+            {isRtl
+              ? 'فیلترهای انتخابی را تغییر دهید یا دکمه «خزش و بروزرسانی زنده» را کلیک نمایید.'
+              : 'Adjust your filters or click "Sync Feed" to refresh live openings.'}
           </p>
         </div>
       )}

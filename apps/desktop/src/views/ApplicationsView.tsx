@@ -55,8 +55,8 @@ export const ApplicationsView: React.FC = () => {
         <div>
           <div className="flex items-center gap-2.5">
             <h1 className="text-2xl font-bold text-slate-100">{t('nav.applications')}</h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-              {applications.length} موقعیت ثبت‌شده
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+              {applications.length} {isRtl ? 'موقعیت ثبت‌شده' : 'Recorded Positions'}
             </span>
           </div>
           <p className="text-sm text-slate-400 mt-1">

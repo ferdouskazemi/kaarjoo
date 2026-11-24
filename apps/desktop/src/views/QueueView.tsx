@@ -108,7 +108,7 @@ export const QueueView: React.FC = () => {
   };
 
   const candidateEmail = profile?.contact.email || 'ferdouskazemi1000@gmail.com';
-  const candidateName = profile?.contact.fullName || 'فردوس کاظمی';
+  const candidateName = profile?.contact.fullName || (isRtl ? 'فردوس کاظمی' : 'Ferdous Kazemi');
 
   return (
     <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-5 max-w-7xl mx-auto w-full bg-[#111111] text-[#f4f4f5]">
@@ -118,7 +118,7 @@ export const QueueView: React.FC = () => {
           <div className="flex items-center gap-2.5">
             <h1 className="text-xl font-bold text-[#f4f4f5]">{t('nav.queue')}</h1>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-medium bg-[#142233] text-sky-300 border border-sky-500/30">
-              {applications.length} موقعیت
+              {applications.length} {isRtl ? 'موقعیت' : 'Positions'}
             </span>
           </div>
           <p className="text-xs text-[#a1a1aa] mt-1">
@@ -153,9 +153,13 @@ export const QueueView: React.FC = () => {
       {applications.length === 0 ? (
         <div className="rounded-2xl border border-[#242424] bg-[#161616] p-16 text-center flex flex-col items-center justify-center">
           <CheckCircle2 className="w-12 h-12 text-[#444444] mb-4" />
-          <h3 className="text-sm font-semibold text-[#f4f4f5]">صف ارسال‌ها خالی است</h3>
+          <h3 className="text-sm font-semibold text-[#f4f4f5]">
+            {isRtl ? 'صف ارسال‌ها خالی است' : 'Application queue is empty'}
+          </h3>
           <p className="text-xs text-[#a1a1aa] mt-1 max-w-sm">
-            از بخش «فرصت‌های شغلی»، موقعیت زنده مورد نظر خود را انتخاب کرده و دکمه «انتقال به صف ارسال» را بزنید.
+            {isRtl
+              ? 'از بخش «فرصت‌های شغلی»، موقعیت زنده مورد نظر خود را انتخاب کرده و دکمه «انتقال به صف ارسال» را بزنید.'
+              : 'From "Live Opportunities", select a position and queue it for review-mode application.'}
           </p>
         </div>
       ) : (
@@ -194,7 +198,13 @@ export const QueueView: React.FC = () => {
                     <div className="flex items-center justify-between text-xs pt-2 border-t border-[#242424]">
                       {getStatusBadge(app.status)}
                       <span className="text-[10px] font-mono text-[#71717a]">
-                        {app.reviewChecklist.length > 0 ? `${app.reviewChecklist.length} فیلد` : 'آماده پردازش'}
+                        {app.reviewChecklist.length > 0
+                          ? isRtl
+                            ? `${app.reviewChecklist.length} فیلد`
+                            : `${app.reviewChecklist.length} fields`
+                          : isRtl
+                          ? 'آماده پردازش'
+                          : 'Ready'}
                       </span>
                     </div>
                   </div>
@@ -339,7 +349,7 @@ export const QueueView: React.FC = () => {
                       {isRtl ? 'چک‌لیست داده‌های وارد شده' : 'Filled Values Checklist'}
                     </span>
                     <span className="text-[10px] font-mono text-emerald-400 bg-[#16271c] px-2 py-0.5 rounded border border-emerald-500/20">
-                      سینک با رزومه کاندید
+                      {isRtl ? 'سینک با رزومه کاندید' : 'Candidate Synced'}
                     </span>
                   </div>
 
@@ -372,7 +382,9 @@ export const QueueView: React.FC = () => {
                     ) : (
                       <div className="p-8 text-center text-[#52525b] text-xs flex flex-col items-center">
                         <Play className="w-6 h-6 text-[#444444] mb-2" />
-                        <span>{isRtl ? 'دکمه «تکمیل خودکار فرم» را بزنید تا چک‌لیست استخراج گردد' : 'Click "Start Filling" to generate checklist'}</span>
+                        <span>
+                          {isRtl ? 'دکمه «تکمیل خودکار فرم» را بزنید تا چک‌لیست استخراج گردد' : 'Click "Start Automated Filling" to generate checklist'}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -387,10 +399,10 @@ export const QueueView: React.FC = () => {
                     {activeApp.status === 'submitted'
                       ? isRtl
                         ? 'درخواست شما با موفقیت ثبت شد و در سیستم ذخیره گردید.'
-                        : 'Application confirmed and recorded.'
+                        : 'Application confirmed and recorded in local system.'
                       : isRtl
                       ? 'فرم تکمیل شده؛ با کلیک دکمه زیر، درخواست نهایی ارسال می‌شود.'
-                      : 'Form filled; click to execute final submission.'}
+                      : 'Form filled and verified; click to submit final application.'}
                   </span>
                 </div>
 

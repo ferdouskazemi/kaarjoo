@@ -28,7 +28,8 @@ import { useProfileStore, INITIAL_CANDIDATE_PROFILE } from '../stores/profileSto
 import { useApplicationStore } from '../stores/applicationStore.js';
 
 export const ProfileView: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isRtl = i18n.dir() === 'rtl';
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -71,13 +72,17 @@ export const ProfileView: React.FC = () => {
         meta: { pageCount: parseResult.pageCount, fileType: parseResult.fileType },
       });
       setProfile(extractedProfile);
-      setActiveHighlight(extractedProfile.contact.email || extractedProfile.contact.fullName || '', 'ایمیل');
+      setActiveHighlight(extractedProfile.contact.email || extractedProfile.contact.fullName || '', 'Email');
 
       // 3. Immediately synchronize all application forms and queue checklists with the user's real email & details
       useApplicationStore.getState().syncWithProfile(extractedProfile);
     } catch (err) {
       console.error('File parsing error:', err);
-      alert('خطا در خواندن و تحلیل فایل. لطفاً از فایل‌های استاندارد PDF، DOCX یا متنی استفاده فرمایید.');
+      alert(
+        isRtl
+          ? 'خطا در خواندن و تحلیل فایل. لطفاً از فایل‌های استاندارد PDF، DOCX یا متنی استفاده فرمایید.'
+          : 'Error parsing document. Please use standard PDF, DOCX, or text files.'
+      );
     } finally {
       setIsProcessing(false);
     }
@@ -152,7 +157,11 @@ export const ProfileView: React.FC = () => {
       {confirmToast && (
         <div className="fixed top-12 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-[#1c2e24] border border-emerald-500/40 text-emerald-300 text-xs shadow-2xl active-ring backdrop-blur transition-all">
           <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-          <span>تمام داده‌های استخراج‌شده تأیید و در صف ارسال و تمام فرم‌های ATS سینک شدند.</span>
+          <span>
+            {isRtl
+              ? 'تمام داده‌های استخراج‌شده تأیید و در صف ارسال و تمام فرم‌های ATS سینک شدند.'
+              : 'Candidate profile verified and synchronized across all queued ATS applications.'}
+          </span>
         </div>
       )}
 
@@ -161,7 +170,7 @@ export const ProfileView: React.FC = () => {
         <div className="flex items-center gap-3">
           <h1 className="text-xs font-semibold text-[#f4f4f5] flex items-center gap-2">
             <FileText className="w-3.5 h-3.5 text-sky-400" />
-            <span>{t('nav.profile')}</span>
+            <span>{t('profile.title')}</span>
           </h1>
 
           {profile && (
@@ -169,7 +178,7 @@ export const ProfileView: React.FC = () => {
               <span className="text-[11px] px-2.5 py-0.5 rounded-md bg-[#1d2720] border border-emerald-500/30 text-emerald-400 font-mono flex items-center gap-1.5">
                 <ShieldCheck className="w-3 h-3 text-emerald-400" />
                 <span className="truncate max-w-[260px]">
-                  استخراج شده از: {uploadedFileName || 'Ferdous Kazemi Resume.pdf'}
+                  {t('profile.extractedFrom')} {uploadedFileName || 'Ferdous Kazemi Resume.pdf'}
                 </span>
               </span>
             </div>
@@ -182,10 +191,10 @@ export const ProfileView: React.FC = () => {
               <button
                 onClick={handleClearProfile}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-[#382020] hover:border-rose-700/60 bg-[#221414] hover:bg-[#2b1717] text-[11px] font-medium text-rose-300 transition-colors cursor-pointer"
-                title="پاکسازی و خالی کردن پروفایل"
+                title={t('profile.clear')}
               >
                 <Trash2 className="w-3 h-3 text-rose-400" />
-                <span>خالی کردن اطلاعات</span>
+                <span>{t('profile.clear')}</span>
               </button>
 
               <button
@@ -193,7 +202,7 @@ export const ProfileView: React.FC = () => {
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-[#333333] hover:border-[#484848] bg-[#202020] hover:bg-[#262626] text-[11px] font-medium text-[#d4d4d8] hover:text-white transition-colors cursor-pointer"
               >
                 <UploadCloud className="w-3 h-3 text-sky-400" />
-                <span>بارگذاری فایل دیگر</span>
+                <span>{t('profile.uploadAnother')}</span>
               </button>
 
               <button
@@ -201,7 +210,7 @@ export const ProfileView: React.FC = () => {
                 className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-[11px] transition-all shadow-sm active:scale-95 cursor-pointer"
               >
                 <CheckCircle2 className="w-3 h-3" />
-                <span>تأیید نهایی پروفایل</span>
+                <span>{t('profile.confirm')}</span>
               </button>
             </>
           ) : (
@@ -213,7 +222,7 @@ export const ProfileView: React.FC = () => {
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-[#333333] hover:border-[#484848] bg-[#202020] text-[#a1a1aa] hover:text-white text-[11px] transition-colors cursor-pointer"
             >
               <RefreshCw className="w-3 h-3 text-sky-400" />
-              <span>بارگذاری پروفایل طلایی کاندید</span>
+              <span>{t('profile.loadSample')}</span>
             </button>
           )}
         </div>
@@ -246,20 +255,22 @@ export const ProfileView: React.FC = () => {
 
             <h3 className="text-sm font-semibold text-[#f4f4f5] mb-1">
               {isProcessing
-                ? 'در حال خواندن و استخراج محلی اطلاعات با بالاترین دقت مهندسی...'
-                : 'بارگذاری رزومه اصلی برای استخراج دقیق'}
+                ? isRtl
+                  ? 'در حال خواندن و استخراج محلی اطلاعات با بالاترین دقت مهندسی...'
+                  : 'Parsing and structuring resume locally with engineering precision...'
+                : t('profile.dropTitle')}
             </h3>
             <p className="text-xs text-[#a1a1aa] max-w-sm mb-4 leading-relaxed">
-              فایل رزومه خود را اینجا بکشید یا برای انتخاب کلیک کنید.
+              {t('profile.dropDesc')}
               <br />
               <span className="text-[11px] text-[#71717a] font-mono">
-                پشتیبانی از PDF، Word (DOCX)، فرمت‌های متنی و Markdown
+                {t('profile.supportedFormats')}
               </span>
             </p>
 
             <div className="flex items-center gap-2 text-[11px] font-mono text-[#a1a1aa] bg-[#202020] px-3 py-1.5 rounded-lg border border-[#2b2b2b]">
               <Lock className="w-3.5 h-3.5 text-emerald-400" />
-              <span>پردازش ۱۰۰٪ محلی و آفلاین • بدون ارسال به سرور شخص ثالث</span>
+              <span>{t('profile.localNotice')}</span>
             </div>
           </div>
         </div>
@@ -277,26 +288,26 @@ export const ProfileView: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="text-xs font-semibold text-[#f4f4f5] flex items-center gap-1.5">
-                      <span>داده‌های شناسایی و استخراج‌شده از رزومه</span>
+                      <span>{t('profile.insightsTitle')}</span>
                     </h3>
                     <p className="text-[11px] text-[#a1a1aa] mt-0.5">
-                      مستقیماً از فایل «{uploadedFileName || 'سند بارگذاری‌شده'}» استخراج و ساختاریافته است:
+                      {t('profile.insightsDesc')} «{uploadedFileName || 'Ferdous Kazemi Resume.pdf'}»
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#182a20] border border-emerald-500/30 text-[11px] font-medium text-emerald-400 shrink-0 font-mono">
                   <ShieldCheck className="w-3 h-3" />
-                  <span>تکمیل: {completenessScore}٪</span>
+                  <span>{t('profile.completion')} {completenessScore}%</span>
                 </div>
               </div>
 
               {/* 4 Mini Stat Badges */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
                 <div className="p-2 rounded-lg bg-[#181818] border border-[#262626] flex flex-col gap-0.5">
-                  <span className="text-[10px] text-[#71717a]">اطلاعات فردی</span>
+                  <span className="text-[10px] text-[#71717a]">{t('profile.identity')}</span>
                   <span className="text-[11px] font-semibold text-[#e4e4e7] flex items-center gap-1 truncate">
                     <CheckCheck className="w-3 h-3 text-emerald-400" />
-                    <span className="truncate">{profile.contact.fullName || 'نامشخص'}</span>
+                    <span className="truncate">{profile.contact.fullName || 'Unknown'}</span>
                   </span>
                   <span className="text-[10px] text-[#a1a1aa] truncate font-mono">
                     {profile.contact.email}
@@ -304,35 +315,35 @@ export const ProfileView: React.FC = () => {
                 </div>
 
                 <div className="p-2 rounded-lg bg-[#181818] border border-[#262626] flex flex-col gap-0.5">
-                  <span className="text-[10px] text-[#71717a]">سوابق شغلی</span>
+                  <span className="text-[10px] text-[#71717a]">{t('profile.experience')}</span>
                   <span className="text-[11px] font-semibold text-[#e4e4e7] flex items-center gap-1">
                     <Briefcase className="w-3 h-3 text-sky-400" />
-                    <span>{profile.experiences.length} موقعیت</span>
+                    <span>{profile.experiences.length} roles</span>
                   </span>
                   <span className="text-[10px] text-[#a1a1aa] truncate">
-                    {profile.experiences[0]?.company || 'آماده ارزیابی'}
+                    {profile.experiences[0]?.company || 'Active'}
                   </span>
                 </div>
 
                 <div className="p-2 rounded-lg bg-[#181818] border border-[#262626] flex flex-col gap-0.5">
-                  <span className="text-[10px] text-[#71717a]">مهارت‌های فنی</span>
+                  <span className="text-[10px] text-[#71717a]">{t('profile.skills')}</span>
                   <span className="text-[11px] font-semibold text-[#e4e4e7] flex items-center gap-1">
                     <Sparkles className="w-3 h-3 text-amber-400" />
-                    <span>{profile.skills.length} مهارت</span>
+                    <span>{profile.skills.length} skills</span>
                   </span>
                   <span className="text-[10px] text-[#a1a1aa] font-mono">
-                    تطبیق بلادرنگ ATS
+                    Live ATS Match
                   </span>
                 </div>
 
                 <div className="p-2 rounded-lg bg-[#181818] border border-[#262626] flex flex-col gap-0.5">
-                  <span className="text-[10px] text-[#71717a]">ضمانت راستی‌آزمایی</span>
+                  <span className="text-[10px] text-[#71717a]">{t('profile.provenanceGuarantee')}</span>
                   <span className="text-[11px] font-semibold text-emerald-400 flex items-center gap-1">
                     <Lock className="w-3 h-3 text-emerald-400" />
-                    <span>۱۰۰٪ آفلاین</span>
+                    <span>100% Offline</span>
                   </span>
                   <span className="text-[10px] text-[#a1a1aa]">
-                    بدون دستکاری داده
+                    Zero Data Leak
                   </span>
                 </div>
               </div>
@@ -348,14 +359,14 @@ export const ProfileView: React.FC = () => {
                   </p>
                 </div>
                 <span className="text-[10px] px-2 py-0.5 rounded font-mono bg-[#1b2b21] text-emerald-400 border border-emerald-500/20">
-                  اعتبارسنجی شده
+                  {isRtl ? 'اعتبارسنجی شده' : 'VERIFIED'}
                 </span>
               </div>
 
               {/* Contact Grid with Precision Click-to-highlight */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-[#d4d4d8]">
                 <div
-                  onClick={() => handleFieldClick(profile.contact.email, 'ایمیل')}
+                  onClick={() => handleFieldClick(profile.contact.email, isRtl ? 'ایمیل' : 'Email')}
                   className="p-2 rounded-lg bg-[#141414] border border-[#262626] hover:border-sky-500/50 flex items-center gap-2 cursor-pointer transition-colors"
                 >
                   <Mail className="w-3.5 h-3.5 text-sky-400 shrink-0" />
@@ -363,7 +374,7 @@ export const ProfileView: React.FC = () => {
                 </div>
 
                 <div
-                  onClick={() => handleFieldClick(profile.contact.phone || '', 'شماره تماس')}
+                  onClick={() => handleFieldClick(profile.contact.phone || '', isRtl ? 'شماره تماس' : 'Phone')}
                   className="p-2 rounded-lg bg-[#141414] border border-[#262626] hover:border-sky-500/50 flex items-center gap-2 cursor-pointer transition-colors"
                 >
                   <Phone className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
@@ -372,7 +383,7 @@ export const ProfileView: React.FC = () => {
 
                 {profile.contact.location && (
                   <div
-                    onClick={() => handleFieldClick(profile.contact.location || '', 'محل سکونت')}
+                    onClick={() => handleFieldClick(profile.contact.location || '', isRtl ? 'محل سکونت' : 'Location')}
                     className="p-2 rounded-lg bg-[#141414] border border-[#262626] hover:border-sky-500/50 flex items-center gap-2 cursor-pointer transition-colors"
                   >
                     <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
@@ -382,7 +393,7 @@ export const ProfileView: React.FC = () => {
 
                 {profile.contact.linkedinUrl && (
                   <div
-                    onClick={() => handleFieldClick(profile.contact.linkedinUrl || '', 'لینکدین')}
+                    onClick={() => handleFieldClick(profile.contact.linkedinUrl || '', 'LinkedIn')}
                     className="p-2 rounded-lg bg-[#141414] border border-[#262626] hover:border-sky-500/50 flex items-center gap-2 cursor-pointer transition-colors"
                   >
                     <Globe className="w-3.5 h-3.5 text-violet-400 shrink-0" />
@@ -395,9 +406,9 @@ export const ProfileView: React.FC = () => {
             {/* Summary */}
             {profile.summary && (
               <div className="rounded-xl border border-[#282828] bg-[#1a1a1a] p-3.5 flex flex-col gap-1.5">
-                <span className="text-[11px] font-semibold text-[#a1a1aa]">خلاصه حرفه‌ای و بیوگرافی</span>
+                <span className="text-[11px] font-semibold text-[#a1a1aa]">{t('profile.summary')}</span>
                 <p
-                  onClick={() => handleFieldClick(profile.summary || '', 'خلاصه')}
+                  onClick={() => handleFieldClick(profile.summary || '', isRtl ? 'خلاصه' : 'Summary')}
                   className="text-xs text-[#d4d4d8] leading-relaxed p-2.5 rounded-lg bg-[#141414] border border-[#242424] hover:border-sky-500/40 cursor-pointer transition-colors"
                 >
                   {profile.summary}
@@ -409,13 +420,13 @@ export const ProfileView: React.FC = () => {
             <div className="rounded-xl border border-[#282828] bg-[#1a1a1a] p-3.5 flex flex-col gap-2.5">
               <span className="text-[11px] font-semibold text-[#a1a1aa] flex items-center gap-1.5">
                 <Briefcase className="w-3.5 h-3.5 text-sky-400" />
-                <span>سوابق شغلی و تجربیات ({profile.experiences.length})</span>
+                <span>{t('profile.experience')} ({profile.experiences.length})</span>
               </span>
 
               {profile.experiences.map((exp) => (
                 <div
                   key={exp.id}
-                  onClick={() => handleFieldClick(exp.company, `سابقه در ${exp.company}`)}
+                  onClick={() => handleFieldClick(exp.company, exp.company)}
                   className="p-3 rounded-lg bg-[#141414] border border-[#242424] flex flex-col gap-1.5 hover:border-sky-500/40 cursor-pointer transition-colors"
                 >
                   <div className="flex items-start justify-between">
@@ -424,7 +435,7 @@ export const ProfileView: React.FC = () => {
                       <span className="text-[11px] text-sky-400">{exp.company}</span>
                     </div>
                     <span className="text-[10px] font-mono text-[#a1a1aa] bg-[#202020] px-2 py-0.5 rounded border border-[#2b2b2b]">
-                      {exp.startDate} - {exp.endDate || 'کنون'}
+                      {exp.startDate} - {exp.endDate || (isRtl ? 'کنون' : 'Present')}
                     </span>
                   </div>
 
@@ -443,7 +454,7 @@ export const ProfileView: React.FC = () => {
             <div className="rounded-xl border border-[#282828] bg-[#1a1a1a] p-3.5 flex flex-col gap-2">
               <span className="text-[11px] font-semibold text-[#a1a1aa] flex items-center gap-1.5">
                 <GraduationCap className="w-3.5 h-3.5 text-amber-400" />
-                <span>تحصیلات ({profile.education.length})</span>
+                <span>{t('profile.education')} ({profile.education.length})</span>
               </span>
 
               {profile.education.map((edu) => (
@@ -469,7 +480,7 @@ export const ProfileView: React.FC = () => {
             <div className="rounded-xl border border-[#282828] bg-[#1a1a1a] p-3.5 flex flex-col gap-2">
               <span className="text-[11px] font-semibold text-[#a1a1aa] flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-                <span>مهارت‌های فنی استخراج‌شده ({profile.skills.length})</span>
+                <span>{t('profile.skills')} ({profile.skills.length})</span>
               </span>
 
               <div className="flex flex-wrap gap-1.5">
@@ -493,7 +504,7 @@ export const ProfileView: React.FC = () => {
               <div className="flex items-center gap-2">
                 <Code2 className="w-3.5 h-3.5 text-sky-400" />
                 <span className="text-xs font-medium text-[#e4e4e7] truncate max-w-[200px]">
-                  {uploadedFileName || 'سند متنی رزومه'}
+                  {uploadedFileName || 'Resume Document Text'}
                 </span>
                 {documentMeta && (
                   <span className="text-[10px] font-mono text-[#a1a1aa] bg-[#222222] px-2 py-0.5 rounded border border-[#2f2f2f]">
@@ -506,10 +517,10 @@ export const ProfileView: React.FC = () => {
                 <button
                   onClick={handleCopyText}
                   className="flex items-center gap-1 px-2 py-0.5 rounded bg-[#202020] hover:bg-[#282828] border border-[#303030] text-[10px] text-[#d4d4d8] transition-colors cursor-pointer"
-                  title="کپی متن کامل"
+                  title={t('profile.copyText')}
                 >
                   {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                  <span>{copied ? 'کپی شد' : 'کپی متن'}</span>
+                  <span>{copied ? t('profile.copied') : t('profile.copyText')}</span>
                 </button>
               </div>
             </div>
@@ -518,7 +529,7 @@ export const ProfileView: React.FC = () => {
             {activeHighlight && (
               <div className="px-4 py-2 bg-[#12222d] border-b border-sky-500/30 flex items-center justify-between text-[11px] text-sky-300">
                 <span>
-                  ردگیری سندیت (Provenance) برای فیلد: <strong>{activeFieldLabel}</strong>
+                  {t('profile.provenanceField')} <strong>{activeFieldLabel}</strong>
                 </span>
                 <span className="font-mono text-[10px] text-sky-400/80 bg-sky-950/60 px-2 py-0.5 rounded border border-sky-800/40">
                   {activeHighlight}
@@ -554,7 +565,7 @@ export const ProfileView: React.FC = () => {
                 })
               ) : (
                 <div className="p-8 text-center text-[#52525b] text-xs">
-                  متن سندی برای نمایش بارگذاری نشده است.
+                  {isRtl ? 'متن سندی برای نمایش بارگذاری نشده است.' : 'No document text loaded yet.'}
                 </div>
               )}
             </div>

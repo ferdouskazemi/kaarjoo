@@ -24,7 +24,7 @@ interface AppState {
 export const useAppStore = create<AppState>((set) => ({
   currentView: 'home',
   theme: 'dark',
-  language: 'fa',
+  language: 'en',
   isCommandPaletteOpen: false,
   engineConnected: false,
   hardwareTier: 'standard',

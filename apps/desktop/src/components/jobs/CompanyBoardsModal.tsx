@@ -28,7 +28,8 @@ export const CompanyBoardsModal: React.FC<CompanyBoardsModalProps> = ({
   onAddBoard,
   onDetectAts,
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isRtl = i18n.dir() === 'rtl';
   const [newUrl, setNewUrl] = useState('');
   const [detecting, setDetecting] = useState(false);
   const [detected, setDetected] = useState<any | null>(null);
@@ -107,10 +108,10 @@ export const CompanyBoardsModal: React.FC<CompanyBoardsModalProps> = ({
             <button
               onClick={handleDetect}
               disabled={detecting || !newUrl.trim()}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-xs font-medium text-slate-200 transition-colors border border-slate-700"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-xs font-medium text-slate-200 transition-colors border border-slate-700 cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5 text-sky-400" />
-              <span>{detecting ? 'در حال بررسی...' : t('jobs.detectAts')}</span>
+              <span>{detecting ? (isRtl ? 'در حال بررسی...' : 'Detecting...') : t('jobs.detectAts')}</span>
             </button>
           </div>
 
@@ -126,10 +127,10 @@ export const CompanyBoardsModal: React.FC<CompanyBoardsModalProps> = ({
               </div>
               <button
                 onClick={handleConfirmAdd}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white transition-colors cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>افزودن به رصد</span>
+                <span>{isRtl ? 'افزودن به رصد' : 'Add to Feed'}</span>
               </button>
             </div>
           )}
@@ -143,11 +144,13 @@ export const CompanyBoardsModal: React.FC<CompanyBoardsModalProps> = ({
               type="text"
               value={searchFilter}
               onChange={(e) => setSearchFilter(e.target.value)}
-              placeholder="جستجو در نام شرکت، ATS یا صنعت..."
+              placeholder={isRtl ? 'جستجو در نام شرکت، ATS یا صنعت...' : 'Filter companies by name, ATS, or industry...'}
               className="w-full ps-9 pe-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-sky-500"
             />
           </div>
-          <span className="text-xs text-slate-500 shrink-0">{filteredBoards.length} شرکت</span>
+          <span className="text-xs text-slate-500 shrink-0 font-mono">
+            {isRtl ? `${filteredBoards.length} شرکت` : `${filteredBoards.length} companies`}
+          </span>
         </div>
 
         {/* Companies List */}

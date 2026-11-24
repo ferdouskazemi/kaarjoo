@@ -8,7 +8,7 @@ i18n.use(initReactI18next).init({
     fa: { translation: faTranslation },
     en: { translation: enTranslation },
   },
-  lng: 'fa', // Persian default as specified in prompt
+  lng: 'en', // English base by default
   fallbackLng: 'en',
   interpolation: {
     escapeValue: false,

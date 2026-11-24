@@ -15,14 +15,15 @@ import {
 } from 'lucide-react';
 
 export const HomeView: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isRtl = i18n.dir() === 'rtl';
   const { setCurrentView } = useAppStore();
   const { getKpis } = useApplicationStore();
   const { profile } = useProfileStore();
   const kpis = getKpis();
 
   const candidateEmail = profile?.contact.email || 'ferdouskazemi1000@gmail.com';
-  const candidateName = profile?.contact.fullName || 'فردوس کاظمی';
+  const candidateName = profile?.contact.fullName || (isRtl ? 'فردوس کاظمی' : 'Ferdous Kazemi');
 
   return (
     <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6 max-w-6xl mx-auto w-full bg-[#111111] text-[#f4f4f5]">
@@ -31,15 +32,15 @@ export const HomeView: React.FC = () => {
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-sky-500/10 text-sky-400 border border-sky-500/20">
-              LOCAL-FIRST ATS
+              {t('home.badge')}
             </span>
-            <span className="text-xs text-[#a1a1aa]">بدون نیاز به API پولی یا ارسال داده به خارج از دستگاه</span>
+            <span className="text-xs text-[#a1a1aa]">{t('home.badgeDesc')}</span>
           </div>
           <h1 className="text-2xl font-bold text-[#f4f4f5] tracking-tight">
-            خوش آمدید به {t('app.name')}
+            {t('home.welcome')}
           </h1>
           <p className="text-xs text-[#a1a1aa] max-w-xl leading-relaxed">
-            دستیار هوشمند شما برای استخراج پروفایل از رزومه، جستجوی خودکار فرصت‌های زنده شغلی (Ashby, Greenhouse, Lever)، تولید مدارک اختصاصی و ارسال امن در حالت بازبینی (Review Mode).
+            {t('home.desc')}
           </p>
 
           {/* Active Candidate Pill */}
@@ -58,14 +59,14 @@ export const HomeView: React.FC = () => {
             className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-medium text-xs transition-all shadow-md active:scale-95 cursor-pointer"
           >
             <UploadCloud className="w-4 h-4" />
-            <span>مدیریت رزومه و پروفایل</span>
+            <span>{isRtl ? 'مدیریت رزومه و پروفایل' : 'Manage Resume & Profile'}</span>
           </button>
           <button
             onClick={() => setCurrentView('queue')}
             className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#202020] hover:bg-[#282828] border border-[#303030] text-[#f4f4f5] font-medium text-xs transition-all active:scale-95 cursor-pointer"
           >
             <ListTodo className="w-4 h-4 text-emerald-400" />
-            <span>مشاهده صف ارسال</span>
+            <span>{isRtl ? 'مشاهده صف ارسال' : 'View Application Queue'}</span>
           </button>
         </div>
       </div>
@@ -74,44 +75,44 @@ export const HomeView: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
         <div className="rounded-xl border border-[#242424] bg-[#161616] p-4 flex flex-col gap-2">
           <div className="flex items-center justify-between text-[#a1a1aa]">
-            <span className="text-xs font-medium">درخواست‌های این هفته</span>
+            <span className="text-xs font-medium">{t('home.weeklyApps')}</span>
             <TrendingUp className="w-4 h-4 text-sky-400" />
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-bold font-mono text-[#f4f4f5]">{kpis.thisWeek}</span>
-            <span className="text-[11px] text-[#71717a] font-mono">هدف: ۱۰ در هفته</span>
+            <span className="text-[11px] text-[#71717a] font-mono">{t('home.weeklyGoal')}</span>
           </div>
         </div>
 
         <div className="rounded-xl border border-[#242424] bg-[#161616] p-4 flex flex-col gap-2">
           <div className="flex items-center justify-between text-[#a1a1aa]">
-            <span className="text-xs font-medium">میانگین امتیاز انطباق</span>
+            <span className="text-xs font-medium">{t('home.avgScore')}</span>
             <Sparkles className="w-4 h-4 text-emerald-400" />
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-bold font-mono text-[#f4f4f5]">{kpis.avgScore}%</span>
-            <span className="text-[11px] text-emerald-400 font-mono">محاسبه محلی با LLM</span>
+            <span className="text-[11px] text-emerald-400 font-mono">{t('home.avgScoreDesc')}</span>
           </div>
         </div>
 
         <div className="rounded-xl border border-[#242424] bg-[#161616] p-4 flex flex-col gap-2">
           <div className="flex items-center justify-between text-[#a1a1aa]">
-            <span className="text-xs font-medium">نرخ دعوت به مصاحبه</span>
+            <span className="text-xs font-medium">{t('home.interviewRate')}</span>
             <CheckCircle className="w-4 h-4 text-amber-400" />
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-bold font-mono text-amber-300">{kpis.interviewRate}%</span>
-            <span className="text-[11px] text-[#71717a] font-mono">از درخواست‌های ارسال‌شده</span>
+            <span className="text-[11px] text-[#71717a] font-mono">{t('home.interviewRateDesc')}</span>
           </div>
         </div>
 
         <div className="rounded-xl border border-[#242424] bg-[#161616] p-4 flex flex-col gap-2">
           <div className="flex items-center justify-between text-[#a1a1aa]">
-            <span className="text-xs font-medium">حریم خصوصی و داده‌ها</span>
+            <span className="text-xs font-medium">{t('home.localPrivacy')}</span>
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-xs font-semibold text-emerald-400 font-mono">۱۰۰٪ آفلاین و محلی</span>
+            <span className="text-xs font-semibold text-emerald-400 font-mono">{t('home.localPrivacyDesc')}</span>
           </div>
         </div>
       </div>
@@ -130,10 +131,10 @@ export const HomeView: React.FC = () => {
           </div>
           <div>
             <h3 className="text-xs font-bold text-[#f4f4f5] group-hover:text-sky-400 transition-colors">
-              استخراج هوشمند و اعتبارسنجی رزومه
+              {t('home.extractCardTitle')}
             </h3>
             <p className="text-[11px] text-[#a1a1aa] mt-1 leading-relaxed">
-              پشتیبانی از PDF استاندارد با PDF.js و Mammoth بدون هیچ‌گونه بایت‌کد یا کاراکترهای نامفهوم، با اتصال مستقیم به اطلاعات واقعی شما.
+              {t('home.extractCardDesc')}
             </p>
           </div>
         </div>
@@ -150,10 +151,10 @@ export const HomeView: React.FC = () => {
           </div>
           <div>
             <h3 className="text-xs font-bold text-[#f4f4f5] group-hover:text-emerald-400 transition-colors">
-              فرصت‌های شغلی زنده (Live Boards)
+              {t('home.jobsCardTitle')}
             </h3>
             <p className="text-[11px] text-[#a1a1aa] mt-1 leading-relaxed">
-              فرصت‌های شغلی ۱۰۰٪ زنده از بردهای رسمی Ashby (Linear, Ramp, OpenAI) و Greenhouse (GitLab, Cloudflare, Canonical) بدون داده‌های ساختگی.
+              {t('home.jobsCardDesc')}
             </p>
           </div>
         </div>

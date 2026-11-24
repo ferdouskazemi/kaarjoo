@@ -63,7 +63,8 @@ function getInitialsColor(name: string): string {
 }
 
 export const JobCard: React.FC<JobCardProps> = ({ job, onSelect, onApply, onFeedback }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isRtl = i18n.dir() === 'rtl';
   const atsStyle = ATS_COLORS[job.atsType] || ATS_COLORS.generic;
   const score = job.matchScore ?? 85;
 
@@ -89,7 +90,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onSelect, onApply, onFeed
               </h3>
               <span className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 font-mono">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span>زنده</span>
+                <span>{isRtl ? 'زنده' : 'LIVE'}</span>
               </span>
             </div>
             <div className="flex items-center gap-2 mt-1 text-xs text-slate-400 flex-wrap">
@@ -153,7 +154,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onSelect, onApply, onFeed
                   : 'bg-slate-800 text-slate-300 border-slate-700'
             }`}
           >
-            {job.remoteType === 'remote' ? 'دورکاری (Remote)' : job.remoteType === 'hybrid' ? 'ترکیبی (Hybrid)' : 'حضوری'}
+            {job.remoteType === 'remote' ? (isRtl ? 'دورکاری (Remote)' : 'Remote') : job.remoteType === 'hybrid' ? (isRtl ? 'ترکیبی (Hybrid)' : 'Hybrid') : (isRtl ? 'حضوری' : 'On-Site')}
           </span>
 
           <span className={`text-xs px-2 py-0.5 rounded font-mono uppercase text-[10px] border ${atsStyle.bg} ${atsStyle.text} ${atsStyle.border}`}>
@@ -161,7 +162,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onSelect, onApply, onFeed
           </span>
 
           {job.salaryText && (
-            <span className="text-xs px-2 py-0.5 rounded bg-slate-800 text-amber-300 font-medium">
+            <span className="text-xs px-2 py-0.5 rounded bg-slate-800 text-amber-300 font-medium font-mono">
               {job.salaryText}
             </span>
           )}
@@ -172,7 +173,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onSelect, onApply, onFeed
           <div className="flex items-center gap-1">
             <button
               type="button"
-              title="تطابق عالی بود"
+              title={isRtl ? 'تطابق عالی بود' : 'Relevant match'}
               onClick={(e) => {
                 e.stopPropagation();
                 onFeedback(job.id, 'relevant');
@@ -187,7 +188,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onSelect, onApply, onFeed
             </button>
             <button
               type="button"
-              title="تطابق غیرمرتبط بود"
+              title={isRtl ? 'تطابق غیرمرتبط بود' : 'Not relevant'}
               onClick={(e) => {
                 e.stopPropagation();
                 onFeedback(job.id, 'irrelevant');
@@ -206,8 +207,8 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onSelect, onApply, onFeed
 
       {/* Action Footer */}
       <div className="flex items-center justify-between gap-3 pt-2">
-        <span className="text-[11px] text-slate-500 font-medium">
-          {job.postedAt ? new Date(job.postedAt).toLocaleDateString() : 'به‌تازگی منتشرشده'}
+        <span className="text-[11px] text-slate-500 font-medium font-mono">
+          {job.postedAt ? new Date(job.postedAt).toLocaleDateString() : (isRtl ? 'به‌تازگی منتشرشده' : 'Recently posted')}
         </span>
 
         <div className="flex items-center gap-2">
