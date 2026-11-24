@@ -70,7 +70,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onSelect, onApply, onFeed
   return (
     <div
       onClick={() => onSelect(job)}
-      className="group relative rounded-xl border border-slate-800/80 bg-slate-900/40 hover:bg-slate-900/80 hover:border-slate-700/80 p-5 transition-all duration-200 cursor-pointer flex flex-col justify-between gap-4 shadow-sm hover:shadow-md"
+      className="group relative rounded-2xl glass-panel hover:border-sky-500/50 p-5 transition-all duration-200 cursor-pointer flex flex-col justify-between gap-4 shadow-sm hover:shadow-xl hover:-translate-y-0.5 smooth-gpu"
     >
       {/* Top Header */}
       <div className="flex items-start justify-between gap-3">
@@ -83,9 +83,15 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onSelect, onApply, onFeed
             {job.company.slice(0, 2).toUpperCase()}
           </div>
           <div className="min-w-0">
-            <h3 className="font-semibold text-slate-100 text-base leading-snug group-hover:text-sky-400 transition-colors line-clamp-1">
-              {job.title}
-            </h3>
+            <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+              <h3 className="font-semibold text-slate-100 text-base leading-snug group-hover:text-sky-400 transition-colors line-clamp-1">
+                {job.title}
+              </h3>
+              <span className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 font-mono">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span>زنده</span>
+              </span>
+            </div>
             <div className="flex items-center gap-2 mt-1 text-xs text-slate-400 flex-wrap">
               <span className="font-medium text-slate-300 flex items-center gap-1">
                 <Building2 className="w-3.5 h-3.5 text-slate-500" />

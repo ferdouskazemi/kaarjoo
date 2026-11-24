@@ -72,6 +72,7 @@ export const JobsView: React.FC = () => {
   const [regionFilter, setRegionFilter] = useState<'all' | 'us' | 'eu' | 'remote'>('all');
   const [remoteFilter, setRemoteFilter] = useState<'all' | 'remote' | 'hybrid' | 'on-site'>('all');
   const [atsFilter, setAtsFilter] = useState<'all' | AtsType>('all');
+  const [stackFilter, setStackFilter] = useState<string>('all');
 
   // Real live crawler run
   const handleSync = async () => {
@@ -151,6 +152,15 @@ export const JobsView: React.FC = () => {
         return false;
       }
 
+      // Stack filter
+      if (stackFilter !== 'all') {
+        const textToSearch = `${job.title} ${(job.matchedSkills || []).join(' ')}`.toLowerCase();
+        if (stackFilter === 'frontend' && !textToSearch.includes('frontend') && !textToSearch.includes('front-end') && !textToSearch.includes('react') && !textToSearch.includes('web')) return false;
+        if (stackFilter === 'fullstack' && !textToSearch.includes('fullstack') && !textToSearch.includes('full-stack') && !textToSearch.includes('software')) return false;
+        if (stackFilter === 'typescript' && !textToSearch.includes('typescript') && !textToSearch.includes('javascript') && !textToSearch.includes('react')) return false;
+        if (stackFilter === 'design' && !textToSearch.includes('design') && !textToSearch.includes('product') && !textToSearch.includes('ui/ux') && !textToSearch.includes('figma')) return false;
+      }
+
       // ATS filter
       if (atsFilter !== 'all' && job.atsType !== atsFilter) {
         return false;
@@ -158,7 +168,7 @@ export const JobsView: React.FC = () => {
 
       return true;
     });
-  }, [jobs, searchQuery, regionFilter, remoteFilter, atsFilter]);
+  }, [jobs, searchQuery, regionFilter, remoteFilter, atsFilter, stackFilter]);
 
   return (
     <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6 max-w-7xl mx-auto w-full">
@@ -238,6 +248,30 @@ export const JobsView: React.FC = () => {
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Quick Tech Stack Filter Ribbon (Sub-millisecond instant matching) */}
+        <div className="flex items-center gap-1.5 flex-wrap pt-2 border-t border-slate-800/40">
+          <span className="text-[11px] text-slate-400 font-medium me-1">تخصص شما:</span>
+          {[
+            { id: 'all', label: 'همه موقعیت‌ها' },
+            { id: 'frontend', label: '⚛️ فرانت‌اند (React / Web)' },
+            { id: 'typescript', label: '📘 TypeScript / JavaScript' },
+            { id: 'fullstack', label: '🌐 فول‌استک (Fullstack)' },
+            { id: 'design', label: '🎨 محصول و UI/UX' },
+          ].map((stack) => (
+            <button
+              key={stack.id}
+              onClick={() => setStackFilter(stack.id)}
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                stackFilter === stack.id
+                  ? 'bg-sky-600 text-white font-semibold shadow-xs active-ring'
+                  : 'bg-slate-950/80 border border-slate-800/80 text-slate-300 hover:text-white hover:border-slate-700'
+              }`}
+            >
+              {stack.label}
+            </button>
+          ))}
         </div>
 
         {/* Row 2: Secondary Filter Pills */}
