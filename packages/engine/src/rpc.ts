@@ -1,5 +1,6 @@
 import readline from 'node:readline';
 import {
+  z,
   JsonRpcRequest,
   JsonRpcRequestSchema,
   JsonRpcResponse,
@@ -7,14 +8,40 @@ import {
   JSONRPC_VERSION,
 } from '@kaarjoo/shared';
 
-export type RpcHandler = (params: any) => Promise<any> | any;
+export class RpcError extends Error {
+  constructor(
+    public code: number,
+    message: string,
+    public data?: unknown
+  ) {
+    super(message);
+    this.name = 'RpcError';
+  }
+}
+
+export interface MethodConfig<TInput = any, TOutput = any> {
+  inputSchema?: z.ZodType<TInput>;
+  outputSchema?: z.ZodType<TOutput>;
+  handler: (params: TInput) => Promise<TOutput> | TOutput;
+}
+
+export type RpcRegistration<TInput = any, TOutput = any> =
+  | MethodConfig<TInput, TOutput>
+  | ((params: TInput) => Promise<TOutput> | TOutput);
 
 export class StdioRpcServer {
-  private handlers = new Map<string, RpcHandler>();
+  private handlers = new Map<string, MethodConfig>();
   private rl: readline.Interface | null = null;
 
-  public register(method: string, handler: RpcHandler): void {
-    this.handlers.set(method, handler);
+  public register<TInput = any, TOutput = any>(
+    method: string,
+    registration: RpcRegistration<TInput, TOutput>
+  ): void {
+    if (typeof registration === 'function') {
+      this.handlers.set(method, { handler: registration });
+    } else {
+      this.handlers.set(method, registration);
+    }
   }
 
   public start(): void {
@@ -37,17 +64,42 @@ export class StdioRpcServer {
         return;
       }
 
-      const handler = this.handlers.get(request.method);
-      if (!handler) {
+      const entry = this.handlers.get(request.method);
+      if (!entry) {
         this.sendError(request.id, RpcErrorCode.MethodNotFound, `Method '${request.method}' not found`);
         return;
       }
 
+      let params = request.params;
+      if (entry.inputSchema) {
+        const parseResult = entry.inputSchema.safeParse(params);
+        if (!parseResult.success) {
+          const detail = parseResult.error.issues
+            .map((i: any) => `${i.path.join('.') || 'root'}: ${i.message}`)
+            .join('; ');
+          this.sendError(
+            request.id,
+            RpcErrorCode.InvalidParams,
+            `Invalid parameters for method '${request.method}': ${detail}`,
+            parseResult.error.format()
+          );
+          return;
+        }
+        params = parseResult.data;
+      }
+
       try {
-        const result = await handler(request.params);
+        const result = await entry.handler(params);
+        if (entry.outputSchema) {
+          const outParse = entry.outputSchema.safeParse(result);
+          if (!outParse.success) {
+            console.error(`[RPC Warning] Output schema validation mismatch for '${request.method}':`, outParse.error.issues);
+          }
+        }
         this.sendResult(request.id, result);
       } catch (err: any) {
-        this.sendError(request.id, RpcErrorCode.InternalError, err.message || 'Internal handler error');
+        const code = typeof err?.code === 'number' ? err.code : RpcErrorCode.InternalError;
+        this.sendError(request.id, code, err?.message || 'Internal handler error', err?.data);
       }
     });
 
