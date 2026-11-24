@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@kaarjoo/adapters": "workspace:*",
+    "@kaarjoo/ats": "workspace:*",
     "@kaarjoo/shared": "workspace:*",
     "cheerio": "^1.0.0",
     "chrono-node": "^2.7.7",

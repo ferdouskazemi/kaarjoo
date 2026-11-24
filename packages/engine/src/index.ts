@@ -14,9 +14,11 @@ import {
   exportCoverLetterToPdf,
   exportResumeToDocx,
 } from './documents/index.js';
+import { ApplicationEngine } from '@kaarjoo/ats';
 import type { HardwareSpecs } from '@kaarjoo/shared';
 
 const server = new StdioRpcServer();
+const applicationEngine = new ApplicationEngine({ headless: true });
 
 // Ping
 server.register('system.ping', () => ({
@@ -150,6 +152,44 @@ server.register('documents.exportPdf', async (params: { resume?: any; coverLette
 server.register('documents.exportDocx', async (params: { resume: any; outputPath?: string }) => {
   const buffer = await exportResumeToDocx(params.resume, { outputPath: params.outputPath });
   return { success: true, size: buffer.length, outputPath: params.outputPath };
+});
+
+// --- Phase 5: Application Engine & ATS Automation ---
+server.register('application.queue', (params: {
+  job: any;
+  profile: any;
+  tailoredResumePath?: string;
+  coverLetterText?: string;
+  mode?: any;
+  answers?: Record<string, string>;
+}) => {
+  return applicationEngine.queueApplication(params);
+});
+
+server.register('application.getAll', () => {
+  return applicationEngine.getAllApplications();
+});
+
+server.register('application.get', (params: { id: string }) => {
+  return applicationEngine.getApplication(params.id);
+});
+
+server.register('application.execute', async (params: {
+  id: string;
+  profile: any;
+  tailoredResumePath?: string;
+  coverLetterText?: string;
+  answers?: Record<string, string>;
+}) => {
+  return applicationEngine.executeApplication(params.id, params);
+});
+
+server.register('application.submitReviewed', async (params: { id: string }) => {
+  return applicationEngine.submitReviewedApplication(params.id);
+});
+
+server.register('application.cancel', async (params: { id: string }) => {
+  return applicationEngine.cancelApplication(params.id);
 });
 
 // Start listening on stdio

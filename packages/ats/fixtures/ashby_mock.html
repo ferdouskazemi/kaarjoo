@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Ashby Mock Application</title>
+</head>
+<body>
+  <h1>Frontend Engineer - Ashby Application</h1>
+  <form id="ashby_form" action="#confirmation" method="POST" onsubmit="event.preventDefault(); document.getElementById('ashby_success').style.display = 'block'; document.getElementById('ashby_form').style.display = 'none';">
+    <div>
+      <label for="ashby_name">Full Name *</label>
+      <input type="text" id="ashby_name" name="name" required>
+    </div>
+    <div>
+      <label for="ashby_email">Email *</label>
+      <input type="email" id="ashby_email" name="email" required>
+    </div>
+    <div>
+      <label for="ashby_phone">Phone Number *</label>
+      <input type="tel" id="ashby_phone" name="phoneNumber" required>
+    </div>
+    <div>
+      <label for="ashby_resume">Resume *</label>
+      <input type="file" id="ashby_resume" name="resumeFile" required>
+    </div>
+    <div style="margin-top: 20px;">
+      <button type="submit">Submit Application</button>
+    </div>
+  </form>
+
+  <div id="ashby_success" data-testid="application-success" style="display: none;">
+    <h2>Thanks for applying!</h2>
+    <p>Application submitted successfully.</p>
+  </div>
+</body>
+</html>

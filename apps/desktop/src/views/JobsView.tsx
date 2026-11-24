@@ -10,6 +10,8 @@ import { JobCard, type DisplayJob } from '../components/jobs/JobCard.js';
 import { JobDetailDrawer } from '../components/jobs/JobDetailDrawer.js';
 import { CompanyBoardsModal } from '../components/jobs/CompanyBoardsModal.js';
 import { TailoredDocumentsModal } from '../components/documents/TailoredDocumentsModal.js';
+import { useApplicationStore } from '../stores/applicationStore.js';
+import { useAppStore } from '../stores/appStore.js';
 import type { CompanyBoard, AtsType } from '@kaarjoo/shared';
 
 // Initial high-quality US & European tech job postings seeded for discovery
@@ -154,6 +156,8 @@ const SEEDED_BOARDS_DEFAULT: CompanyBoard[] = [
 
 export const JobsView: React.FC = () => {
   const { t } = useTranslation();
+  const { setCurrentView } = useAppStore();
+  const { queueJobApplication } = useApplicationStore();
 
   // State
   const [jobs, setJobs] = useState<DisplayJob[]>(INITIAL_JOBS);
@@ -441,8 +445,19 @@ export const JobsView: React.FC = () => {
         onClose={() => setIsTailoringModalOpen(false)}
         job={tailoringJob}
         onProceedToApply={() => {
-          setIsTailoringModalOpen(false);
-          alert('مدارک اختصاصی با موفقیت تایید و ذخیره شدند! آماده ارسال در فاز ۵ (فرم‌های ATS).');
+          if (tailoringJob) {
+            queueJobApplication({
+              job: {
+                id: tailoringJob.id,
+                title: tailoringJob.title,
+                company: tailoringJob.company,
+                applyUrl: tailoringJob.applyUrl,
+                atsType: tailoringJob.atsType,
+              },
+            });
+            setIsTailoringModalOpen(false);
+            setCurrentView('queue');
+          }
         }}
       />
     </div>

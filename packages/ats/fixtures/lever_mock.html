@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Lever Mock Job Application</title>
+</head>
+<body>
+  <h1>Apply at TechCorp</h1>
+  <form id="lever_form" action="#confirmation" method="POST" onsubmit="event.preventDefault(); document.getElementById('confirmation_box').style.display = 'block'; document.getElementById('lever_form').style.display = 'none';">
+    <div class="application-field">
+      <label>Full Name *</label>
+      <input type="text" name="name" required placeholder="Full name">
+    </div>
+    <div class="application-field">
+      <label>Email *</label>
+      <input type="email" name="email" required placeholder="Email address">
+    </div>
+    <div class="application-field">
+      <label>Phone *</label>
+      <input type="tel" name="phone" required placeholder="Phone number">
+    </div>
+    <div class="application-field">
+      <label>Current company</label>
+      <input type="text" name="org" placeholder="Current company">
+    </div>
+    <div class="application-field">
+      <label>Resume/CV *</label>
+      <input type="file" name="resume" required>
+    </div>
+    <div class="application-field">
+      <label>LinkedIn URL</label>
+      <input type="text" name="urls[LinkedIn]">
+    </div>
+    <div class="application-field">
+      <label>GitHub URL</label>
+      <input type="text" name="urls[GitHub]">
+    </div>
+    <div class="application-field">
+      <label>Additional Information</label>
+      <textarea name="comments" placeholder="Add a cover letter or any additional notes..."></textarea>
+    </div>
+    <div style="margin-top: 20px;">
+      <button class="postings-btn" type="submit">Submit Application</button>
+    </div>
+  </form>
+
+  <div id="confirmation_box" class="application-confirmation" style="display: none;">
+    <h2>Application submitted!</h2>
+    <p>Thank you for applying. We will review your materials shortly.</p>
+  </div>
+</body>
+</html>

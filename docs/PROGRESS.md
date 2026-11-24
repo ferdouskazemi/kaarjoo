@@ -175,11 +175,50 @@
 ---
 
 ## Phase 5: Application Engine (Form Filling & ATS Drivers)
+- **Status:** COMPLETED
+- **Focus & Achievements:**
+  - **ATS Form Fillers Architecture (`packages/ats/src/fillers/`):**
+    - `GreenhouseFiller`: Form filling for Greenhouse boards (`#first_name`, `#last_name`, `#email`, `#phone`, `#resume`, custom questions, EEO dropdowns).
+    - `LeverFiller`: Form filling for Lever postings (`input[name="name"]`, `email`, `phone`, `org`, URLs, comments, resume upload).
+    - `AshbyFiller`: Dynamic field handling for Ashby boards.
+    - `WorkableFiller`: Form handling for Workable widget applications.
+    - `GenericFormFiller`: Fallback heuristic form filler for arbitrary HTML career pages.
+  - **Field Mapping & Heuristics Pipeline (`packages/ats/src/`):**
+    - `detector.ts`: High-speed DOM field scanner extracting label, name, id, placeholder, aria-label, required status, and select options.
+    - `matcher.ts`: Exact, substring, boolean, and Jaccard word-overlap matching for dropdown options. Strict EEO / demographic default policy (always selects "I decline to self-identify" / "Prefer not to say").
+    - `mapper.ts`: Canonical mapping from profile, tailored resume, cover letter, and screening answers with per-field confidence scoring and categorized review checklists.
+    - `discovery.ts`: Zero-dependency system browser discovery across Windows Registry, macOS, and Linux.
+  - **Review Mode by Default & Ethical Automation:**
+    - Fills all form fields, attaches verified tailored PDF/DOCX documents, and pauses on final step.
+    - Generates full-page browser screenshot (`screenshotBeforeSubmit`) and detailed verification checklist.
+    - Requires explicit user approval before clicking final submit button.
+    - **Stop-and-Ask Triggers:** Instant halt and user alert on CAPTCHA challenge (reCAPTCHA, hCaptcha, Turnstile, Arkose), login walls, or unanswerable required fields. Zero bypass attempts.
+  - **Local Mock ATS Fixtures & End-to-End Tests (`packages/ats/fixtures/` & `__tests__/`):**
+    - Local mock forms for Greenhouse, Lever, Ashby, Workable, CAPTCHA challenge, and Login wall.
+    - 17 unit and Playwright integration tests verifying 100% field mapping accuracy, attachment handling, review mode halts, and submission confirmation.
+  - **JSON-RPC Engine Integration (`packages/engine/src/index.ts`):**
+    - Endpoints: `application.queue`, `application.getAll`, `application.get`, `application.execute`, `application.submitReviewed`, `application.cancel`.
+  - **Desktop Application Queue & Review View (`apps/desktop/src/views/QueueView.tsx`):**
+    - Multi-card queue management with real-time status badges.
+    - Step-by-step Playwright execution progress bar.
+    - Live browser screenshot thumbnail with expand/fullscreen zoom modal.
+    - Categorized verification checklist (Contact, Documents, Screening, EEO).
+    - One-click "Approve & Submit" with real-time feedback.
+    - Seamless transition from Tailored Documents Studio into the Review Queue.
+  - **Verification:**
+    - 78 out of 78 unit tests passing across 20 test files in `vitest`.
+    - Profile extraction evaluation: **100.0%** accuracy.
+    - Matching evaluation: **100.0%** Precision@10.
+    - Rust core compiling cleanly with `cargo check` in `apps/desktop/src-tauri`.
+    - Desktop React application building cleanly in 4.01s.
+
+---
+
+## Phase 6: Application Tracker, Kanban Dashboard & Settings
 - **Status:** Next Up
 - **Focus:**
-  - ATS form fillers: Greenhouse, Lever, Ashby, Workable, plus generic HTML form filler.
-  - Local mock ATS forms in `fixtures/ats/` for automated testing.
-  - Field mapping pipeline (name, email, phone, resume upload, cover letter, screening answers, EEO defaults).
-  - Review Mode (default): fills form, pauses on final step with screenshot and verification checklist before user submits.
-  - Auto-apply mode (opt-in per source, daily cap, score threshold).
-  - Stop & ask user triggers: CAPTCHA detection, login wall, unknown required field (never bypass bot checks).
+  - Drag-and-drop Kanban Board: Saved → Ready → Applied → Interview → Offer → Rejected / Withdrawn.
+  - Table view with sorting, search, and CSV export.
+  - Application history snapshot: posting text, documents used, answers entered, screenshots, and timeline.
+  - Dashboard KPIs: weekly applications, response rate, average match score, top missing skills.
+  - Local SQLite persistence and data backup/restore.

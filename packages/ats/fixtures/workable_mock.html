@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Workable Mock Application</title>
+</head>
+<body>
+  <h1>Apply via Workable</h1>
+  <form id="workable_form" action="#confirmation" method="POST" onsubmit="event.preventDefault(); document.getElementById('workable_success').style.display = 'block'; document.getElementById('workable_form').style.display = 'none';">
+    <div>
+      <label for="w_firstname">First name *</label>
+      <input type="text" id="w_firstname" name="firstname" required>
+    </div>
+    <div>
+      <label for="w_lastname">Last name *</label>
+      <input type="text" id="w_lastname" name="lastname" required>
+    </div>
+    <div>
+      <label for="w_email">Email *</label>
+      <input type="email" id="w_email" name="email" required>
+    </div>
+    <div>
+      <label for="w_phone">Phone *</label>
+      <input type="tel" id="w_phone" name="phone" required>
+    </div>
+    <div>
+      <label for="w_summary">Summary</label>
+      <textarea id="w_summary" name="summary"></textarea>
+    </div>
+    <div>
+      <label for="w_resume">Resume *</label>
+      <input type="file" id="w_resume" name="resume" required>
+    </div>
+    <div style="margin-top: 20px;">
+      <button data-ui="submit-application" type="submit">Submit application</button>
+    </div>
+  </form>
+
+  <div id="workable_success" data-ui="application-success" style="display: none;">
+    <h2>Application sent!</h2>
+    <p>Thank you for applying.</p>
+  </div>
+</body>
+</html>
