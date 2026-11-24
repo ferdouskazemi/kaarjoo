@@ -46,9 +46,21 @@ impl EngineClient {
     fn find_bundle_path(&self) -> Result<PathBuf, String> {
         // 1. Try resource directory (production)
         if let Ok(res_dir) = self.app_handle.path().resource_dir() {
-            let candidate = res_dir.join("bundle.mjs");
-            if candidate.exists() {
-                return Ok(candidate);
+            let direct = res_dir.join("bundle.mjs");
+            if direct.exists() {
+                return Ok(direct);
+            }
+            let up3 = res_dir.join("_up_/_up_/_up_/packages/engine/dist/bundle.mjs");
+            if up3.exists() {
+                return Ok(up3);
+            }
+            let up2 = res_dir.join("_up_/_up_/packages/engine/dist/bundle.mjs");
+            if up2.exists() {
+                return Ok(up2);
+            }
+            let pkg = res_dir.join("packages/engine/dist/bundle.mjs");
+            if pkg.exists() {
+                return Ok(pkg);
             }
         }
 

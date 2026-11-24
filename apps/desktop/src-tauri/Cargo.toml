@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Kaarjoo (کارجو) - Local-First AI Job Application Desktop App"
 authors = ["Kaarjoo Authors"]
 edition = "2021"
+default-run = "kaarjoo-desktop"
 
 [lib]
 name = "kaarjoo_lib"
