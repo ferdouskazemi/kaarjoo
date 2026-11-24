@@ -23,12 +23,12 @@ export function extractProfileFromText(text: string, fileName: string): { profil
 
   // 1. Extract Email
   const emailMatch = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
-  const email = emailMatch ? emailMatch[0].trim() : 'candidate@example.com';
+  const email = emailMatch ? emailMatch[0].trim() : 'ferdouskazemi1000@gmail.com';
 
   // 2. Extract Phone
-  // Supports international formats like +93 703093770, +1 415-555-0199, etc.
+  // Supports international formats like +93 728 200 021, +1 415-555-0199, etc.
   const phoneMatch = text.match(/(?:\+\d{1,3}[\s-]?)?\(?\d{2,4}\)?[\s.-]?\d{3,4}[\s.-]?\d{3,4}/);
-  const phone = phoneMatch ? phoneMatch[0].trim() : '+98 912 000 0000';
+  const phone = phoneMatch ? phoneMatch[0].trim() : '+93 728 200 021';
 
   // 3. Extract Links (LinkedIn, GitHub)
   const linkedinMatch = text.match(/(?:https?:\/\/)?(?:www\.)?linkedin\.com\/in\/([a-zA-Z0-9_.-]+)/i);

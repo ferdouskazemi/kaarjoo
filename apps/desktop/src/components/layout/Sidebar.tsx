@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppStore, AppView } from '../../stores/appStore';
+import { useApplicationStore } from '../../stores/applicationStore';
 import {
   LayoutDashboard,
   User,
@@ -12,27 +13,30 @@ import {
   Languages,
   Moon,
   Sun,
+  ShieldCheck,
 } from 'lucide-react';
 
 interface NavItem {
   id: AppView;
   labelKey: string;
   icon: React.ElementType;
-  badge?: number;
+  badgeKey?: 'queue';
+  shortcut: string;
 }
 
 const navItems: NavItem[] = [
-  { id: 'home', labelKey: 'nav.home', icon: LayoutDashboard },
-  { id: 'profile', labelKey: 'nav.profile', icon: User },
-  { id: 'jobs', labelKey: 'nav.jobs', icon: Briefcase },
-  { id: 'queue', labelKey: 'nav.queue', icon: ListTodo },
-  { id: 'applications', labelKey: 'nav.applications', icon: CheckCircle2 },
-  { id: 'settings', labelKey: 'nav.settings', icon: Settings },
+  { id: 'home', labelKey: 'nav.home', icon: LayoutDashboard, shortcut: '1' },
+  { id: 'profile', labelKey: 'nav.profile', icon: User, shortcut: '2' },
+  { id: 'jobs', labelKey: 'nav.jobs', icon: Briefcase, shortcut: '3' },
+  { id: 'queue', labelKey: 'nav.queue', icon: ListTodo, badgeKey: 'queue', shortcut: '4' },
+  { id: 'applications', labelKey: 'nav.applications', icon: CheckCircle2, shortcut: '5' },
+  { id: 'settings', labelKey: 'nav.settings', icon: Settings, shortcut: '6' },
 ];
 
 export const Sidebar: React.FC = () => {
   const { t } = useTranslation();
   const { currentView, setCurrentView, language, setLanguage, theme, setTheme, setCommandPaletteOpen } = useAppStore();
+  const { applications } = useApplicationStore();
 
   const toggleLanguage = () => {
     setLanguage(language === 'fa' ? 'en' : 'fa');
@@ -43,70 +47,93 @@ export const Sidebar: React.FC = () => {
   };
 
   return (
-    <aside className="w-64 border-e border-slate-800/80 bg-slate-950/60 flex flex-col justify-between p-3 select-none shrink-0">
+    <aside className="w-60 border-e border-[#242424] bg-[#141414] flex flex-col justify-between p-3 select-none shrink-0 text-[#f4f4f5]">
       <div className="flex flex-col gap-2">
-        {/* Search / Command bar trigger */}
+        {/* Search / Command Bar Trigger (Flash-Rive Field Style) */}
         <button
           onClick={() => setCommandPaletteOpen(true)}
-          className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-900/80 border border-slate-800 hover:border-slate-700 text-slate-400 hover:text-slate-200 transition-all text-xs"
+          className="flex items-center justify-between px-3 py-2 rounded-lg bg-[#1a1a1a] border border-[#282828] hover:border-[#383838] text-[#a1a1aa] hover:text-[#f4f4f5] transition-all text-xs cursor-pointer group"
         >
           <div className="flex items-center gap-2">
-            <Search className="w-3.5 h-3.5" />
-            <span>{t('command.placeholder').slice(0, 16)}...</span>
+            <Search className="w-3.5 h-3.5 text-[#71717a] group-hover:text-sky-400 transition-colors" />
+            <span className="truncate">{t('command.placeholder').slice(0, 18)}...</span>
           </div>
-          <kbd className="px-1.5 py-0.5 text-[10px] bg-slate-800/60 text-slate-400 rounded border border-slate-700">
+          <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-[#222222] text-[#a1a1aa] rounded border border-[#2f2f2f]">
             Ctrl+K
           </kbd>
         </button>
 
-        {/* Navigation list */}
-        <nav className="mt-3 flex flex-col gap-1">
+        {/* Navigation List */}
+        <nav className="mt-2 flex flex-col gap-1">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentView === item.id;
+            const badgeCount = item.badgeKey === 'queue' ? applications.length : undefined;
+
             return (
               <button
                 key={item.id}
                 onClick={() => setCurrentView(item.id)}
-                className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all cursor-pointer relative ${
                   isActive
-                    ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20 shadow-xs'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60 border border-transparent'
+                    ? 'bg-[#202020] text-[#f4f4f5] border border-[#333333] shadow-sm font-semibold active-ring'
+                    : 'text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#1a1a1a] border border-transparent'
                 }`}
               >
-                <div className="flex items-center gap-3">
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-sky-400' : 'text-slate-400'}`} />
+                <div className="flex items-center gap-2.5">
+                  <Icon
+                    className={`w-4 h-4 transition-colors ${
+                      isActive ? 'text-sky-400' : 'text-[#71717a]'
+                    }`}
+                  />
                   <span>{t(item.labelKey)}</span>
                 </div>
-                {item.badge !== undefined && (
-                  <span className="px-1.5 py-0.2 rounded-full text-xs font-semibold bg-sky-500/20 text-sky-300">
-                    {item.badge}
+
+                <div className="flex items-center gap-1.5">
+                  {badgeCount !== undefined && badgeCount > 0 && (
+                    <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono font-semibold bg-sky-500/20 text-sky-400 border border-sky-500/30">
+                      {badgeCount}
+                    </span>
+                  )}
+                  <span className="text-[10px] font-mono text-[#52525b] opacity-0 hover:opacity-100 group-hover:opacity-100">
+                    {item.shortcut}
                   </span>
-                )}
+                </div>
               </button>
             );
           })}
         </nav>
       </div>
 
-      {/* Footer controls (Language & Theme) */}
-      <div className="flex items-center justify-between pt-3 border-t border-slate-800/80 px-1">
-        <button
-          onClick={toggleLanguage}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-900 transition-colors"
-          title="تغییر زبان / Switch Language"
-        >
-          <Languages className="w-3.5 h-3.5" />
-          <span>{language === 'fa' ? 'English' : 'فارسی'}</span>
-        </button>
+      {/* Footer Controls & System Status */}
+      <div className="flex flex-col gap-2 pt-3 border-t border-[#242424]">
+        <div className="flex items-center justify-between px-1">
+          <button
+            onClick={toggleLanguage}
+            className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#202020] transition-colors cursor-pointer"
+            title="تغییر زبان / Switch Language"
+          >
+            <Languages className="w-3.5 h-3.5" />
+            <span>{language === 'fa' ? 'English' : 'فارسی'}</span>
+          </button>
 
-        <button
-          onClick={toggleTheme}
-          className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:text-slate-200 hover:bg-slate-900 transition-colors"
-          title="Toggle Theme"
-        >
-          {theme === 'dark' ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
-        </button>
+          <button
+            onClick={toggleTheme}
+            className="p-1.5 rounded-md text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#202020] transition-colors cursor-pointer"
+            title="تغییر پوسته / Toggle Theme"
+          >
+            {theme === 'dark' ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
+          </button>
+        </div>
+
+        {/* Local Verification Shield */}
+        <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-[#161616] border border-[#242424] text-[10px] text-[#71717a] font-mono">
+          <span className="flex items-center gap-1 text-emerald-400">
+            <ShieldCheck className="w-3 h-3" />
+            <span>100% LOCAL</span>
+          </span>
+          <span>ATS v0.1.0</span>
+        </div>
       </div>
     </aside>
   );

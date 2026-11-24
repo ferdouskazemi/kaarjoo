@@ -33,11 +33,11 @@ export const AppShell: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-slate-950 text-slate-100 antialiased font-sans">
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#111111] text-[#f4f4f5] antialiased">
       <TitleBar />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />
-        <main className="flex-1 overflow-y-auto flex flex-col bg-slate-950/40">
+        <main className="flex-1 overflow-y-auto flex flex-col bg-[#111111]">
           {renderCurrentView()}
         </main>
       </div>

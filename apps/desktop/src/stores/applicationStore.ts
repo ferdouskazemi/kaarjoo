@@ -3,7 +3,9 @@ import {
   ApplicationRecord,
   ApplicationMode,
   ApplicationStatus,
+  UserProfile,
 } from '@kaarjoo/shared';
+import { useProfileStore } from './profileStore.js';
 
 export interface ApplyingStepInfo {
   step: 'idle' | 'navigating' | 'detecting' | 'filling' | 'uploading' | 'review_ready' | 'submitted' | 'error';
@@ -55,6 +57,7 @@ interface ApplicationStoreState {
   setPreviewScreenshot: (url: string | null) => void;
   exportToCsv: () => string;
   getKpis: () => ApplicationKpis;
+  syncWithProfile: (profile: UserProfile | null) => void;
 }
 
 const mockInitialApplications: ApplicationRecord[] = [
@@ -90,8 +93,8 @@ const mockInitialApplications: ApplicationRecord[] = [
     filledFields: [
       { fieldId: 'first_name', fieldName: 'job_application[first_name]', label: 'First Name', value: 'فردوس', displayValue: 'فردوس (Ferdous)', confidence: 0.98, canonicalField: 'first_name', isRequired: true },
       { fieldId: 'last_name', fieldName: 'job_application[last_name]', label: 'Last Name', value: 'کاظمی', displayValue: 'کاظمی (Kazemi)', confidence: 0.98, canonicalField: 'last_name', isRequired: true },
-      { fieldId: 'email', fieldName: 'job_application[email]', label: 'Email', value: 'ferdous.kazemi@example.com', displayValue: 'ferdous.kazemi@example.com', confidence: 1.0, canonicalField: 'email', isRequired: true },
-      { fieldId: 'phone', fieldName: 'job_application[phone]', label: 'Phone', value: '+49 170 1234567', displayValue: '+49 170 1234567', confidence: 0.95, canonicalField: 'phone', isRequired: true },
+      { fieldId: 'email', fieldName: 'job_application[email]', label: 'Email', value: 'ferdouskazemi1000@gmail.com', displayValue: 'ferdouskazemi1000@gmail.com', confidence: 1.0, canonicalField: 'email', isRequired: true },
+      { fieldId: 'phone', fieldName: 'job_application[phone]', label: 'Phone', value: '+93 728 200 021', displayValue: '+93 728 200 021', confidence: 0.95, canonicalField: 'phone', isRequired: true },
       { fieldId: 'resume', fieldName: 'job_application[resume]', label: 'Resume / CV', value: 'Spotify_Tailored_ATS.pdf', displayValue: 'Spotify_Tailored_ATS.pdf (ATS-Safe)', confidence: 1.0, canonicalField: 'resume', isRequired: true },
       { fieldId: 'work_auth', fieldName: 'job_application[answers][work_auth]', label: 'Work Authorization (EU)', value: 'yes', displayValue: 'Yes', confidence: 0.95, canonicalField: 'work_authorization', isRequired: true },
       { fieldId: 'gender', fieldName: 'job_application[gender]', label: 'Demographic: Gender', value: 'decline', displayValue: 'I decline to self-identify', confidence: 1.0, canonicalField: 'eeo_gender', isRequired: false },
@@ -99,8 +102,8 @@ const mockInitialApplications: ApplicationRecord[] = [
     reviewChecklist: [
       { id: 'first_name', label: 'First Name', value: 'فردوس (Ferdous)', status: 'ok', category: 'contact' },
       { id: 'last_name', label: 'Last Name', value: 'کاظمی (Kazemi)', status: 'ok', category: 'contact' },
-      { id: 'email', label: 'Email', value: 'ferdous.kazemi@example.com', status: 'ok', category: 'contact' },
-      { id: 'phone', label: 'Phone', value: '+49 170 1234567', status: 'ok', category: 'contact' },
+      { id: 'email', label: 'Email', value: 'ferdouskazemi1000@gmail.com', status: 'ok', category: 'contact' },
+      { id: 'phone', label: 'Phone', value: '+93 728 200 021', status: 'ok', category: 'contact' },
       { id: 'resume', label: 'Tailored Résumé PDF', value: 'Spotify_Tailored_ATS.pdf', status: 'ok', category: 'documents' },
       { id: 'work_auth', label: 'Work Authorization (EU)', value: 'Yes', status: 'ok', category: 'screening' },
       { id: 'gender', label: 'EEO / Demographics', value: 'I decline to self-identify', status: 'ok', category: 'eeo' },
@@ -335,17 +338,22 @@ export const useApplicationStore = create<ApplicationStoreState>((set, get) => (
     });
     await new Promise((r) => setTimeout(r, 600));
 
+    const activeCandidateProfile = useProfileStore.getState().profile;
+    const applicantName = activeCandidateProfile?.contact.fullName || 'فردوس کاظمی';
+    const applicantEmail = activeCandidateProfile?.contact.email || 'ferdouskazemi1000@gmail.com';
+    const applicantPhone = activeCandidateProfile?.contact.phone || '+93 728 200 021';
+
     const updatedFilledFields = [
-      { fieldId: 'name', fieldName: 'name', label: 'Full Name', value: 'فردوس کاظمی', displayValue: 'فردوس کاظمی (Ferdous Kazemi)', confidence: 0.98, canonicalField: 'full_name', isRequired: true },
-      { fieldId: 'email', fieldName: 'email', label: 'Email', value: 'ferdous.kazemi@example.com', displayValue: 'ferdous.kazemi@example.com', confidence: 1.0, canonicalField: 'email', isRequired: true },
-      { fieldId: 'phone', fieldName: 'phone', label: 'Phone', value: '+49 170 1234567', displayValue: '+49 170 1234567', confidence: 0.95, canonicalField: 'phone', isRequired: true },
+      { fieldId: 'name', fieldName: 'name', label: 'Full Name', value: applicantName, displayValue: `${applicantName} (Ferdous Kazemi)`, confidence: 0.99, canonicalField: 'full_name', isRequired: true },
+      { fieldId: 'email', fieldName: 'email', label: 'Email', value: applicantEmail, displayValue: applicantEmail, confidence: 1.0, canonicalField: 'email', isRequired: true },
+      { fieldId: 'phone', fieldName: 'phone', label: 'Phone', value: applicantPhone, displayValue: applicantPhone, confidence: 0.98, canonicalField: 'phone', isRequired: true },
       { fieldId: 'resume', fieldName: 'resume', label: 'Resume', value: 'Tailored_Resume.pdf', displayValue: 'Tailored_Resume.pdf (ATS-Safe)', confidence: 1.0, canonicalField: 'resume', isRequired: true },
     ];
 
     const updatedChecklist = [
-      { id: 'name', label: 'Full Name', value: 'فردوس کاظمی (Ferdous Kazemi)', status: 'ok' as const, category: 'contact' as const },
-      { id: 'email', label: 'Email', value: 'ferdous.kazemi@example.com', status: 'ok' as const, category: 'contact' as const },
-      { id: 'phone', label: 'Phone', value: '+49 170 1234567', status: 'ok' as const, category: 'contact' as const },
+      { id: 'name', label: 'Full Name', value: `${applicantName} (Ferdous Kazemi)`, status: 'ok' as const, category: 'contact' as const },
+      { id: 'email', label: 'Email', value: applicantEmail, status: 'ok' as const, category: 'contact' as const },
+      { id: 'phone', label: 'Phone', value: applicantPhone, status: 'ok' as const, category: 'contact' as const },
       { id: 'resume', label: 'Tailored Résumé PDF', value: 'Tailored_Resume.pdf', status: 'ok' as const, category: 'documents' as const },
     ];
 
@@ -571,5 +579,42 @@ export const useApplicationStore = create<ApplicationStoreState>((set, get) => (
       topMissingSkills,
       atsDistribution,
     };
+  },
+
+  syncWithProfile: (profile: UserProfile | null) => {
+    if (!profile) return;
+    const safeName = profile.contact.fullName || 'فردوس کاظمی';
+    const safeEmail = profile.contact.email || 'ferdouskazemi1000@gmail.com';
+    const safePhone = profile.contact.phone || '+93 728 200 021';
+
+    set((state) => ({
+      applications: state.applications.map((app) => ({
+        ...app,
+        filledFields: app.filledFields.map((field) => {
+          if (field.canonicalField === 'email' || field.fieldId === 'email') {
+            return { ...field, value: safeEmail, displayValue: safeEmail };
+          }
+          if (field.canonicalField === 'phone' || field.fieldId === 'phone') {
+            return { ...field, value: safePhone, displayValue: safePhone };
+          }
+          if (field.canonicalField === 'first_name') {
+            return { ...field, value: safeName.split(' ')[0] || safeName, displayValue: safeName };
+          }
+          if (field.canonicalField === 'last_name') {
+            return { ...field, value: safeName.split(' ').slice(1).join(' ') || safeName, displayValue: safeName };
+          }
+          if (field.canonicalField === 'full_name' || field.fieldId === 'name') {
+            return { ...field, value: safeName, displayValue: `${safeName} (Ferdous Kazemi)` };
+          }
+          return field;
+        }),
+        reviewChecklist: app.reviewChecklist.map((item) => {
+          if (item.id === 'email') return { ...item, value: safeEmail };
+          if (item.id === 'phone') return { ...item, value: safePhone };
+          if (item.id === 'name' || item.id === 'first_name') return { ...item, value: `${safeName} (Ferdous Kazemi)` };
+          return item;
+        }),
+      })),
+    }));
   },
 }));

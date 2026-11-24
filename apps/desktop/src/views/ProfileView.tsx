@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   UploadCloud,
@@ -18,149 +18,63 @@ import {
   CheckCheck,
   Lock,
   BarChart3,
+  Copy,
+  Check,
+  Code2,
 } from 'lucide-react';
-import { UserProfile } from '@kaarjoo/shared';
 import { parseDocumentFile } from '../utils/documentParser.js';
 import { extractProfileFromText } from '../utils/resumeExtractor.js';
-
-const SAMPLE_PROFILE: UserProfile = {
-  id: 'prof_sample_1',
-  version: 1,
-  createdAt: '2026-01-01',
-  updatedAt: '2026-01-01',
-  contact: {
-    fullName: 'فردوس کاظمی',
-    email: 'ferdous.kazemi@example.com',
-    phone: '+93 79 123 4567',
-    location: 'کابل، افغانستان',
-    linkedinUrl: 'https://www.linkedin.com/in/ferdous-kazemi',
-    provenance: {
-      sourceFileId: 'resume_fa.pdf',
-      page: 1,
-      textSpan: 'فردوس کاظمی',
-      confidence: 0.99,
-      status: 'accepted',
-    },
-  },
-  summary:
-    'مهندس ارشد نرم‌افزار با بیش از ۶ سال تجربه در طراحی و پیاده‌سازی سیستم‌های توزیع‌شده با کارایی بالا، معماری میکروسرویس و رهبری تیم‌های چابک.',
-  experiences: [
-    {
-      id: 'exp_1',
-      title: 'مهندس ارشد نرم‌افزار',
-      company: 'شرکت فناوری‌های پیشرفته افغان',
-      location: 'کابل',
-      startDate: '۱۳۹۹-۰۱',
-      isCurrent: true,
-      achievements: [
-        'طراحی و هدایت مهاجرت سیستم یکپارچه مالی به معماری میکروسرویس بر پایه Go و gRPC',
-        'کاهش زمان پاسخ‌دهی پایگاه‌داده به میزان ۴۵٪ با بهره‌گیری از Redis و بهینه‌سازی کوئری‌های PostgreSQL',
-      ],
-      skillsUsed: ['Go', 'PostgreSQL', 'Docker', 'Kubernetes'],
-    },
-    {
-      id: 'exp_2',
-      title: 'توسعه‌دهنده فول‌استک',
-      company: 'نوآوران داده کابل',
-      location: 'کابل',
-      startDate: '۱۳۹۶-۰۷',
-      endDate: '۱۳۹۸-۱۲',
-      isCurrent: false,
-      achievements: [
-        'توسعه پلتفرم مدیریت سفارشات با React، TypeScript و Node.js',
-        'پیاده‌سازی پایپ‌لاین‌های CI/CD و اتوماسیون تست‌های واحد',
-      ],
-      skillsUsed: ['TypeScript', 'React', 'Node.js'],
-    },
-  ],
-  education: [
-    {
-      id: 'edu_1',
-      institution: 'دانشگاه کابل',
-      degree: 'کارشناسی مهندسی کامپیوتر',
-      fieldOfStudy: 'نرم‌افزار',
-      startDate: '۱۳۹۲',
-      endDate: '۱۳۹۶',
-      grade: 'ممتاز',
-    },
-  ],
-  skills: [
-    { id: 'sk_1', name: 'Go', escoId: 'http://data.europa.eu/esco/skill/go', category: 'Technology' },
-    { id: 'sk_2', name: 'TypeScript', escoId: 'http://data.europa.eu/esco/skill/typescript', category: 'Technology' },
-    { id: 'sk_3', name: 'React', escoId: 'http://data.europa.eu/esco/skill/react', category: 'Technology' },
-    { id: 'sk_4', name: 'PostgreSQL', escoId: 'http://data.europa.eu/esco/skill/postgresql', category: 'Technology' },
-    { id: 'sk_5', name: 'Docker', escoId: 'http://data.europa.eu/esco/skill/docker', category: 'Technology' },
-    { id: 'sk_6', name: 'Kubernetes', escoId: 'http://data.europa.eu/esco/skill/kubernetes', category: 'Technology' },
-  ],
-  languages: [
-    { id: 'lang_1', language: 'فارسی', proficiency: 'native' },
-    { id: 'lang_2', language: 'انگلیسی', proficiency: 'C1' },
-  ],
-  certifications: [],
-  targetTitles: ['مهندس ارشد نرم‌افزار', 'معمار سیستم‌های توزیع‌شده'],
-  workAuthorization: ['Worldwide', 'Remote', 'US'],
-};
-
-const SAMPLE_DOCUMENT_TEXT = `فردوس کاظمی
-مهندس ارشد نرم‌افزار
-کابل، افغانستان | ferdous.kazemi@example.com | +93 79 123 4567 | linkedin.com/in/ferdous-kazemi
-
-درباره من
-مهندس ارشد نرم‌افزار با بیش از ۶ سال تجربه در طراحی و پیاده‌سازی سیستم‌های توزیع‌شده با کارایی بالا، معماری میکروسرویس و رهبری تیم‌های چابک.
-
-سوابق کاری
-مهندس ارشد نرم‌افزار | شرکت فناوری‌های پیشرفته افغان
-فروردین ۱۳۹۹ تا کنون
-• طراحی و هدایت مهاجرت سیستم یکپارچه مالی به معماری میکروسرویس بر پایه Go و gRPC
-• کاهش زمان پاسخ‌دهی پایگاه‌داده به میزان ۴۵٪ با بهره‌گیری از Redis و بهینه‌سازی کوئری‌های PostgreSQL
-
-توسعه‌دهنده فول‌استک | نوآوران داده کابل
-مهر ۱۳۹۶ تا اسفند ۱۳۹۸
-• توسعه پلتفرم مدیریت سفارشات با React، TypeScript و Node.js
-• پیاده‌سازی پایپ‌لاین‌های CI/CD و اتوماسیون تست‌های واحد
-
-تحصیلات
-کارشناسی مهندسی کامپیوتر | دانشگاه کابل
-۱۳۹۲ تا ۱۳۹۶
-
-مهارت‌ها
-Go, TypeScript, React, PostgreSQL, Docker, Kubernetes, Git, CI/CD, Microservices`;
+import { useProfileStore, INITIAL_CANDIDATE_PROFILE } from '../stores/profileStore.js';
+import { useApplicationStore } from '../stores/applicationStore.js';
 
 export const ProfileView: React.FC = () => {
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Profile starts completely EMPTY (null) as requested by the user
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [uploadedFileName, setUploadedFileName] = useState<string>('');
-  const [uploadedDocumentText, setUploadedDocumentText] = useState<string>('');
-  const [activeHighlight, setActiveHighlight] = useState<string>('');
-  const [activeFieldLabel, setActiveFieldLabel] = useState<string>('');
+  const {
+    profile,
+    uploadedFileName,
+    uploadedDocumentText,
+    documentMeta,
+    activeHighlight,
+    activeFieldLabel,
+    setProfile,
+    setUploadedDocument,
+    setActiveHighlight,
+    clearProfile,
+  } = useProfileStore();
+
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-
-  const [documentMeta, setDocumentMeta] = useState<{ pageCount: number; fileType: string } | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [confirmToast, setConfirmToast] = useState(false);
 
   const handleFieldClick = (highlightText: string, label: string) => {
-    setActiveHighlight(highlightText);
-    setActiveFieldLabel(label);
+    setActiveHighlight(highlightText, label);
   };
 
   const handleFileProcess = async (file: File) => {
     setIsProcessing(true);
-    setUploadedFileName(file.name);
-
     try {
       // 1. Engineering-grade document parsing (PDF via PDF.js, Word via Mammoth, TXT/MD)
       const parseResult = await parseDocumentFile(file);
-      setDocumentMeta({ pageCount: parseResult.pageCount, fileType: parseResult.fileType });
 
       // 2. Structured profile extraction
-      const { profile: extractedProfile, rawText: processedText } = extractProfileFromText(parseResult.text, file.name);
+      const { profile: extractedProfile, rawText: processedText } = extractProfileFromText(
+        parseResult.text,
+        file.name
+      );
+
+      setUploadedDocument({
+        fileName: file.name,
+        text: processedText,
+        meta: { pageCount: parseResult.pageCount, fileType: parseResult.fileType },
+      });
       setProfile(extractedProfile);
-      setUploadedDocumentText(processedText);
-      setActiveHighlight(extractedProfile.contact.email || extractedProfile.contact.fullName || '');
-      setActiveFieldLabel('ایمیل');
+      setActiveHighlight(extractedProfile.contact.email || extractedProfile.contact.fullName || '', 'ایمیل');
+
+      // 3. Immediately synchronize all application forms and queue checklists with the user's real email & details
+      useApplicationStore.getState().syncWithProfile(extractedProfile);
     } catch (err) {
       console.error('File parsing error:', err);
       alert('خطا در خواندن و تحلیل فایل. لطفاً از فایل‌های استاندارد PDF، DOCX یا متنی استفاده فرمایید.');
@@ -186,14 +100,25 @@ export const ProfileView: React.FC = () => {
   };
 
   const handleClearProfile = () => {
-    setProfile(null);
-    setUploadedFileName('');
-    setUploadedDocumentText('');
-    setDocumentMeta(null);
-    setActiveHighlight('');
-    setActiveFieldLabel('');
+    clearProfile();
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
+    }
+  };
+
+  const handleConfirmProfile = () => {
+    if (profile) {
+      useApplicationStore.getState().syncWithProfile(profile);
+      setConfirmToast(true);
+      setTimeout(() => setConfirmToast(false), 3500);
+    }
+  };
+
+  const handleCopyText = () => {
+    if (uploadedDocumentText) {
+      navigator.clipboard.writeText(uploadedDocumentText);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
@@ -213,7 +138,7 @@ export const ProfileView: React.FC = () => {
     : 0;
 
   return (
-    <div className="flex-1 overflow-hidden flex flex-col h-full w-full">
+    <div className="flex-1 overflow-hidden flex flex-col h-full w-full bg-[#111111] text-[#f4f4f5]">
       {/* Hidden File Input */}
       <input
         type="file"
@@ -223,19 +148,29 @@ export const ProfileView: React.FC = () => {
         className="hidden"
       />
 
-      {/* Top Action Bar */}
-      <div className="h-14 border-b border-slate-800 bg-slate-900/60 px-6 flex items-center justify-between shrink-0">
+      {/* Confirmation Toast (Flash-Rive micro-interaction) */}
+      {confirmToast && (
+        <div className="fixed top-12 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-[#1c2e24] border border-emerald-500/40 text-emerald-300 text-xs shadow-2xl active-ring backdrop-blur transition-all">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <span>تمام داده‌های استخراج‌شده تأیید و در صف ارسال و تمام فرم‌های ATS سینک شدند.</span>
+        </div>
+      )}
+
+      {/* Top Action Bar (Obsidian Dock Style) */}
+      <div className="h-12 border-b border-[#282828] bg-[#161616] px-6 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
-          <h1 className="text-base font-bold text-slate-100 flex items-center gap-2">
-            <FileText className="w-4 h-4 text-sky-400" />
+          <h1 className="text-xs font-semibold text-[#f4f4f5] flex items-center gap-2">
+            <FileText className="w-3.5 h-3.5 text-sky-400" />
             <span>{t('nav.profile')}</span>
           </h1>
 
           {profile && (
             <div className="flex items-center gap-2">
-              <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-medium flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span>استخراج شده از: {uploadedFileName || 'سند ارائه‌شده'}</span>
+              <span className="text-[11px] px-2.5 py-0.5 rounded-md bg-[#1d2720] border border-emerald-500/30 text-emerald-400 font-mono flex items-center gap-1.5">
+                <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                <span className="truncate max-w-[260px]">
+                  استخراج شده از: {uploadedFileName || 'Ferdous Kazemi Resume.pdf'}
+                </span>
               </span>
             </div>
           )}
@@ -246,49 +181,46 @@ export const ProfileView: React.FC = () => {
             <>
               <button
                 onClick={handleClearProfile}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-900/60 hover:border-rose-700 bg-rose-950/20 hover:bg-rose-950/40 text-xs font-medium text-rose-300 transition-colors"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-[#382020] hover:border-rose-700/60 bg-[#221414] hover:bg-[#2b1717] text-[11px] font-medium text-rose-300 transition-colors cursor-pointer"
                 title="پاکسازی و خالی کردن پروفایل"
               >
-                <Trash2 className="w-3.5 h-3.5" />
+                <Trash2 className="w-3 h-3 text-rose-400" />
                 <span>خالی کردن اطلاعات</span>
               </button>
 
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-900 text-xs font-medium text-slate-300 hover:text-white transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-[#333333] hover:border-[#484848] bg-[#202020] hover:bg-[#262626] text-[11px] font-medium text-[#d4d4d8] hover:text-white transition-colors cursor-pointer"
               >
-                <UploadCloud className="w-3.5 h-3.5 text-sky-400" />
+                <UploadCloud className="w-3 h-3 text-sky-400" />
                 <span>بارگذاری فایل دیگر</span>
               </button>
 
               <button
-                onClick={() => alert('تمام اطلاعات استخراج‌شده تأیید گردید و در حافظه سیستم ذخیره شد.')}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-all shadow-sm"
+                onClick={handleConfirmProfile}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-[11px] transition-all shadow-sm active:scale-95 cursor-pointer"
               >
-                <CheckCircle2 className="w-3.5 h-3.5" />
+                <CheckCircle2 className="w-3 h-3" />
                 <span>تأیید نهایی پروفایل</span>
               </button>
             </>
           ) : (
             <button
               onClick={() => {
-                setProfile(SAMPLE_PROFILE);
-                setUploadedFileName('golden_sample_resume.pdf');
-                setUploadedDocumentText(SAMPLE_DOCUMENT_TEXT);
-                setActiveHighlight(SAMPLE_PROFILE.contact.email || '');
-                setActiveFieldLabel('ایمیل');
+                setProfile(INITIAL_CANDIDATE_PROFILE);
+                useApplicationStore.getState().syncWithProfile(INITIAL_CANDIDATE_PROFILE);
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-900 text-slate-400 hover:text-slate-200 text-xs transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-[#333333] hover:border-[#484848] bg-[#202020] text-[#a1a1aa] hover:text-white text-[11px] transition-colors cursor-pointer"
             >
-              <RefreshCw className="w-3 h-3" />
-              <span>بارگذاری نمونه رزومه تستی</span>
+              <RefreshCw className="w-3 h-3 text-sky-400" />
+              <span>بارگذاری پروفایل طلایی کاندید</span>
             </button>
           )}
         </div>
       </div>
 
       {!profile ? (
-        /* Empty / Drop Zone State (Empty state ready for user upload) */
+        /* Empty / Drop Zone State (Clean minimal Obsidian drop zone) */
         <div className="flex-1 overflow-y-auto p-8 flex flex-col items-center justify-center">
           <div
             onDragOver={(e) => {
@@ -298,172 +230,163 @@ export const ProfileView: React.FC = () => {
             onDragLeave={() => setIsDragging(false)}
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
-            className={`w-full max-w-xl border-2 border-dashed rounded-3xl p-14 flex flex-col items-center justify-center text-center cursor-pointer transition-all group ${
+            className={`w-full max-w-xl p-10 rounded-2xl border-2 border-dashed transition-all flex flex-col items-center text-center cursor-pointer group ${
               isDragging
-                ? 'border-sky-400 bg-sky-950/20 scale-[1.01]'
-                : 'border-slate-800 hover:border-sky-500/60 bg-slate-900/40 hover:bg-slate-900/70'
+                ? 'border-sky-500 bg-[#16222f]'
+                : 'border-[#2d2d2d] hover:border-sky-500/50 bg-[#161616] hover:bg-[#1a1a1a]'
             }`}
           >
-            {isProcessing ? (
-              <div className="flex flex-col items-center gap-3">
-                <Loader2 className="w-12 h-12 text-sky-400 animate-spin" />
-                <span className="text-sm font-semibold text-slate-200">
-                  در حال استخراج و تحلیل حقایق رزومه...
-                </span>
-                <span className="text-xs text-slate-500">
-                  پارس Bounding Boxها و استخراج مهارت‌های استاندارد ESCO
-                </span>
-              </div>
-            ) : (
-              <>
-                <div className="w-16 h-16 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-4 group-hover:scale-105 transition-transform">
-                  <UploadCloud className="w-8 h-8" />
-                </div>
-                <h3 className="text-lg font-bold text-slate-100">
-                  فایل رزومه خود را اینجا رها کنید یا کلیک نمایید
-                </h3>
-                <p className="text-xs text-slate-400 mt-2 max-w-md leading-relaxed">
-                  پشتیبانی از انواع فرمت‌های <strong>PDF</strong>، <strong>Word (DOCX)</strong> و <strong>متنی (TXT)</strong> دوزبانه (فارسی و انگلیسی).
-                  اطلاعات مستقیماً استخراج شده و به صورت کادر به کادر در کنار سند شما نمایش داده خواهد شد.
-                </p>
-                <div className="flex flex-wrap gap-2 justify-center mt-6">
-                  {['فایل PDF', 'فایل Word (DOCX)', 'متن ساده (TXT)', 'رزومه فارسی و انگلیسی'].map((tag) => (
-                    <span
-                      key={tag}
-                      className="px-2.5 py-1 rounded-md text-[11px] bg-slate-800/80 text-slate-300 border border-slate-700/60"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </>
-            )}
+            <div className="w-14 h-14 rounded-2xl bg-[#202020] border border-[#2e2e2e] flex items-center justify-center text-sky-400 mb-4 group-hover:scale-105 transition-transform">
+              {isProcessing ? (
+                <Loader2 className="w-7 h-7 animate-spin text-sky-400" />
+              ) : (
+                <UploadCloud className="w-7 h-7 text-sky-400" />
+              )}
+            </div>
+
+            <h3 className="text-sm font-semibold text-[#f4f4f5] mb-1">
+              {isProcessing
+                ? 'در حال خواندن و استخراج محلی اطلاعات با بالاترین دقت مهندسی...'
+                : 'بارگذاری رزومه اصلی برای استخراج دقیق'}
+            </h3>
+            <p className="text-xs text-[#a1a1aa] max-w-sm mb-4 leading-relaxed">
+              فایل رزومه خود را اینجا بکشید یا برای انتخاب کلیک کنید.
+              <br />
+              <span className="text-[11px] text-[#71717a] font-mono">
+                پشتیبانی از PDF، Word (DOCX)، فرمت‌های متنی و Markdown
+              </span>
+            </p>
+
+            <div className="flex items-center gap-2 text-[11px] font-mono text-[#a1a1aa] bg-[#202020] px-3 py-1.5 rounded-lg border border-[#2b2b2b]">
+              <Lock className="w-3.5 h-3.5 text-emerald-400" />
+              <span>پردازش ۱۰۰٪ محلی و آفلاین • بدون ارسال به سرور شخص ثالث</span>
+            </div>
           </div>
         </div>
       ) : (
-        /* Split View Review Screen (Left: Profile Cards, Right: Source Document Viewer) */
-        <div className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x lg:divide-x-reverse divide-slate-800">
+        /* Split View Review Screen (Left: Clean Extracted Cards, Right: Clean Raw Text Inspector) */
+        <div className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x lg:divide-x-reverse divide-[#242424]">
           {/* Left Column: Structured Profile Cards */}
-          <div className="h-full overflow-y-auto p-6 flex flex-col gap-5">
+          <div className="h-full overflow-y-auto p-5 flex flex-col gap-4">
             {/* Extraction Insights & Summary Card */}
-            <div className="rounded-2xl border border-sky-500/30 bg-gradient-to-br from-sky-950/40 via-slate-900/80 to-slate-900/60 p-4.5 flex flex-col gap-3 shadow-sm">
+            <div className="rounded-xl border border-[#2d3748] bg-gradient-to-br from-[#131d27] via-[#161b22] to-[#141414] p-4 flex flex-col gap-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center shrink-0">
+                  <div className="w-7 h-7 rounded-lg bg-sky-500/10 border border-sky-500/20 text-sky-400 flex items-center justify-center shrink-0">
                     <BarChart3 className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="text-xs font-bold text-slate-100 flex items-center gap-1.5">
-                      <span>داده‌های شناسایی و استخراج‌شده از رزومه شما</span>
+                    <h3 className="text-xs font-semibold text-[#f4f4f5] flex items-center gap-1.5">
+                      <span>داده‌های شناسایی و استخراج‌شده از رزومه</span>
                     </h3>
-                    <p className="text-[11px] text-slate-400 mt-0.5">
-                      سیستم کارجو موارد زیر را مستقیماً از فایل «{uploadedFileName || 'سند بارگذاری‌شده'}» استخراج و دسته‌بندی نموده است:
+                    <p className="text-[11px] text-[#a1a1aa] mt-0.5">
+                      مستقیماً از فایل «{uploadedFileName || 'سند بارگذاری‌شده'}» استخراج و ساختاریافته است:
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[11px] font-semibold text-emerald-400 shrink-0">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>تکمیل پروفایل: {completenessScore}٪</span>
+                <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#182a20] border border-emerald-500/30 text-[11px] font-medium text-emerald-400 shrink-0 font-mono">
+                  <ShieldCheck className="w-3 h-3" />
+                  <span>تکمیل: {completenessScore}٪</span>
                 </div>
               </div>
 
               {/* 4 Mini Stat Badges */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
-                <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 flex flex-col gap-0.5">
-                  <span className="text-[10px] text-slate-400">اطلاعات هویتی و تماس</span>
-                  <span className="text-xs font-bold text-slate-200 flex items-center gap-1">
-                    <CheckCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <div className="p-2 rounded-lg bg-[#181818] border border-[#262626] flex flex-col gap-0.5">
+                  <span className="text-[10px] text-[#71717a]">اطلاعات فردی</span>
+                  <span className="text-[11px] font-semibold text-[#e4e4e7] flex items-center gap-1 truncate">
+                    <CheckCheck className="w-3 h-3 text-emerald-400" />
                     <span className="truncate">{profile.contact.fullName || 'نامشخص'}</span>
                   </span>
-                  <span className="text-[10px] text-slate-500 truncate font-mono">
-                    {profile.contact.email || profile.contact.phone || 'فاقد تماس'}
+                  <span className="text-[10px] text-[#a1a1aa] truncate font-mono">
+                    {profile.contact.email}
                   </span>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 flex flex-col gap-0.5">
-                  <span className="text-[10px] text-slate-400">سوابق شغلی شناسایی‌شده</span>
-                  <span className="text-xs font-bold text-slate-200 flex items-center gap-1">
-                    <Briefcase className="w-3.5 h-3.5 text-sky-400" />
-                    <span>{profile.experiences.length} موقعیت شغلی</span>
+                <div className="p-2 rounded-lg bg-[#181818] border border-[#262626] flex flex-col gap-0.5">
+                  <span className="text-[10px] text-[#71717a]">سوابق شغلی</span>
+                  <span className="text-[11px] font-semibold text-[#e4e4e7] flex items-center gap-1">
+                    <Briefcase className="w-3 h-3 text-sky-400" />
+                    <span>{profile.experiences.length} موقعیت</span>
                   </span>
-                  <span className="text-[10px] text-slate-500 truncate">
+                  <span className="text-[10px] text-[#a1a1aa] truncate">
                     {profile.experiences[0]?.company || 'آماده ارزیابی'}
                   </span>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 flex flex-col gap-0.5">
-                  <span className="text-[10px] text-slate-400">مهارت‌های فنی (ESCO)</span>
-                  <span className="text-xs font-bold text-slate-200 flex items-center gap-1">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                    <span>{profile.skills.length} مهارت تخصصی</span>
+                <div className="p-2 rounded-lg bg-[#181818] border border-[#262626] flex flex-col gap-0.5">
+                  <span className="text-[10px] text-[#71717a]">مهارت‌های فنی</span>
+                  <span className="text-[11px] font-semibold text-[#e4e4e7] flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-amber-400" />
+                    <span>{profile.skills.length} مهارت</span>
                   </span>
-                  <span className="text-[10px] text-slate-500">
-                    جهت تطبیق با فرصت‌های US/EU
+                  <span className="text-[10px] text-[#a1a1aa] font-mono">
+                    تطبیق بلادرنگ ATS
                   </span>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 flex flex-col gap-0.5">
-                  <span className="text-[10px] text-slate-400">ضمانت راستی‌آزمایی</span>
-                  <span className="text-xs font-bold text-emerald-300 flex items-center gap-1">
-                    <Lock className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>۱۰۰٪ سندیت محلی</span>
+                <div className="p-2 rounded-lg bg-[#181818] border border-[#262626] flex flex-col gap-0.5">
+                  <span className="text-[10px] text-[#71717a]">ضمانت راستی‌آزمایی</span>
+                  <span className="text-[11px] font-semibold text-emerald-400 flex items-center gap-1">
+                    <Lock className="w-3 h-3 text-emerald-400" />
+                    <span>۱۰۰٪ آفلاین</span>
                   </span>
-                  <span className="text-[10px] text-slate-500">
-                    بدون جعل / ذخیره در سیستم
+                  <span className="text-[10px] text-[#a1a1aa]">
+                    بدون دستکاری داده
                   </span>
                 </div>
               </div>
             </div>
 
             {/* Top Identity Card */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 flex flex-col gap-4">
+            <div className="rounded-xl border border-[#282828] bg-[#1a1a1a] p-4 flex flex-col gap-3">
               <div className="flex items-start justify-between">
                 <div>
-                  <h2 className="text-xl font-bold text-slate-100">{profile.contact.fullName}</h2>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    {profile.targetTitles?.[0] || 'متخصص نرم‌افزار و فناوری'}
+                  <h2 className="text-base font-bold text-[#f4f4f5]">{profile.contact.fullName}</h2>
+                  <p className="text-xs text-[#a1a1aa] mt-0.5 font-mono">
+                    {profile.targetTitles?.[0] || 'Senior / Mid-Level Software Engineer'}
                   </p>
                 </div>
-                <span className="text-[10px] px-2 py-0.5 rounded font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <span className="text-[10px] px-2 py-0.5 rounded font-mono bg-[#1b2b21] text-emerald-400 border border-emerald-500/20">
                   اعتبارسنجی شده
                 </span>
               </div>
 
-              {/* Contact Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-slate-300">
+              {/* Contact Grid with Precision Click-to-highlight */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-[#d4d4d8]">
                 <div
                   onClick={() => handleFieldClick(profile.contact.email, 'ایمیل')}
-                  className="p-2.5 rounded-xl bg-slate-950/50 border border-slate-800/80 flex items-center gap-2 hover:border-sky-500/50 cursor-pointer transition-all"
+                  className="p-2 rounded-lg bg-[#141414] border border-[#262626] hover:border-sky-500/50 flex items-center gap-2 cursor-pointer transition-colors"
                 >
-                  <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                  <span className="truncate">{profile.contact.email}</span>
+                  <Mail className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                  <span className="truncate font-mono text-[11px] text-[#e4e4e7]">{profile.contact.email}</span>
                 </div>
 
                 <div
                   onClick={() => handleFieldClick(profile.contact.phone || '', 'شماره تماس')}
-                  className="p-2.5 rounded-xl bg-slate-950/50 border border-slate-800/80 flex items-center gap-2 hover:border-sky-500/50 cursor-pointer transition-all"
+                  className="p-2 rounded-lg bg-[#141414] border border-[#262626] hover:border-sky-500/50 flex items-center gap-2 cursor-pointer transition-colors"
                 >
-                  <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                  <span className="truncate font-mono">{profile.contact.phone || '--'}</span>
+                  <Phone className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span className="truncate font-mono text-[11px] text-[#e4e4e7]">{profile.contact.phone || '--'}</span>
                 </div>
 
                 {profile.contact.location && (
                   <div
                     onClick={() => handleFieldClick(profile.contact.location || '', 'محل سکونت')}
-                    className="p-2.5 rounded-xl bg-slate-950/50 border border-slate-800/80 flex items-center gap-2 hover:border-sky-500/50 cursor-pointer transition-all"
+                    className="p-2 rounded-lg bg-[#141414] border border-[#262626] hover:border-sky-500/50 flex items-center gap-2 cursor-pointer transition-colors"
                   >
-                    <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                    <span className="truncate">{profile.contact.location}</span>
+                    <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <span className="truncate text-[11px]">{profile.contact.location}</span>
                   </div>
                 )}
 
                 {profile.contact.linkedinUrl && (
                   <div
                     onClick={() => handleFieldClick(profile.contact.linkedinUrl || '', 'لینکدین')}
-                    className="p-2.5 rounded-xl bg-slate-950/50 border border-slate-800/80 flex items-center gap-2 hover:border-sky-500/50 cursor-pointer transition-all"
+                    className="p-2 rounded-lg bg-[#141414] border border-[#262626] hover:border-sky-500/50 flex items-center gap-2 cursor-pointer transition-colors"
                   >
-                    <Globe className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                    <span className="truncate">{profile.contact.linkedinUrl.replace('https://www.', '')}</span>
+                    <Globe className="w-3.5 h-3.5 text-violet-400 shrink-0" />
+                    <span className="truncate font-mono text-[11px]">{profile.contact.linkedinUrl.replace('https://', '')}</span>
                   </div>
                 )}
               </div>
@@ -471,11 +394,11 @@ export const ProfileView: React.FC = () => {
 
             {/* Summary */}
             {profile.summary && (
-              <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4 flex flex-col gap-2">
-                <span className="text-xs font-semibold text-slate-300">خلاصه حرفه‌ای و درباره من</span>
+              <div className="rounded-xl border border-[#282828] bg-[#1a1a1a] p-3.5 flex flex-col gap-1.5">
+                <span className="text-[11px] font-semibold text-[#a1a1aa]">خلاصه حرفه‌ای و بیوگرافی</span>
                 <p
                   onClick={() => handleFieldClick(profile.summary || '', 'خلاصه')}
-                  className="text-xs text-slate-300 leading-relaxed p-2.5 rounded-xl bg-slate-950/30 border border-slate-800/60 hover:border-sky-500/40 cursor-pointer transition-all"
+                  className="text-xs text-[#d4d4d8] leading-relaxed p-2.5 rounded-lg bg-[#141414] border border-[#242424] hover:border-sky-500/40 cursor-pointer transition-colors"
                 >
                   {profile.summary}
                 </p>
@@ -483,8 +406,8 @@ export const ProfileView: React.FC = () => {
             )}
 
             {/* Experiences */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4 flex flex-col gap-3">
-              <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+            <div className="rounded-xl border border-[#282828] bg-[#1a1a1a] p-3.5 flex flex-col gap-2.5">
+              <span className="text-[11px] font-semibold text-[#a1a1aa] flex items-center gap-1.5">
                 <Briefcase className="w-3.5 h-3.5 text-sky-400" />
                 <span>سوابق شغلی و تجربیات ({profile.experiences.length})</span>
               </span>
@@ -493,20 +416,20 @@ export const ProfileView: React.FC = () => {
                 <div
                   key={exp.id}
                   onClick={() => handleFieldClick(exp.company, `سابقه در ${exp.company}`)}
-                  className="p-3.5 rounded-xl bg-slate-950/40 border border-slate-800/80 flex flex-col gap-2 hover:border-sky-500/40 cursor-pointer transition-all"
+                  className="p-3 rounded-lg bg-[#141414] border border-[#242424] flex flex-col gap-1.5 hover:border-sky-500/40 cursor-pointer transition-colors"
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <h4 className="text-xs font-bold text-slate-200">{exp.title}</h4>
-                      <span className="text-[11px] text-slate-400">{exp.company}</span>
+                      <h4 className="text-xs font-bold text-[#f4f4f5]">{exp.title}</h4>
+                      <span className="text-[11px] text-sky-400">{exp.company}</span>
                     </div>
-                    <span className="text-[10px] font-mono text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+                    <span className="text-[10px] font-mono text-[#a1a1aa] bg-[#202020] px-2 py-0.5 rounded border border-[#2b2b2b]">
                       {exp.startDate} - {exp.endDate || 'کنون'}
                     </span>
                   </div>
 
                   {exp.achievements.length > 0 && (
-                    <ul className="text-[11px] text-slate-400 space-y-1 list-disc list-inside">
+                    <ul className="text-[11px] text-[#a1a1aa] space-y-1 list-disc list-inside">
                       {exp.achievements.map((ach, i) => (
                         <li key={i}>{ach}</li>
                       ))}
@@ -517,8 +440,8 @@ export const ProfileView: React.FC = () => {
             </div>
 
             {/* Education */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4 flex flex-col gap-3">
-              <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+            <div className="rounded-xl border border-[#282828] bg-[#1a1a1a] p-3.5 flex flex-col gap-2">
+              <span className="text-[11px] font-semibold text-[#a1a1aa] flex items-center gap-1.5">
                 <GraduationCap className="w-3.5 h-3.5 text-amber-400" />
                 <span>تحصیلات ({profile.education.length})</span>
               </span>
@@ -527,14 +450,14 @@ export const ProfileView: React.FC = () => {
                 <div
                   key={edu.id}
                   onClick={() => handleFieldClick(edu.institution, edu.institution)}
-                  className="p-3.5 rounded-xl bg-slate-950/40 border border-slate-800/80 flex items-start justify-between hover:border-sky-500/40 cursor-pointer transition-all"
+                  className="p-2.5 rounded-lg bg-[#141414] border border-[#242424] flex items-start justify-between hover:border-sky-500/40 cursor-pointer transition-colors"
                 >
                   <div>
-                    <h4 className="text-xs font-bold text-slate-200">{edu.degree}</h4>
-                    <span className="text-[11px] text-slate-400">{edu.institution}</span>
+                    <h4 className="text-xs font-bold text-[#f4f4f5]">{edu.degree}</h4>
+                    <span className="text-[11px] text-[#a1a1aa]">{edu.institution}</span>
                   </div>
                   {edu.startDate && (
-                    <span className="text-[10px] font-mono text-slate-500">
+                    <span className="text-[10px] font-mono text-[#71717a]">
                       {edu.startDate} - {edu.endDate || ''}
                     </span>
                   )}
@@ -543,10 +466,10 @@ export const ProfileView: React.FC = () => {
             </div>
 
             {/* Validated Skills */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4 flex flex-col gap-3">
-              <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+            <div className="rounded-xl border border-[#282828] bg-[#1a1a1a] p-3.5 flex flex-col gap-2">
+              <span className="text-[11px] font-semibold text-[#a1a1aa] flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-                <span>مهارت‌های استخراج‌شده ({profile.skills.length})</span>
+                <span>مهارت‌های فنی استخراج‌شده ({profile.skills.length})</span>
               </span>
 
               <div className="flex flex-wrap gap-1.5">
@@ -554,7 +477,7 @@ export const ProfileView: React.FC = () => {
                   <span
                     key={skill.id}
                     onClick={() => handleFieldClick(skill.name, skill.name)}
-                    className="px-2.5 py-1 rounded-lg text-xs bg-slate-950 border border-slate-800 hover:border-sky-500/50 text-slate-300 cursor-pointer transition-colors"
+                    className="px-2 py-0.5 rounded text-[11px] bg-[#141414] border border-[#2b2b2b] hover:border-sky-500/50 text-[#d4d4d8] font-mono cursor-pointer transition-colors"
                   >
                     {skill.name}
                   </span>
@@ -563,49 +486,77 @@ export const ProfileView: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Column: Source Document Viewer & Visual Bounding Box Sync */}
-          <div className="h-full overflow-y-auto p-6 flex flex-col gap-3 bg-slate-950/20">
-            <div className="flex items-center justify-between pb-1">
-              <span className="text-xs font-semibold text-slate-200 flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5 text-sky-400" />
-                <span>سند اصلی رزومه: <strong>{uploadedFileName || 'سند بارگذاری‌شده'}</strong></span>
+          {/* Right Column: Source Document Viewer (Obsidian Code Inspector Style) */}
+          <div className="h-full overflow-hidden flex flex-col bg-[#141414]">
+            {/* Inspector Header Bar */}
+            <div className="h-10 px-4 border-b border-[#242424] bg-[#181818] flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2">
+                <Code2 className="w-3.5 h-3.5 text-sky-400" />
+                <span className="text-xs font-medium text-[#e4e4e7] truncate max-w-[200px]">
+                  {uploadedFileName || 'سند متنی رزومه'}
+                </span>
                 {documentMeta && (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 font-mono">
-                    {documentMeta.pageCount} صفحه • فرمت {documentMeta.fileType.toUpperCase()}
+                  <span className="text-[10px] font-mono text-[#a1a1aa] bg-[#222222] px-2 py-0.5 rounded border border-[#2f2f2f]">
+                    {documentMeta.pageCount}P • {documentMeta.fileType.toUpperCase()}
                   </span>
                 )}
-              </span>
-              <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3" />
-                <span>متن ساختاریافته (Clean Text)</span>
-              </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleCopyText}
+                  className="flex items-center gap-1 px-2 py-0.5 rounded bg-[#202020] hover:bg-[#282828] border border-[#303030] text-[10px] text-[#d4d4d8] transition-colors cursor-pointer"
+                  title="کپی متن کامل"
+                >
+                  {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                  <span>{copied ? 'کپی شد' : 'کپی متن'}</span>
+                </button>
+              </div>
             </div>
 
             {/* Active Field Focus Banner */}
             {activeHighlight && (
-              <div className="rounded-xl bg-sky-500/10 border border-sky-500/30 p-2.5 flex items-center justify-between text-xs text-sky-300">
-                <span>نمایش منبع فیلد: <strong>{activeFieldLabel}</strong></span>
-                <span className="text-[10px] text-slate-400">تطبیق مکانی در سند اصلی</span>
+              <div className="px-4 py-2 bg-[#12222d] border-b border-sky-500/30 flex items-center justify-between text-[11px] text-sky-300">
+                <span>
+                  ردگیری سندیت (Provenance) برای فیلد: <strong>{activeFieldLabel}</strong>
+                </span>
+                <span className="font-mono text-[10px] text-sky-400/80 bg-sky-950/60 px-2 py-0.5 rounded border border-sky-800/40">
+                  {activeHighlight}
+                </span>
               </div>
             )}
 
-            {/* Document Viewer with Text Highlight Layer */}
-            <div className="flex-1 rounded-2xl border border-slate-800 bg-slate-900/30 p-6 font-mono text-xs leading-relaxed text-slate-300 whitespace-pre-wrap select-text max-h-[600px] overflow-y-auto">
-              {(uploadedDocumentText || SAMPLE_DOCUMENT_TEXT).split('\n').map((line, idx) => {
-                const isHighlighted = activeHighlight && line.toLowerCase().includes(activeHighlight.toLowerCase());
-                return (
-                  <div
-                    key={idx}
-                    className={`py-0.5 rounded px-2 transition-colors ${
-                      isHighlighted
-                        ? 'bg-sky-500/30 text-white border-s-2 border-sky-400 font-semibold'
-                        : 'hover:bg-slate-900/40'
-                    }`}
-                  >
-                    {line || '\u00A0'}
-                  </div>
-                );
-              })}
+            {/* Document Viewer with Line Numbers and Precision Text Rendering */}
+            <div className="flex-1 overflow-y-auto p-4 font-mono text-xs leading-relaxed text-[#d4d4d8] select-text">
+              {uploadedDocumentText ? (
+                uploadedDocumentText.split('\n').map((line, idx) => {
+                  const isHighlighted =
+                    activeHighlight &&
+                    line.toLowerCase().includes(activeHighlight.toLowerCase());
+
+                  return (
+                    <div
+                      key={idx}
+                      className={`flex items-start gap-3 py-0.5 px-2 rounded transition-colors ${
+                        isHighlighted
+                          ? 'bg-[#1a3344] text-white border-s-2 border-sky-400 font-semibold shadow-sm'
+                          : 'hover:bg-[#1c1c1c]'
+                      }`}
+                    >
+                      <span className="w-8 shrink-0 text-right select-none text-[10px] text-[#52525b] font-mono">
+                        {idx + 1}
+                      </span>
+                      <span className="flex-1 whitespace-pre-wrap break-all">
+                        {line || '\u00A0'}
+                      </span>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="p-8 text-center text-[#52525b] text-xs">
+                  متن سندی برای نمایش بارگذاری نشده است.
+                </div>
+              )}
             </div>
           </div>
         </div>
