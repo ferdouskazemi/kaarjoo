@@ -22,8 +22,8 @@ export const HomeView: React.FC = () => {
   const { data: applications = [] } = useApplications();
   const { data: jobs = [] } = useJobs();
 
-  const candidateEmail = profile?.contact?.email || (isRtl ? 'هیچ رزومه‌ای بارگذاری نشده است' : 'No résumé uploaded yet');
-  const candidateName = profile?.contact?.fullName || (isRtl ? 'کاربر جدید' : 'New User');
+  const candidateEmail = profile?.contact?.email || t('home.noResumeYet');
+  const candidateName = profile?.contact?.fullName || t('home.newUser');
 
   const totalApps = applications.length;
   const appliedCount = applications.filter((a) => a.status === 'submitted' || a.status === 'applied').length;
@@ -71,14 +71,14 @@ export const HomeView: React.FC = () => {
             className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-medium text-xs transition-all shadow-md active:scale-95 cursor-pointer"
           >
             <UploadCloud className="w-4 h-4" />
-            <span>{isRtl ? 'مدیریت رزومه و پروفایل' : 'Manage Resume & Profile'}</span>
+            <span>{t('home.manageProfile')}</span>
           </button>
           <button
             onClick={() => setCurrentView('queue')}
             className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#202020] hover:bg-[#282828] border border-[#303030] text-[#f4f4f5] font-medium text-xs transition-all active:scale-95 cursor-pointer"
           >
             <ListTodo className="w-4 h-4 text-emerald-400" />
-            <span>{isRtl ? 'مشاهده صف ارسال' : 'View Application Queue'}</span>
+            <span>{t('home.viewQueue')}</span>
           </button>
         </div>
       </div>
@@ -87,13 +87,13 @@ export const HomeView: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
         <div className="rounded-xl border border-[#242424] bg-[#161616] p-4 flex flex-col gap-2">
           <div className="flex items-center justify-between text-[#a1a1aa]">
-            <span className="text-xs font-medium">{isRtl ? 'درخواست‌های ارسال‌شده' : 'Submitted Apps'}</span>
+            <span className="text-xs font-medium">{t('home.submittedApps')}</span>
             <TrendingUp className="w-4 h-4 text-sky-400" />
           </div>
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-bold font-mono text-[#f4f4f5]">{appliedCount}</span>
             <span className="text-[11px] text-[#71717a] font-mono">
-              / {totalApps} {isRtl ? 'کل' : 'total'}
+              / {totalApps} {t('home.totalApps')}
             </span>
           </div>
         </div>

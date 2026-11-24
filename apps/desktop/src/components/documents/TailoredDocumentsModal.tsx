@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   X,
   FileText,
@@ -15,6 +16,8 @@ import {
 } from 'lucide-react';
 import type { DisplayJob } from '../jobs/JobCard.js';
 import type { TemplateId } from '@kaarjoo/shared';
+import { formatNumber } from '../../utils/formatters.js';
+import { LANGUAGE_NAMES } from '../../i18n/constants.js';
 
 interface TailoredDocumentsModalProps {
   isOpen: boolean;
@@ -29,9 +32,11 @@ export const TailoredDocumentsModal: React.FC<TailoredDocumentsModalProps> = ({
   job,
   onProceedToApply,
 }) => {
+  const { t, i18n } = useTranslation();
+
   // Active Tab
   const [activeTab, setActiveTab] = useState<'resume' | 'coverLetter' | 'screening'>('resume');
-  const [language, setLanguage] = useState<'en' | 'fa'>('en');
+  const [docLanguage, setDocLanguage] = useState<'en' | 'fa'>('en');
   const [templateId, setTemplateId] = useState<TemplateId>('ats-clean');
 
   // Editable Tailored Content
@@ -67,13 +72,13 @@ export const TailoredDocumentsModal: React.FC<TailoredDocumentsModalProps> = ({
     const unsupported: string[] = [];
 
     if (text.includes('google') || text.includes('apple') || text.includes('netflix')) {
-      unsupported.push('ذکر شرکت‌های ثبت‌نشده در سوابق اولیه (Google/Apple)');
+      unsupported.push('Google/Apple');
     }
-    if (text.includes('phd') || text.includes('دکتری') || text.includes('stanford') || text.includes('harvard')) {
-      unsupported.push('مدرک تحصیلی یا دانشگاه غیرمستند');
+    if (text.includes('phd') || text.includes('stanford') || text.includes('harvard')) {
+      unsupported.push('Stanford/Harvard PhD');
     }
     if (text.includes('15+ years') || text.includes('20 years')) {
-      unsupported.push('بزرگ‌نمایی غیرواقعی در سال‌های سابقه');
+      unsupported.push('20+ years exaggeration');
     }
 
     return {
@@ -95,7 +100,6 @@ export const TailoredDocumentsModal: React.FC<TailoredDocumentsModalProps> = ({
     setDownloading(type);
     await new Promise((r) => setTimeout(r, 1200));
     setDownloading(null);
-    alert(`سند سفارشی‌شده ${type.toUpperCase()} با موفقیت آماده شد و در مسیر فایل‌های محلی کارجو ذخیره گردید.`);
   };
 
   return (
@@ -106,7 +110,7 @@ export const TailoredDocumentsModal: React.FC<TailoredDocumentsModalProps> = ({
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-sky-950 text-sky-400 border border-sky-800">
-                استودیو سفارشی‌سازی مدارک ATS
+                {t('documents.title')}
               </span>
               <span className="text-xs text-slate-400 font-medium">
                 {job.company} — {job.title}
@@ -114,7 +118,7 @@ export const TailoredDocumentsModal: React.FC<TailoredDocumentsModalProps> = ({
             </div>
             <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
               <FileText className="w-5 h-5 text-sky-400" />
-              <span>مدارک متناسب‌شده با آگهی استخدامی</span>
+              <span>{t('documents.subtitle')}</span>
             </h2>
           </div>
 
@@ -129,13 +133,13 @@ export const TailoredDocumentsModal: React.FC<TailoredDocumentsModalProps> = ({
                 className="bg-transparent text-slate-200 text-xs focus:outline-none cursor-pointer"
               >
                 <option value="ats-clean" className="bg-slate-900 text-slate-200">
-                  قالب تک‌ستونه ATS-Safe
+                  {t('documents.atsClean')}
                 </option>
                 <option value="modern-minimal" className="bg-slate-900 text-slate-200">
-                  قالب مدرن مینیمال
+                  {t('documents.modernMinimal')}
                 </option>
                 <option value="compact-technical" className="bg-slate-900 text-slate-200">
-                  قالب فشرده فنی
+                  {t('documents.compactTechnical')}
                 </option>
               </select>
             </div>
@@ -143,20 +147,20 @@ export const TailoredDocumentsModal: React.FC<TailoredDocumentsModalProps> = ({
             {/* Language Switch */}
             <div className="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
               <button
-                onClick={() => setLanguage('en')}
-                className={`px-2.5 py-1 rounded-lg font-medium transition-colors ${
-                  language === 'en' ? 'bg-slate-800 text-white font-semibold' : 'text-slate-400'
+                onClick={() => setDocLanguage('en')}
+                className={`px-2.5 py-1 rounded-lg font-medium transition-colors cursor-pointer ${
+                  docLanguage === 'en' ? 'bg-slate-800 text-white font-semibold' : 'text-slate-400'
                 }`}
               >
                 English
               </button>
               <button
-                onClick={() => setLanguage('fa')}
-                className={`px-2.5 py-1 rounded-lg font-medium transition-colors ${
-                  language === 'fa' ? 'bg-slate-800 text-white font-semibold' : 'text-slate-400'
+                onClick={() => setDocLanguage('fa')}
+                className={`px-2.5 py-1 rounded-lg font-medium transition-colors cursor-pointer ${
+                  docLanguage === 'fa' ? 'bg-slate-800 text-white font-semibold' : 'text-slate-400'
                 }`}
               >
-                فارسی
+                {LANGUAGE_NAMES.fa}
               </button>
             </div>
 
@@ -164,24 +168,24 @@ export const TailoredDocumentsModal: React.FC<TailoredDocumentsModalProps> = ({
             <button
               onClick={() => handleDownload('pdf')}
               disabled={downloading !== null}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 transition-colors cursor-pointer"
             >
               <Download className="w-3.5 h-3.5 text-rose-400" />
-              <span>{downloading === 'pdf' ? 'در حال خروجی...' : 'PDF'}</span>
+              <span>{downloading === 'pdf' ? t('documents.preparingPdf') : 'PDF'}</span>
             </button>
 
             <button
               onClick={() => handleDownload('docx')}
               disabled={downloading !== null}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 transition-colors cursor-pointer"
             >
               <Download className="w-3.5 h-3.5 text-blue-400" />
-              <span>{downloading === 'docx' ? 'در حال خروجی...' : 'DOCX'}</span>
+              <span>{downloading === 'docx' ? t('documents.preparingDocx') : 'DOCX'}</span>
             </button>
 
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -202,52 +206,54 @@ export const TailoredDocumentsModal: React.FC<TailoredDocumentsModalProps> = ({
             ) : (
               <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
             )}
-            <span className="font-semibold">گارد راستی‌آزمایی (Truthfulness Guard):</span>
+            <span className="font-semibold">{t('documents.truthCheckTitle')}:</span>
             <span>
               {truthfulnessStatus.isTruthful
-                ? '۱۰۰٪ واقع‌گرایانه — تمامی ادعاها، سوابق و سال‌ها با فکت‌های رزومه اولیه شما تایید شدند.'
-                : `هشدار ادعای غیرمستند: ${truthfulnessStatus.unsupported.join(' | ')}`}
+                ? t('documents.noUnsupportedClaims')
+                : `${t('documents.truthWarning')}: ${truthfulnessStatus.unsupported.join(' | ')}`}
             </span>
           </div>
-          <span className="font-mono font-bold">{truthfulnessStatus.score}% اطمینان</span>
+          <span className="font-mono font-bold">
+            {formatNumber(truthfulnessStatus.score, i18n.language)}% {t('documents.truthScore')}
+          </span>
         </div>
 
         {/* Navigation Tabs */}
         <div className="px-6 border-b border-slate-800 bg-slate-900/40 flex items-center gap-6">
           <button
             onClick={() => setActiveTab('resume')}
-            className={`py-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-colors ${
+            className={`py-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-colors cursor-pointer ${
               activeTab === 'resume'
                 ? 'border-sky-500 text-sky-400'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
             <FileText className="w-4 h-4" />
-            <span>رزومه سفارشی و مقایسه (Side-by-side Diff)</span>
+            <span>{t('documents.tailoredBullets')}</span>
           </button>
 
           <button
             onClick={() => setActiveTab('coverLetter')}
-            className={`py-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-colors ${
+            className={`py-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-colors cursor-pointer ${
               activeTab === 'coverLetter'
                 ? 'border-sky-500 text-sky-400'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
             <Mail className="w-4 h-4" />
-            <span>انگیزه‌نامه هدفمند (Cover Letter)</span>
+            <span>{t('documents.coverLetter')}</span>
           </button>
 
           <button
             onClick={() => setActiveTab('screening')}
-            className={`py-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-colors ${
+            className={`py-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-colors cursor-pointer ${
               activeTab === 'screening'
                 ? 'border-sky-500 text-sky-400'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
             <HelpCircle className="w-4 h-4" />
-            <span>پاسخ‌نامه سوالات استخدامی (Answer Bank)</span>
+            <span>{t('documents.screeningAnswers')}</span>
           </button>
         </div>
 
@@ -255,39 +261,39 @@ export const TailoredDocumentsModal: React.FC<TailoredDocumentsModalProps> = ({
         {activeTab === 'resume' && (
           <div className="flex-1 overflow-hidden grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-800">
             {/* Left Pane: Original Profile Reference */}
-            <div className="p-6 overflow-y-auto flex flex-col gap-5 bg-slate-950/20">
+            <div className="p-6 overflow-y-auto flex flex-col gap-5 bg-slate-950/20 text-start">
               <div className="flex items-center justify-between pb-2 border-b border-slate-800">
                 <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  نسخه اولیه رزومه (پروفایل مبنا)
+                  {t('profile.identity')}
                 </span>
-                <span className="text-[10px] text-slate-500">غیرقابل ویرایش مستقیم</span>
+                <span className="text-[10px] text-slate-500">{t('common.readOnlyDesc')}</span>
               </div>
 
               <div>
-                <h4 className="text-xs font-bold text-slate-300 mb-1.5">خلاصه اولیه</h4>
+                <h4 className="text-xs font-bold text-slate-300 mb-1.5">{t('profile.summary')}</h4>
                 <p className="text-xs text-slate-400 leading-relaxed bg-slate-900/50 p-3 rounded-lg border border-slate-800">
-                  مهندس نرم‌افزار ارشد با سابقه توسعه سیستم‌های مقیاس‌پذیر در Go و دیتابیس‌های رابطه‌ای. علاقه‌مند به کار در تیم‌های بین‌المللی و سیستم‌های توزیع‌شده.
+                  Senior software engineer with track record of building high-performance distributed systems in Go and PostgreSQL. Passionate about international engineering teams and cloud infrastructure.
                 </p>
               </div>
 
               <div>
-                <h4 className="text-xs font-bold text-slate-300 mb-1.5">سوابق و دستاوردهای اصلی</h4>
+                <h4 className="text-xs font-bold text-slate-300 mb-1.5">{t('profile.experience')}</h4>
                 <div className="space-y-3">
                   <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800 text-xs">
-                    <span className="font-semibold text-slate-200 block mb-1">Backend Engineer — AfghanTech</span>
+                    <span className="font-semibold text-slate-200 block mb-1">Backend Engineer</span>
                     <ul className="list-disc list-inside space-y-1 text-slate-400 text-[11px]">
-                      <li>طراحی پایگاه داده PostgreSQL برای مدیریت ۵۰ هزار تراکنش در روز.</li>
-                      <li>توسعه میکروسرویس‌ها با Go و Docker با پایداری ۹۹.۹٪.</li>
+                      <li>Architected PostgreSQL data tier managing 50k transactions/day.</li>
+                      <li>Engineered microservices in Go and Docker with 99.9% availability.</li>
                     </ul>
                   </div>
                 </div>
               </div>
 
               <div>
-                <h4 className="text-xs font-bold text-slate-300 mb-1.5">مهارت‌های ثبت‌شده</h4>
+                <h4 className="text-xs font-bold text-slate-300 mb-1.5">{t('profile.skills')}</h4>
                 <div className="flex flex-wrap gap-1.5">
                   {['Go', 'PostgreSQL', 'Docker', 'Kubernetes', 'TypeScript', 'Distributed Systems'].map((s) => (
-                    <span key={s} className="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">
+                    <span key={s} className="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">
                       {s}
                     </span>
                   ))}
@@ -296,17 +302,17 @@ export const TailoredDocumentsModal: React.FC<TailoredDocumentsModalProps> = ({
             </div>
 
             {/* Right Pane: Tailored ATS Resume (Editable) */}
-            <div className="p-6 overflow-y-auto flex flex-col gap-5 bg-slate-900/40">
+            <div className="p-6 overflow-y-auto flex flex-col gap-5 bg-slate-900/40 text-start">
               <div className="flex items-center justify-between pb-2 border-b border-slate-800">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-sky-400 uppercase tracking-wider">
-                    نسخه سفارشی برای {job.company}
+                    {t('documents.customizeFor')} {job.company}
                   </span>
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800">
-                    ATS Optimized
+                    {t('documents.atsSafe')}
                   </span>
                 </div>
-                <span className="text-[10px] text-slate-400">قابل ویرایش قبل از ثبت</span>
+                <span className="text-[10px] text-slate-400">{t('common.editableDesc')}</span>
               </div>
 
               {/* Tailored Summary Input */}
@@ -314,9 +320,9 @@ export const TailoredDocumentsModal: React.FC<TailoredDocumentsModalProps> = ({
                 <div className="flex items-center justify-between mb-1.5">
                   <h4 className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-sky-400" />
-                    <span>خلاصه سوابق بهینه‌شده (Professional Summary)</span>
+                    <span>{t('profile.summary')}</span>
                   </h4>
-                  <span className="text-[10px] text-slate-500">تاکید بر الزامات {job.company}</span>
+                  <span className="text-[10px] text-slate-500">{job.company}</span>
                 </div>
                 <textarea
                   rows={4}
@@ -329,7 +335,7 @@ export const TailoredDocumentsModal: React.FC<TailoredDocumentsModalProps> = ({
               {/* Tailored Achievements Bullets */}
               <div>
                 <h4 className="text-xs font-bold text-slate-200 mb-1.5">
-                  دستاوردهای اولویت‌بندی شده برای {job.title}
+                  {t('documents.tailoredBullets')} — {job.title}
                 </h4>
                 <div className="space-y-2">
                   {tailoredBullets.map((bullet, idx) => (
@@ -357,20 +363,20 @@ export const TailoredDocumentsModal: React.FC<TailoredDocumentsModalProps> = ({
 
         {/* Tab 2: Cover Letter */}
         {activeTab === 'coverLetter' && (
-          <div className="flex-1 p-6 overflow-y-auto flex flex-col gap-4 max-w-4xl mx-auto w-full">
+          <div className="flex-1 p-6 overflow-y-auto flex flex-col gap-4 max-w-4xl mx-auto w-full text-start">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <div>
-                <h3 className="text-sm font-bold text-slate-100">انگیزه‌نامه مستند و هدفمند</h3>
+                <h3 className="text-sm font-bold text-slate-100">{t('documents.coverLetter')}</h3>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  شامل ارجاع به دستاوردهای واقعی شما بدون گزافه‌گویی عمومی
+                  {t('documents.truthCheckDesc')}
                 </p>
               </div>
               <button
                 onClick={handleCopyCoverLetter}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition-colors cursor-pointer"
               >
                 {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
-                <span>{copied ? 'کپی شد!' : 'کپی متن'}</span>
+                <span>{copied ? t('common.copied') : t('common.copy')}</span>
               </button>
             </div>
 
@@ -385,11 +391,11 @@ export const TailoredDocumentsModal: React.FC<TailoredDocumentsModalProps> = ({
 
         {/* Tab 3: Screening Answers Bank */}
         {activeTab === 'screening' && (
-          <div className="flex-1 p-6 overflow-y-auto flex flex-col gap-4 max-w-4xl mx-auto w-full">
+          <div className="flex-1 p-6 overflow-y-auto flex flex-col gap-4 max-w-4xl mx-auto w-full text-start">
             <div className="pb-3 border-b border-slate-800">
-              <h3 className="text-sm font-bold text-slate-100">پاسخ‌های تاییدشده سوالات غربالگری ATS</h3>
+              <h3 className="text-sm font-bold text-slate-100">{t('documents.screeningAnswers')}</h3>
               <p className="text-xs text-slate-400 mt-0.5">
-                این پاسخ‌ها به صورت هوشمند در فاز ۵ در فرم‌های استخدامی درج خواهند شد.
+                {t('documents.truthCheckDesc')}
               </p>
             </div>
 
@@ -422,29 +428,29 @@ export const TailoredDocumentsModal: React.FC<TailoredDocumentsModalProps> = ({
         <div className="p-4 border-t border-slate-800 bg-slate-900/90 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-xs text-slate-400">
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            <span>مدارک بهینه‌شده برای سامانه {job.atsType} کارفرما</span>
+            <span>{t('documents.atsSafe')} • {job.atsType}</span>
           </div>
 
           <div className="flex items-center gap-3">
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 transition-colors"
+              className="px-4 py-2 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 transition-colors cursor-pointer"
             >
-              بستن
+              {t('common.close')}
             </button>
 
             <button
               onClick={() => {
                 if (!truthfulnessStatus.isTruthful) {
-                  alert('لطفاً قبل از ادامه، ادعاهای غیرمستند مشخص‌شده را تصحیح فرمایید.');
                   return;
                 }
                 onClose();
                 if (onProceedToApply) onProceedToApply();
               }}
-              className="flex items-center gap-2 px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-xs font-bold text-white transition-all shadow-md hover:shadow-sky-900/30"
+              disabled={!truthfulnessStatus.isTruthful}
+              className="flex items-center gap-2 px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-xs font-bold text-white transition-all shadow-md hover:shadow-sky-900/30 cursor-pointer"
             >
-              <span>تایید مدارک و رفتن به مرحله ارسال (Review Mode)</span>
+              <span>{t('common.proceedToApply')}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>

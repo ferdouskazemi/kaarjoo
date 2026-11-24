@@ -137,11 +137,7 @@ export const ProfileView: React.FC = () => {
       {confirmToast && (
         <div className="fixed top-12 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-[#1c2e24] border border-emerald-500/40 text-emerald-300 text-xs shadow-2xl active-ring backdrop-blur transition-all">
           <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-          <span>
-            {isRtl
-              ? 'تمام داده‌های استخراج‌شده تأیید و در صف ارسال و فرم‌های ATS سینک شدند.'
-              : 'Candidate profile verified and synchronized across all application forms.'}
-          </span>
+          <span>{t('profile.confirmToast')}</span>
         </div>
       )}
 
@@ -202,7 +198,7 @@ export const ProfileView: React.FC = () => {
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-amber-500/40 hover:border-amber-500 bg-amber-500/10 text-amber-300 text-[11px] transition-colors cursor-pointer"
             >
               <RefreshCw className="w-3 h-3 text-amber-400" />
-              <span>بارگذاری پروفایل دمو (Demo Mode)</span>
+              <span>{t('profile.loadSample')}</span>
             </button>
           ) : null}
         </div>
@@ -239,9 +235,7 @@ export const ProfileView: React.FC = () => {
 
             <h3 className="text-sm font-semibold text-[#f4f4f5] mb-1">
               {isProcessing
-                ? isRtl
-                  ? 'در حال خواندن و استخراج محلی اطلاعات با بالاترین دقت مهندسی...'
-                  : 'Parsing and structuring resume locally with engineering precision...'
+                ? t('profile.processing')
                 : t('profile.dropTitle')}
             </h3>
             <p className="text-xs text-[#a1a1aa] max-w-sm mb-4 leading-relaxed">
@@ -343,14 +337,14 @@ export const ProfileView: React.FC = () => {
                   </p>
                 </div>
                 <span className="text-[10px] px-2 py-0.5 rounded font-mono bg-[#1b2b21] text-emerald-400 border border-emerald-500/20">
-                  {isRtl ? 'اعتبارسنجی شده' : 'VERIFIED'}
+                  {t('profile.verified')}
                 </span>
               </div>
 
               {/* Contact Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-[#d4d4d8]">
                 <div
-                  onClick={() => handleFieldClick(profile.contact?.email || '', isRtl ? 'ایمیل' : 'Email')}
+                  onClick={() => handleFieldClick(profile.contact?.email || '', t('profile.email'))}
                   className="p-2 rounded-lg bg-[#141414] border border-[#262626] hover:border-sky-500/50 flex items-center gap-2 cursor-pointer transition-colors"
                 >
                   <Mail className="w-3.5 h-3.5 text-sky-400 shrink-0" />
@@ -358,7 +352,7 @@ export const ProfileView: React.FC = () => {
                 </div>
 
                 <div
-                  onClick={() => handleFieldClick(profile.contact?.phone || '', isRtl ? 'شماره تماس' : 'Phone')}
+                  onClick={() => handleFieldClick(profile.contact?.phone || '', t('profile.phone'))}
                   className="p-2 rounded-lg bg-[#141414] border border-[#262626] hover:border-sky-500/50 flex items-center gap-2 cursor-pointer transition-colors"
                 >
                   <Phone className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
@@ -367,7 +361,7 @@ export const ProfileView: React.FC = () => {
 
                 {profile.contact?.location && (
                   <div
-                    onClick={() => handleFieldClick(profile.contact.location || '', isRtl ? 'محل سکونت' : 'Location')}
+                    onClick={() => handleFieldClick(profile.contact.location || '', t('profile.location'))}
                     className="p-2 rounded-lg bg-[#141414] border border-[#262626] hover:border-sky-500/50 flex items-center gap-2 cursor-pointer transition-colors"
                   >
                     <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />

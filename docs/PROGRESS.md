@@ -13,6 +13,7 @@
 * **Phase 5: Application Engine (Form Filling & ATS Drivers)** — **COMPLETED & WIRED** (Playwright fillers in engine sidecar; persistent SQLite task queue table; `applications_execute_review` triggers review mode)
 * **Phase 6: Application Tracker, Kanban & Analytics** — **COMPLETED & WIRED** (Tracker, Queue, and Dashboard read from SQLite via TanStack Query; production state defaults to clean empty states; optional Demo Mode toggle in Settings)
 * **Phase 7: Polish, Packaging & Release** — **COMPLETED & VERIFIED** (Flash-Rive design system applied; English-base default configuration; engine bundled as `externalBin` + resources; NSIS setup `.exe` and WiX `.msi` built successfully)
+* **Phase 8: Localization (i18n) & Automated Character Guards** — **COMPLETED & ENFORCED** (100% key parity across English and Persian dictionaries, zero hardcoded Persian/Arabic characters outside `src/i18n`, automated Vitest parity and character guard tests, pseudo-locale `en-XA` generator, date-fns-jalali and localized number/currency formatting)
 
 ---
 
@@ -73,3 +74,13 @@
     - NSIS Installer produced: `apps/desktop/src-tauri/target/release/bundle/nsis/Kaarjoo_1.0.0_x64-setup.exe` (29.73 MiB).
     - WiX MSI Installer produced: `apps/desktop/src-tauri/target/release/bundle/msi/Kaarjoo_1.0.0_x64_en-US.msi` (43.07 MiB).
     - Release binary: `apps/desktop/src-tauri/target/release/kaarjoo-desktop.exe` (7.42 MB).
+
+### Phase 8: Localization (i18n) & Automated Character Guards
+- **Status:** COMPLETED & ENFORCED
+- **Evidence:**
+  - Automated parity test (`apps/desktop/src/i18n/__tests__/parity.test.ts`): 3 tests passing, asserting 100% key match between `en.json` and `fa.json` and zero empty strings.
+  - Automated character guard test (`apps/desktop/src/i18n/__tests__/no-hardcoded-persian.test.ts`): 2 tests passing, recursively scanning all TypeScript/TSX source files in `apps/desktop/src` and ensuring zero Persian/Arabic characters outside `src/i18n/**`.
+  - Pseudo-locale engine (`apps/desktop/src/i18n/pseudo.ts` and `pseudo.test.ts`): 3 tests passing, generating accented `[!!! ... !!!]` string expansions to verify UI containment and catch hardcoded literals.
+  - UI stores and components refactored to enum codes (`applicationStore.ts`, `profileStore.ts`), translating at render time.
+  - Date, time, numbers, and percentage formatting centralized in `apps/desktop/src/utils/formatters.ts` using `date-fns-jalali` for Persian and `Intl` for numerals.
+  - User contact details standardized: `ferdouskazemi1000@gmail.com` and `+93 728 200 021`.

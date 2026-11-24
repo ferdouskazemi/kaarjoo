@@ -43,7 +43,7 @@ export const TitleBar: React.FC = () => {
       <div className="flex items-center gap-3" data-tauri-drag-region>
         <div className="flex items-center gap-2">
           <div className="w-4.5 h-4.5 rounded bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 font-bold text-[11px]">
-            ک
+            K
           </div>
           <span className="text-xs font-semibold tracking-wide text-[#f4f4f5]">
             {t('app.name')}

@@ -11,11 +11,11 @@ import { KanbanBoard } from '../components/tracker/KanbanBoard.js';
 import { ApplicationsTableView } from '../components/tracker/ApplicationsTableView.js';
 import { ApplicationDetailDrawer } from '../components/tracker/ApplicationDetailDrawer.js';
 import { DashboardKpisWidget } from '../components/tracker/DashboardKpisWidget.js';
+import { formatNumber } from '../utils/formatters.js';
 import { ApplicationRecord } from '@kaarjoo/shared';
 
 export const ApplicationsView: React.FC = () => {
   const { t, i18n } = useTranslation();
-  const isRtl = i18n.dir() === 'rtl';
 
   const {
     applications,
@@ -54,15 +54,13 @@ export const ApplicationsView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-800">
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-2xl font-bold text-slate-100">{t('nav.applications')}</h1>
+            <h1 className="text-2xl font-bold text-slate-100">{t('tracker.title')}</h1>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-              {applications.length} {isRtl ? 'موقعیت ثبت‌شده' : 'Recorded Positions'}
+              {formatNumber(applications.length, i18n.language)} {t('tracker.recordedPositions')}
             </span>
           </div>
           <p className="text-sm text-slate-400 mt-1">
-            {isRtl
-              ? 'پیگیری جامع وضعیت درخواست‌ها در قالب بورد Kanban و جدول به همراه تاریخچه اسناد و یادداشت‌های مصاحبه.'
-              : 'Interactive Kanban pipeline and table tracker with full document snapshots, timeline, and interview notes.'}
+            {t('tracker.subtitle')}
           </p>
         </div>
 
@@ -71,38 +69,38 @@ export const ApplicationsView: React.FC = () => {
           <div className="flex items-center rounded-xl bg-slate-900 border border-slate-800 p-1 text-xs">
             <button
               onClick={() => setViewMode('kanban')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-colors ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
                 viewMode === 'kanban'
                   ? 'bg-sky-600 text-white shadow-sm'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               <LayoutGrid className="w-3.5 h-3.5" />
-              <span>{isRtl ? 'بورد کانبان' : 'Kanban'}</span>
+              <span>{t('tracker.kanbanView')}</span>
             </button>
             <button
               onClick={() => setViewMode('table')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-colors ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
                 viewMode === 'table'
                   ? 'bg-sky-600 text-white shadow-sm'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               <List className="w-3.5 h-3.5" />
-              <span>{isRtl ? 'نمای جدول' : 'Table'}</span>
+              <span>{t('tracker.tableView')}</span>
             </button>
           </div>
 
           <button
             onClick={handleDownloadCsv}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-850 border border-slate-800 text-xs text-slate-200 hover:text-white transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-850 border border-slate-800 text-xs text-slate-200 hover:text-white transition-colors cursor-pointer"
           >
             {isExportSuccess ? (
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
             ) : (
               <Download className="w-3.5 h-3.5 text-slate-400" />
             )}
-            <span>{isExportSuccess ? (isRtl ? 'دانلود شد!' : 'Downloaded!') : (isRtl ? 'خروجی CSV' : 'Export CSV')}</span>
+            <span>{isExportSuccess ? t('tracker.downloadSuccess') : t('tracker.exportCsv')}</span>
           </button>
         </div>
       </div>

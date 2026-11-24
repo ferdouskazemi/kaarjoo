@@ -10,6 +10,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import type { CompanyBoard } from '@kaarjoo/shared';
+import { formatNumber } from '../../utils/formatters.js';
 
 interface CompanyBoardsModalProps {
   isOpen: boolean;
@@ -29,7 +30,6 @@ export const CompanyBoardsModal: React.FC<CompanyBoardsModalProps> = ({
   onDetectAts,
 }) => {
   const { t, i18n } = useTranslation();
-  const isRtl = i18n.dir() === 'rtl';
   const [newUrl, setNewUrl] = useState('');
   const [detecting, setDetecting] = useState(false);
   const [detected, setDetected] = useState<any | null>(null);
@@ -88,7 +88,7 @@ export const CompanyBoardsModal: React.FC<CompanyBoardsModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -111,7 +111,7 @@ export const CompanyBoardsModal: React.FC<CompanyBoardsModalProps> = ({
               className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-xs font-medium text-slate-200 transition-colors border border-slate-700 cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5 text-sky-400" />
-              <span>{detecting ? (isRtl ? 'در حال بررسی...' : 'Detecting...') : t('jobs.detectAts')}</span>
+              <span>{detecting ? t('common.loading') : t('jobs.detectAts')}</span>
             </button>
           </div>
 
@@ -130,7 +130,7 @@ export const CompanyBoardsModal: React.FC<CompanyBoardsModalProps> = ({
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white transition-colors cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>{isRtl ? 'افزودن به رصد' : 'Add to Feed'}</span>
+                <span>{t('jobs.addBoardBtn')}</span>
               </button>
             </div>
           )}
@@ -139,17 +139,17 @@ export const CompanyBoardsModal: React.FC<CompanyBoardsModalProps> = ({
         {/* Search bar inside modal */}
         <div className="p-4 border-b border-slate-800 bg-slate-900/40 flex items-center justify-between gap-3">
           <div className="relative flex-1">
-            <Search className="w-4 h-4 text-slate-400 absolute start-3 top-2.5" />
+            <Search className="w-4 h-4 text-slate-400 absolute start-3 top-2.5 pointer-events-none" />
             <input
               type="text"
               value={searchFilter}
               onChange={(e) => setSearchFilter(e.target.value)}
-              placeholder={isRtl ? 'جستجو در نام شرکت، ATS یا صنعت...' : 'Filter companies by name, ATS, or industry...'}
+              placeholder={t('jobs.filterCompanies')}
               className="w-full ps-9 pe-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-sky-500"
             />
           </div>
           <span className="text-xs text-slate-500 shrink-0 font-mono">
-            {isRtl ? `${filteredBoards.length} شرکت` : `${filteredBoards.length} companies`}
+            {formatNumber(filteredBoards.length, i18n.language)} {t('jobs.companiesCount')}
           </span>
         </div>
 

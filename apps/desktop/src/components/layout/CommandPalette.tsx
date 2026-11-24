@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { Command } from 'cmdk';
 import { useTranslation } from 'react-i18next';
-import { useAppStore, AppView } from '../../stores/appStore';
+import { useAppStore, AppView } from '../../stores/appStore.js';
+import { TARGET_LANGUAGE_LABELS } from '../../i18n/constants.js';
 import {
   LayoutDashboard,
   User,
@@ -60,7 +61,7 @@ export const CommandPalette: React.FC = () => {
               {t('command.noResults')}
             </Command.Empty>
 
-            <Command.Group heading="Navigation" className="text-[11px] font-semibold text-slate-500 px-2 py-1">
+            <Command.Group heading={t('command.navigate')} className="text-[11px] font-semibold text-slate-500 px-2 py-1">
               <Command.Item
                 onSelect={() => navigateTo('home')}
                 className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-slate-800/80 cursor-pointer"
@@ -105,7 +106,7 @@ export const CommandPalette: React.FC = () => {
               </Command.Item>
             </Command.Group>
 
-            <Command.Group heading="Preferences" className="text-[11px] font-semibold text-slate-500 px-2 py-1 mt-1 border-t border-slate-800/60 pt-1">
+            <Command.Group heading={t('command.actions')} className="text-[11px] font-semibold text-slate-500 px-2 py-1 mt-1 border-t border-slate-800/60 pt-1">
               <Command.Item
                 onSelect={() => {
                   setLanguage(language === 'fa' ? 'en' : 'fa');
@@ -114,7 +115,7 @@ export const CommandPalette: React.FC = () => {
                 className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-slate-800/80 cursor-pointer"
               >
                 <Languages className="w-4 h-4 text-emerald-400" />
-                <span>{language === 'fa' ? 'Switch to English' : 'تغییر به زبان فارسی'}</span>
+                <span>{TARGET_LANGUAGE_LABELS[language]}</span>
               </Command.Item>
               <Command.Item
                 onSelect={() => {
@@ -126,12 +127,12 @@ export const CommandPalette: React.FC = () => {
                 {theme === 'dark' ? (
                   <>
                     <Sun className="w-4 h-4 text-amber-400" />
-                    <span>پوسته روشن (Light Mode)</span>
+                    <span>{t('common.light')}</span>
                   </>
                 ) : (
                   <>
                     <Moon className="w-4 h-4 text-indigo-400" />
-                    <span>پوسته تاریک (Dark Mode)</span>
+                    <span>{t('common.dark')}</span>
                   </>
                 )}
               </Command.Item>

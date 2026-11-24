@@ -16,6 +16,7 @@ import {
   ThumbsDown,
 } from 'lucide-react';
 import type { DisplayJob } from './JobCard.js';
+import { formatNumber } from '../../utils/formatters.js';
 
 interface JobDetailDrawerProps {
   job: DisplayJob | null;
@@ -25,18 +26,18 @@ interface JobDetailDrawerProps {
 }
 
 export const JobDetailDrawer: React.FC<JobDetailDrawerProps> = ({ job, onClose, onApply, onFeedback }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   if (!job) return null;
 
   const score = job.matchScore ?? 88;
   const matchedSkills = job.matchedSkills || ['TypeScript', 'React', 'Node.js', 'Distributed Systems'];
   const missingSkills = job.missingSkills || ['Kubernetes Operator SDK'];
   const topReasons = job.topReasons || [
-    `انطباق مستقیم با مهارت‌های اصلی رزومه شما`,
-    `همخوانی سطح سابقه و مسئولیت‌های ارشد مورد نیاز`,
-    `فرصت دورکاری کامل هماهنگ با اولویت‌های کاری شما`,
+    'Direct alignment with primary core resume skills',
+    'Seniority and responsibility matching verified',
+    'Remote setup aligned with work preferences',
   ];
-  const whyNotHigher = job.whyNotHigher || 'برای رسیدن به امتیاز ۹۵٪+، افزودن پروژه‌های مرتبط با نیازمندی‌های کسری می‌تواند موثر باشد.';
+  const whyNotHigher = job.whyNotHigher || t('matching.whyNotHigherTip');
   const breakdown = job.breakdown || {
     hardFilterScore: 100,
     semanticScore: 88,
@@ -52,7 +53,11 @@ export const JobDetailDrawer: React.FC<JobDetailDrawerProps> = ({ job, onClose, 
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-2 flex-wrap">
               <span className="text-xs px-2.5 py-0.5 rounded-full font-medium bg-emerald-950/60 text-emerald-300 border border-emerald-800/50">
-                {job.remoteType === 'remote' ? 'دورکاری (Remote)' : job.remoteType === 'hybrid' ? 'ترکیبی' : 'حضوری'}
+                {job.remoteType === 'remote'
+                  ? t('jobs.remoteOnly')
+                  : job.remoteType === 'hybrid'
+                    ? t('jobs.hybrid')
+                    : t('jobs.onSite')}
               </span>
               <span className="text-xs px-2 py-0.5 rounded font-mono uppercase text-[10px] bg-slate-800 text-slate-300 border border-slate-700">
                 ATS: {job.atsType}
@@ -67,14 +72,14 @@ export const JobDetailDrawer: React.FC<JobDetailDrawerProps> = ({ job, onClose, 
               <span>•</span>
               <span className="flex items-center gap-1">
                 <MapPin className="w-4 h-4 text-slate-400" />
-                {job.location || 'United States / Europe'}
+                {job.location || 'Worldwide'}
               </span>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -94,9 +99,9 @@ export const JobDetailDrawer: React.FC<JobDetailDrawerProps> = ({ job, onClose, 
                   <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 rounded-lg p-1">
                     <button
                       type="button"
-                      title="تطابق خوب"
+                      title={t('jobs.feedbackRelevant')}
                       onClick={() => onFeedback(job.id, 'relevant')}
-                      className={`p-1.5 rounded transition-colors ${
+                      className={`p-1.5 rounded transition-colors cursor-pointer ${
                         job.userFeedback === 'relevant'
                           ? 'bg-emerald-950 text-emerald-400'
                           : 'text-slate-500 hover:text-slate-300'
@@ -106,9 +111,9 @@ export const JobDetailDrawer: React.FC<JobDetailDrawerProps> = ({ job, onClose, 
                     </button>
                     <button
                       type="button"
-                      title="نامرتبط"
+                      title={t('jobs.feedbackNotRelevant')}
                       onClick={() => onFeedback(job.id, 'irrelevant')}
-                      className={`p-1.5 rounded transition-colors ${
+                      className={`p-1.5 rounded transition-colors cursor-pointer ${
                         job.userFeedback === 'irrelevant'
                           ? 'bg-red-950 text-red-400'
                           : 'text-slate-500 hover:text-slate-300'
@@ -119,7 +124,9 @@ export const JobDetailDrawer: React.FC<JobDetailDrawerProps> = ({ job, onClose, 
                   </div>
                 )}
                 <div className="flex items-center gap-2">
-                  <span className="text-2xl font-bold text-emerald-400">{score}%</span>
+                  <span className="text-2xl font-bold text-emerald-400">
+                    {formatNumber(score, i18n.language)}%
+                  </span>
                 </div>
               </div>
             </div>
@@ -128,8 +135,8 @@ export const JobDetailDrawer: React.FC<JobDetailDrawerProps> = ({ job, onClose, 
             <div className="grid grid-cols-2 gap-3 pt-2">
               <div className="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/60">
                 <div className="flex justify-between text-[11px] mb-1">
-                  <span className="text-slate-400">فیلترهای الزامی</span>
-                  <span className="text-slate-200 font-mono font-semibold">{breakdown.hardFilterScore}%</span>
+                  <span className="text-slate-400">{t('matching.requirementsScore')}</span>
+                  <span className="text-slate-200 font-mono font-semibold">{formatNumber(breakdown.hardFilterScore, i18n.language)}%</span>
                 </div>
                 <div className="w-full bg-slate-800 rounded-full h-1.5">
                   <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: `${breakdown.hardFilterScore}%` }} />
@@ -138,8 +145,8 @@ export const JobDetailDrawer: React.FC<JobDetailDrawerProps> = ({ job, onClose, 
 
               <div className="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/60">
                 <div className="flex justify-between text-[11px] mb-1">
-                  <span className="text-slate-400">انطباق معنایی (Embedding)</span>
-                  <span className="text-slate-200 font-mono font-semibold">{breakdown.semanticScore}%</span>
+                  <span className="text-slate-400">{t('matching.titleScore')}</span>
+                  <span className="text-slate-200 font-mono font-semibold">{formatNumber(breakdown.semanticScore, i18n.language)}%</span>
                 </div>
                 <div className="w-full bg-slate-800 rounded-full h-1.5">
                   <div className="bg-sky-500 h-1.5 rounded-full" style={{ width: `${breakdown.semanticScore}%` }} />
@@ -148,8 +155,8 @@ export const JobDetailDrawer: React.FC<JobDetailDrawerProps> = ({ job, onClose, 
 
               <div className="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/60">
                 <div className="flex justify-between text-[11px] mb-1">
-                  <span className="text-slate-400">پوشش مهارت‌ها (ESCO)</span>
-                  <span className="text-slate-200 font-mono font-semibold">{breakdown.skillCoverageScore}%</span>
+                  <span className="text-slate-400">{t('matching.skillCoverage')}</span>
+                  <span className="text-slate-200 font-mono font-semibold">{formatNumber(breakdown.skillCoverageScore, i18n.language)}%</span>
                 </div>
                 <div className="w-full bg-slate-800 rounded-full h-1.5">
                   <div className="bg-purple-500 h-1.5 rounded-full" style={{ width: `${breakdown.skillCoverageScore}%` }} />
@@ -158,8 +165,8 @@ export const JobDetailDrawer: React.FC<JobDetailDrawerProps> = ({ job, onClose, 
 
               <div className="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/60">
                 <div className="flex justify-between text-[11px] mb-1">
-                  <span className="text-slate-400">بازرتبه‌بندی LLM محلی</span>
-                  <span className="text-slate-200 font-mono font-semibold">{breakdown.llmRerankScore}%</span>
+                  <span className="text-slate-400">{t('matching.overallScore')}</span>
+                  <span className="text-slate-200 font-mono font-semibold">{formatNumber(breakdown.llmRerankScore, i18n.language)}%</span>
                 </div>
                 <div className="w-full bg-slate-800 rounded-full h-1.5">
                   <div className="bg-amber-500 h-1.5 rounded-full" style={{ width: `${breakdown.llmRerankScore}%` }} />
@@ -169,7 +176,7 @@ export const JobDetailDrawer: React.FC<JobDetailDrawerProps> = ({ job, onClose, 
 
             {/* Top 3 Reasons */}
             <div className="pt-3 border-t border-slate-800/60 flex flex-col gap-2">
-              <span className="text-xs font-semibold text-slate-300 block">دلایل اصلی تطابق (Top Reasons):</span>
+              <span className="text-xs font-semibold text-slate-300 block">{t('matching.topReasons')}:</span>
               <ul className="space-y-1.5">
                 {topReasons.map((reason, idx) => (
                   <li key={idx} className="flex items-start gap-2 text-xs text-slate-300">
@@ -185,7 +192,7 @@ export const JobDetailDrawer: React.FC<JobDetailDrawerProps> = ({ job, onClose, 
               <div className="rounded-lg bg-slate-900/40 p-3 border border-slate-800/80 flex items-start gap-2.5 text-xs text-slate-300">
                 <HelpCircle className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-semibold text-sky-300 block mb-0.5">چرا امتیاز بالاتر نیست؟</span>
+                  <span className="font-semibold text-sky-300 block mb-0.5">{t('matching.whyNotHigher')}</span>
                   <span className="text-slate-400 text-[11px] leading-relaxed">{whyNotHigher}</span>
                 </div>
               </div>
@@ -232,7 +239,7 @@ export const JobDetailDrawer: React.FC<JobDetailDrawerProps> = ({ job, onClose, 
             <div className="rounded-xl border border-amber-900/30 bg-amber-950/20 p-4 flex items-center gap-3">
               <DollarSign className="w-5 h-5 text-amber-400 shrink-0" />
               <div>
-                <span className="text-xs text-amber-400/80 font-medium block">حقوق و مزایا</span>
+                <span className="text-xs text-amber-400/80 font-medium block">{t('jobs.salary')}</span>
                 <span className="text-sm font-semibold text-amber-200">{job.salaryText}</span>
               </div>
             </div>
@@ -242,10 +249,10 @@ export const JobDetailDrawer: React.FC<JobDetailDrawerProps> = ({ job, onClose, 
           <div className="flex flex-col gap-3">
             <h4 className="font-semibold text-slate-200 text-sm flex items-center gap-2">
               <FileText className="w-4 h-4 text-slate-400" />
-              شرح کامل موقعیت شغلی
+              {t('jobs.description')}
             </h4>
             <div className="prose prose-invert prose-sm max-w-none text-slate-300 text-xs leading-relaxed space-y-4 whitespace-pre-line rounded-xl border border-slate-800/60 bg-slate-950/30 p-5 font-sans">
-              {job.descriptionMarkdown || 'در حال بارگذاری جزییات موقعیت شغلی از سرور شرکت...'}
+              {job.descriptionMarkdown || t('common.loading')}
             </div>
           </div>
         </div>
@@ -264,7 +271,7 @@ export const JobDetailDrawer: React.FC<JobDetailDrawerProps> = ({ job, onClose, 
 
           <button
             onClick={() => onApply(job)}
-            className="flex items-center gap-2 px-5 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-xs font-semibold text-white transition-all shadow-md hover:shadow-sky-900/30"
+            className="flex items-center gap-2 px-5 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-xs font-semibold text-white transition-all shadow-md hover:shadow-sky-900/30 cursor-pointer"
           >
             <ShieldCheck className="w-4 h-4" />
             <span>{t('jobs.applyReview')}</span>

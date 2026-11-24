@@ -9,8 +9,7 @@ import { useProfileStore } from './profileStore.js';
 
 export interface ApplyingStepInfo {
   step: 'idle' | 'navigating' | 'detecting' | 'filling' | 'uploading' | 'review_ready' | 'submitted' | 'error';
-  messageFa: string;
-  messageEn: string;
+  messageKey: string;
 }
 
 export interface ApplicationKpis {
@@ -80,9 +79,9 @@ const mockInitialApplications: ApplicationRecord[] = [
     coverLetterText: 'Dear Spotify Team,\nI am thrilled to apply for the Senior Backend Engineer role. With over 6 years of experience building high-throughput distributed microservices...',
     stopReason: 'none',
     timeline: [
-      { id: 'tl_1', status: 'saved', timestamp: new Date(Date.now() - 86400000 * 2).toISOString(), title: 'آگهی ذخیره شد', note: 'یافته شده از طریق کراولر بورد گرین‌هاوس اسپاتیفای' },
-      { id: 'tl_2', status: 'tailored', timestamp: new Date(Date.now() - 86400000).toISOString(), title: 'رزومه سفارشی تولید شد', note: 'تطبیق با مهارت‌های Kafka, Go, Distributed Systems' },
-      { id: 'tl_3', status: 'needs_review', timestamp: new Date(Date.now() - 3600000).toISOString(), title: 'فرم تکمیل شد و آماده بازبینی است' },
+      { id: 'tl_1', status: 'saved', timestamp: new Date(Date.now() - 86400000 * 2).toISOString(), title: 'saved', note: 'Discovered via Spotify Greenhouse careers board' },
+      { id: 'tl_2', status: 'tailored', timestamp: new Date(Date.now() - 86400000).toISOString(), title: 'tailored', note: 'Aligned with Kafka, Go, and distributed systems skills' },
+      { id: 'tl_3', status: 'needs_review', timestamp: new Date(Date.now() - 3600000).toISOString(), title: 'needs_review' },
     ],
     jobSnapshot: {
       title: 'Senior Backend Engineer - Core Infrastructure',
@@ -91,10 +90,10 @@ const mockInitialApplications: ApplicationRecord[] = [
       requirements: ['Java/Go', 'Kafka', 'Kubernetes', 'Microservices'],
       descriptionMarkdown: 'Join Spotify Core Infrastructure to scale event streaming platforms...',
     },
-    notes: 'پروژه‌های رویدادمحور و سابقه کار با کافکا در رزومه هایلایت شده است.',
+    notes: 'Event-driven architecture and Kafka experience highlighted in resume.',
     filledFields: [
-      { fieldId: 'first_name', fieldName: 'job_application[first_name]', label: 'First Name', value: 'فردوس', displayValue: 'فردوس (Ferdous)', confidence: 0.98, canonicalField: 'first_name', isRequired: true },
-      { fieldId: 'last_name', fieldName: 'job_application[last_name]', label: 'Last Name', value: 'کاظمی', displayValue: 'کاظمی (Kazemi)', confidence: 0.98, canonicalField: 'last_name', isRequired: true },
+      { fieldId: 'first_name', fieldName: 'job_application[first_name]', label: 'First Name', value: 'Ferdous', displayValue: 'Ferdous', confidence: 0.98, canonicalField: 'first_name', isRequired: true },
+      { fieldId: 'last_name', fieldName: 'job_application[last_name]', label: 'Last Name', value: 'Kazemi', displayValue: 'Kazemi', confidence: 0.98, canonicalField: 'last_name', isRequired: true },
       { fieldId: 'email', fieldName: 'job_application[email]', label: 'Email', value: 'ferdouskazemi1000@gmail.com', displayValue: 'ferdouskazemi1000@gmail.com', confidence: 1.0, canonicalField: 'email', isRequired: true },
       { fieldId: 'phone', fieldName: 'job_application[phone]', label: 'Phone', value: '+93 728 200 021', displayValue: '+93 728 200 021', confidence: 0.95, canonicalField: 'phone', isRequired: true },
       { fieldId: 'resume', fieldName: 'job_application[resume]', label: 'Resume / CV', value: 'Spotify_Tailored_ATS.pdf', displayValue: 'Spotify_Tailored_ATS.pdf (ATS-Safe)', confidence: 1.0, canonicalField: 'resume', isRequired: true },
@@ -102,8 +101,8 @@ const mockInitialApplications: ApplicationRecord[] = [
       { fieldId: 'gender', fieldName: 'job_application[gender]', label: 'Demographic: Gender', value: 'decline', displayValue: 'I decline to self-identify', confidence: 1.0, canonicalField: 'eeo_gender', isRequired: false },
     ],
     reviewChecklist: [
-      { id: 'first_name', label: 'First Name', value: 'فردوس (Ferdous)', status: 'ok', category: 'contact' },
-      { id: 'last_name', label: 'Last Name', value: 'کاظمی (Kazemi)', status: 'ok', category: 'contact' },
+      { id: 'first_name', label: 'First Name', value: 'Ferdous', status: 'ok', category: 'contact' },
+      { id: 'last_name', label: 'Last Name', value: 'Kazemi', status: 'ok', category: 'contact' },
       { id: 'email', label: 'Email', value: 'ferdouskazemi1000@gmail.com', status: 'ok', category: 'contact' },
       { id: 'phone', label: 'Phone', value: '+93 728 200 021', status: 'ok', category: 'contact' },
       { id: 'resume', label: 'Tailored Résumé PDF', value: 'Spotify_Tailored_ATS.pdf', status: 'ok', category: 'documents' },
@@ -128,14 +127,14 @@ const mockInitialApplications: ApplicationRecord[] = [
     salaryText: '$210,000 - $275,000 / yr',
     profileId: 'usr_default',
     tailoredResumePath: 'C:\\Work\\kaarjoo\\eval\\resumes\\Figma_DesignSystem_Tailored.pdf',
-    notes: 'فرم با موفقیت ارسال شد و ایمیل تأییدیه Lever دریافت گردید.',
+    notes: 'Submitted via Lever portal. Confirmation received.',
     submittedAt: new Date(Date.now() - 86400000 * 3).toISOString(),
     stopReason: 'none',
     filledFields: [],
     reviewChecklist: [],
     timeline: [
-      { id: 'tl_f1', status: 'saved', timestamp: new Date(Date.now() - 86400000 * 4).toISOString(), title: 'آگهی ذخیره شد' },
-      { id: 'tl_f2', status: 'applied', timestamp: new Date(Date.now() - 86400000 * 3).toISOString(), title: 'ارسال نهایی به Lever با موفقیت انجام شد' },
+      { id: 'tl_f1', status: 'saved', timestamp: new Date(Date.now() - 86400000 * 4).toISOString(), title: 'saved' },
+      { id: 'tl_f2', status: 'applied', timestamp: new Date(Date.now() - 86400000 * 3).toISOString(), title: 'applied' },
     ],
     screenshotConfirmation: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1200&q=80',
     createdAt: new Date(Date.now() - 86400000 * 4).toISOString(),
@@ -155,13 +154,13 @@ const mockInitialApplications: ApplicationRecord[] = [
     salaryText: '$180,000 - $240,000 / yr',
     profileId: 'usr_default',
     interviewDate: '2026-03-02T15:00:00Z',
-    notes: 'مصاحبه تکنیکال مرحله دوم با Principal Engineer در تاریخ ۲ مارس تعیین شده است.',
+    notes: 'Technical round 2 with Principal Engineer scheduled.',
     stopReason: 'none',
     filledFields: [],
     reviewChecklist: [],
     timeline: [
-      { id: 'tl_g1', status: 'applied', timestamp: new Date(Date.now() - 86400000 * 7).toISOString(), title: 'درخواست ارسال شد' },
-      { id: 'tl_g2', status: 'interview', timestamp: new Date(Date.now() - 86400000 * 2).toISOString(), title: 'دعوت به مصاحبه فنی دوم دریافت شد', note: 'لینک Zoom در تقویم ذخیره گردید.' },
+      { id: 'tl_g1', status: 'applied', timestamp: new Date(Date.now() - 86400000 * 7).toISOString(), title: 'applied' },
+      { id: 'tl_g2', status: 'interview', timestamp: new Date(Date.now() - 86400000 * 2).toISOString(), title: 'interview', note: 'Calendar invite confirmed' },
     ],
     createdAt: new Date(Date.now() - 86400000 * 8).toISOString(),
     updatedAt: new Date(Date.now() - 86400000 * 2).toISOString(),
@@ -179,14 +178,14 @@ const mockInitialApplications: ApplicationRecord[] = [
     matchScore: 91,
     salaryText: '€110,000 / yr + Equity',
     profileId: 'usr_default',
-    notes: 'پیشنهاد کاری کتبی دریافت شد. در حال بررسی جزئیات بیمه و مرخصی‌ها.',
+    notes: 'Formal offer received. Reviewing compensation and benefits.',
     stopReason: 'none',
     filledFields: [],
     reviewChecklist: [],
     timeline: [
-      { id: 'tl_k1', status: 'applied', timestamp: new Date(Date.now() - 86400000 * 14).toISOString(), title: 'درخواست ارسال شد' },
-      { id: 'tl_k2', status: 'interview', timestamp: new Date(Date.now() - 86400000 * 8).toISOString(), title: 'مصاحبه‌ها انجام شد' },
-      { id: 'tl_k3', status: 'offer', timestamp: new Date(Date.now() - 86400000 * 1).toISOString(), title: 'پیشنهاد کاری (Offer Letter) صادر شد' },
+      { id: 'tl_k1', status: 'applied', timestamp: new Date(Date.now() - 86400000 * 14).toISOString(), title: 'applied' },
+      { id: 'tl_k2', status: 'interview', timestamp: new Date(Date.now() - 86400000 * 8).toISOString(), title: 'interview' },
+      { id: 'tl_k3', status: 'offer', timestamp: new Date(Date.now() - 86400000 * 1).toISOString(), title: 'offer' },
     ],
     createdAt: new Date(Date.now() - 86400000 * 15).toISOString(),
     updatedAt: new Date(Date.now() - 86400000 * 1).toISOString(),
@@ -204,7 +203,7 @@ const mockInitialApplications: ApplicationRecord[] = [
     matchScore: 89,
     salaryText: '$240,000 - $350,000 / yr',
     profileId: 'usr_default',
-    notes: 'آگهی ذخیره شده برای تنظیم رزومه تخصصی حوزه AI Safety.',
+    notes: 'Saved position for specialized AI alignment tailoring.',
     stopReason: 'none',
     filledFields: [],
     reviewChecklist: [],
@@ -225,13 +224,13 @@ const mockInitialApplications: ApplicationRecord[] = [
     matchScore: 68,
     salaryText: '€65,000 / yr',
     profileId: 'usr_default',
-    notes: 'عدم تطابق با اولویت کاری از راه دور (الزام حضور در برلین).',
+    notes: 'Position requires on-site presence in Berlin.',
     stopReason: 'none',
     filledFields: [],
     reviewChecklist: [],
     timeline: [
-      { id: 'tl_l1', status: 'applied', timestamp: new Date(Date.now() - 86400000 * 10).toISOString(), title: 'درخواست ارسال شد' },
-      { id: 'tl_l2', status: 'rejected', timestamp: new Date(Date.now() - 86400000 * 4).toISOString(), title: 'رد درخواست به دلیل عدم امکان حضور حضوری' },
+      { id: 'tl_l1', status: 'applied', timestamp: new Date(Date.now() - 86400000 * 10).toISOString(), title: 'applied' },
+      { id: 'tl_l2', status: 'rejected', timestamp: new Date(Date.now() - 86400000 * 4).toISOString(), title: 'rejected' },
     ],
     createdAt: new Date(Date.now() - 86400000 * 12).toISOString(),
     updatedAt: new Date(Date.now() - 86400000 * 4).toISOString(),
@@ -245,8 +244,7 @@ export const useApplicationStore = create<ApplicationStoreState>((set, get) => (
   isExecuting: false,
   currentStep: {
     step: 'idle',
-    messageFa: 'سیستم آماده بررسی درخواست‌هاست.',
-    messageEn: 'System ready to review applications.',
+    messageKey: 'queue.readyForSubmit',
   },
   previewScreenshot: null,
 
@@ -286,7 +284,7 @@ export const useApplicationStore = create<ApplicationStoreState>((set, get) => (
           id: `tl_${Date.now()}`,
           status: 'queued',
           timestamp: now,
-          title: 'درخواست به صف ارسال اضافه شد',
+          title: 'queued',
         },
       ],
       jobSnapshot: {
@@ -320,8 +318,7 @@ export const useApplicationStore = create<ApplicationStoreState>((set, get) => (
     set({
       currentStep: {
         step: 'navigating',
-        messageFa: `در حال باز کردن صفحه رسمی استخدامی ${app.company} در مرورگر...`,
-        messageEn: `Navigating to official career page at ${app.company}...`,
+        messageKey: 'queue.executing',
       },
     });
     await new Promise((r) => setTimeout(r, 600));
@@ -329,8 +326,7 @@ export const useApplicationStore = create<ApplicationStoreState>((set, get) => (
     set({
       currentStep: {
         step: 'detecting',
-        messageFa: 'شناسایی فیلدهای ورودی و بررسی عدم وجود چالش امنیتی (CAPTCHA)...',
-        messageEn: 'Detecting form inputs and verifying no CAPTCHA challenges...',
+        messageKey: 'queue.executing',
       },
     });
     await new Promise((r) => setTimeout(r, 700));
@@ -338,8 +334,7 @@ export const useApplicationStore = create<ApplicationStoreState>((set, get) => (
     set({
       currentStep: {
         step: 'filling',
-        messageFa: 'تکمیل هوشمند اطلاعات فردی، تماس، سوابق و پاسخ‌های گزینشی...',
-        messageEn: 'Filling applicant contact, experience, and screening answers...',
+        messageKey: 'queue.executing',
       },
     });
     await new Promise((r) => setTimeout(r, 700));
@@ -347,26 +342,25 @@ export const useApplicationStore = create<ApplicationStoreState>((set, get) => (
     set({
       currentStep: {
         step: 'uploading',
-        messageFa: 'پیوست فایل رزومه استاندارد ATS و کاورلتر اختصاصی تایید شده...',
-        messageEn: 'Uploading ATS-tailored resume PDF and verified cover letter...',
+        messageKey: 'queue.executing',
       },
     });
     await new Promise((r) => setTimeout(r, 600));
 
     const activeCandidateProfile = useProfileStore.getState().profile;
-    const applicantName = activeCandidateProfile?.contact.fullName || 'فردوس کاظمی';
+    const applicantName = activeCandidateProfile?.contact.fullName || 'Ferdous Kazemi';
     const applicantEmail = activeCandidateProfile?.contact.email || 'ferdouskazemi1000@gmail.com';
     const applicantPhone = activeCandidateProfile?.contact.phone || '+93 728 200 021';
 
     const updatedFilledFields = [
-      { fieldId: 'name', fieldName: 'name', label: 'Full Name', value: applicantName, displayValue: `${applicantName} (Ferdous Kazemi)`, confidence: 0.99, canonicalField: 'full_name', isRequired: true },
+      { fieldId: 'name', fieldName: 'name', label: 'Full Name', value: applicantName, displayValue: applicantName, confidence: 0.99, canonicalField: 'full_name', isRequired: true },
       { fieldId: 'email', fieldName: 'email', label: 'Email', value: applicantEmail, displayValue: applicantEmail, confidence: 1.0, canonicalField: 'email', isRequired: true },
       { fieldId: 'phone', fieldName: 'phone', label: 'Phone', value: applicantPhone, displayValue: applicantPhone, confidence: 0.98, canonicalField: 'phone', isRequired: true },
-      { fieldId: 'resume', fieldName: 'resume', label: 'Resume', value: 'Tailored_Resume.pdf', displayValue: 'Tailored_Resume.pdf (ATS-Safe)', confidence: 1.0, canonicalField: 'resume', isRequired: true },
+      { fieldId: 'resume', fieldName: 'resume', label: 'Resume', value: 'Tailored_Resume.pdf', displayValue: 'Tailored_Resume.pdf', confidence: 1.0, canonicalField: 'resume', isRequired: true },
     ];
 
     const updatedChecklist = [
-      { id: 'name', label: 'Full Name', value: `${applicantName} (Ferdous Kazemi)`, status: 'ok' as const, category: 'contact' as const },
+      { id: 'name', label: 'Full Name', value: applicantName, status: 'ok' as const, category: 'contact' as const },
       { id: 'email', label: 'Email', value: applicantEmail, status: 'ok' as const, category: 'contact' as const },
       { id: 'phone', label: 'Phone', value: applicantPhone, status: 'ok' as const, category: 'contact' as const },
       { id: 'resume', label: 'Tailored Résumé PDF', value: 'Tailored_Resume.pdf', status: 'ok' as const, category: 'documents' as const },
@@ -376,8 +370,7 @@ export const useApplicationStore = create<ApplicationStoreState>((set, get) => (
       isExecuting: false,
       currentStep: {
         step: 'review_ready',
-        messageFa: 'فرم با موفقیت تکمیل شد و در مرحله بازبینی نهایی متوقف گردید.',
-        messageEn: 'Form filled successfully and paused at final review step.',
+        messageKey: 'queue.pauseMessage',
       },
       applications: state.applications.map((a) =>
         a.id === id
@@ -399,8 +392,7 @@ export const useApplicationStore = create<ApplicationStoreState>((set, get) => (
     set({
       currentStep: {
         step: 'filling',
-        messageFa: 'در حال کلیک بر روی دکمه ثبت نهایی فرم در مرورگر...',
-        messageEn: 'Submitting final application in browser...',
+        messageKey: 'queue.executing',
       },
     });
 
@@ -410,8 +402,7 @@ export const useApplicationStore = create<ApplicationStoreState>((set, get) => (
       isExecuting: false,
       currentStep: {
         step: 'submitted',
-        messageFa: 'درخواست با موفقیت ثبت شد و پیام تایید دریافت گردید.',
-        messageEn: 'Application confirmed and submitted successfully.',
+        messageKey: 'queue.submissionSuccess',
       },
       applications: state.applications.map((a) =>
         a.id === id
@@ -427,7 +418,7 @@ export const useApplicationStore = create<ApplicationStoreState>((set, get) => (
                   id: `tl_${Date.now()}`,
                   status: 'applied',
                   timestamp: new Date().toISOString(),
-                  title: 'درخواست با موفقیت ارسال و در بورد ثبت گردید',
+                  title: 'applied',
                 },
               ],
             }
@@ -451,7 +442,7 @@ export const useApplicationStore = create<ApplicationStoreState>((set, get) => (
                   id: `tl_${Date.now()}`,
                   status: newStatus,
                   timestamp: now,
-                  title: `تغییر وضعیت به: ${newStatus}`,
+                  title: newStatus,
                 },
               ],
             }
@@ -484,7 +475,7 @@ export const useApplicationStore = create<ApplicationStoreState>((set, get) => (
                   id: `tl_${Date.now()}`,
                   status: 'interview',
                   timestamp: now,
-                  title: `تنظیم زمان مصاحبه: ${new Date(date).toLocaleDateString('fa-IR')}`,
+                  title: 'interview',
                   note,
                 },
               ],
@@ -598,7 +589,7 @@ export const useApplicationStore = create<ApplicationStoreState>((set, get) => (
 
   syncWithProfile: (profile: UserProfile | null) => {
     if (!profile) return;
-    const safeName = profile.contact.fullName || 'فردوس کاظمی';
+    const safeName = profile.contact.fullName || 'Ferdous Kazemi';
     const safeEmail = profile.contact.email || 'ferdouskazemi1000@gmail.com';
     const safePhone = profile.contact.phone || '+93 728 200 021';
 
@@ -619,14 +610,14 @@ export const useApplicationStore = create<ApplicationStoreState>((set, get) => (
             return { ...field, value: safeName.split(' ').slice(1).join(' ') || safeName, displayValue: safeName };
           }
           if (field.canonicalField === 'full_name' || field.fieldId === 'name') {
-            return { ...field, value: safeName, displayValue: `${safeName} (Ferdous Kazemi)` };
+            return { ...field, value: safeName, displayValue: safeName };
           }
           return field;
         }),
         reviewChecklist: app.reviewChecklist.map((item) => {
           if (item.id === 'email') return { ...item, value: safeEmail };
           if (item.id === 'phone') return { ...item, value: safePhone };
-          if (item.id === 'name' || item.id === 'first_name') return { ...item, value: `${safeName} (Ferdous Kazemi)` };
+          if (item.id === 'name' || item.id === 'first_name') return { ...item, value: safeName };
           return item;
         }),
       })),

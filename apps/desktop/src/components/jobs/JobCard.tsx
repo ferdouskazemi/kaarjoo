@@ -9,6 +9,7 @@ import {
   ThumbsDown,
 } from 'lucide-react';
 import type { JobPosting, RemoteType, AtsType } from '@kaarjoo/shared';
+import { formatDate, formatNumber } from '../../utils/formatters.js';
 
 export interface DisplayJob extends Partial<JobPosting> {
   id: string;
@@ -64,14 +65,13 @@ function getInitialsColor(name: string): string {
 
 export const JobCard: React.FC<JobCardProps> = ({ job, onSelect, onApply, onFeedback }) => {
   const { t, i18n } = useTranslation();
-  const isRtl = i18n.dir() === 'rtl';
   const atsStyle = ATS_COLORS[job.atsType] || ATS_COLORS.generic;
   const score = job.matchScore ?? 85;
 
   return (
     <div
       onClick={() => onSelect(job)}
-      className="group relative rounded-2xl glass-panel hover:border-sky-500/50 p-5 transition-all duration-200 cursor-pointer flex flex-col justify-between gap-4 shadow-sm hover:shadow-xl hover:-translate-y-0.5 smooth-gpu"
+      className="group relative rounded-2xl glass-panel hover:border-sky-500/50 p-5 transition-all duration-200 cursor-pointer flex flex-col justify-between gap-4 shadow-sm hover:shadow-xl hover:-translate-y-0.5 smooth-gpu text-start"
     >
       {/* Top Header */}
       <div className="flex items-start justify-between gap-3">
@@ -90,7 +90,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onSelect, onApply, onFeed
               </h3>
               <span className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 font-mono">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span>{isRtl ? 'زنده' : 'LIVE'}</span>
+                <span>{t('jobs.liveBadge')}</span>
               </span>
             </div>
             <div className="flex items-center gap-2 mt-1 text-xs text-slate-400 flex-wrap">
@@ -101,7 +101,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onSelect, onApply, onFeed
               <span>•</span>
               <span className="flex items-center gap-1 line-clamp-1">
                 <MapPin className="w-3.5 h-3.5 text-slate-500" />
-                {job.location || 'US / EU'}
+                {job.location || 'Worldwide'}
               </span>
             </div>
           </div>
@@ -128,7 +128,9 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onSelect, onApply, onFeed
                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
               />
             </svg>
-            <span className="absolute text-[11px] font-bold text-slate-200">{score}%</span>
+            <span className="absolute text-[11px] font-bold text-slate-200">
+              {formatNumber(score, i18n.language)}%
+            </span>
           </div>
           <span className="text-[10px] text-slate-400 mt-0.5 font-medium">{t('jobs.matchScore')}</span>
         </div>
@@ -154,7 +156,11 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onSelect, onApply, onFeed
                   : 'bg-slate-800 text-slate-300 border-slate-700'
             }`}
           >
-            {job.remoteType === 'remote' ? (isRtl ? 'دورکاری (Remote)' : 'Remote') : job.remoteType === 'hybrid' ? (isRtl ? 'ترکیبی (Hybrid)' : 'Hybrid') : (isRtl ? 'حضوری' : 'On-Site')}
+            {job.remoteType === 'remote'
+              ? t('jobs.remoteOnly')
+              : job.remoteType === 'hybrid'
+                ? t('jobs.hybrid')
+                : t('jobs.onSite')}
           </span>
 
           <span className={`text-xs px-2 py-0.5 rounded font-mono uppercase text-[10px] border ${atsStyle.bg} ${atsStyle.text} ${atsStyle.border}`}>
@@ -173,12 +179,12 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onSelect, onApply, onFeed
           <div className="flex items-center gap-1">
             <button
               type="button"
-              title={isRtl ? 'تطابق عالی بود' : 'Relevant match'}
+              title={t('jobs.feedbackRelevant')}
               onClick={(e) => {
                 e.stopPropagation();
                 onFeedback(job.id, 'relevant');
               }}
-              className={`p-1.5 rounded-md transition-colors ${
+              className={`p-1.5 rounded-md transition-colors cursor-pointer ${
                 job.userFeedback === 'relevant'
                   ? 'bg-emerald-950 text-emerald-400 border border-emerald-800'
                   : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800'
@@ -188,12 +194,12 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onSelect, onApply, onFeed
             </button>
             <button
               type="button"
-              title={isRtl ? 'تطابق غیرمرتبط بود' : 'Not relevant'}
+              title={t('jobs.feedbackNotRelevant')}
               onClick={(e) => {
                 e.stopPropagation();
                 onFeedback(job.id, 'irrelevant');
               }}
-              className={`p-1.5 rounded-md transition-colors ${
+              className={`p-1.5 rounded-md transition-colors cursor-pointer ${
                 job.userFeedback === 'irrelevant'
                   ? 'bg-red-950 text-red-400 border border-red-800'
                   : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800'
@@ -208,7 +214,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onSelect, onApply, onFeed
       {/* Action Footer */}
       <div className="flex items-center justify-between gap-3 pt-2">
         <span className="text-[11px] text-slate-500 font-medium font-mono">
-          {job.postedAt ? new Date(job.postedAt).toLocaleDateString() : (isRtl ? 'به‌تازگی منتشرشده' : 'Recently posted')}
+          {job.postedAt ? formatDate(job.postedAt, i18n.language) : t('jobs.recentlyPosted')}
         </span>
 
         <div className="flex items-center gap-2">
@@ -218,7 +224,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onSelect, onApply, onFeed
               e.stopPropagation();
               onSelect(job);
             }}
-            className="px-3 py-1.5 rounded-lg border border-slate-700/80 bg-slate-800/60 hover:bg-slate-800 text-xs text-slate-200 transition-colors"
+            className="px-3 py-1.5 rounded-lg border border-slate-700/80 bg-slate-800/60 hover:bg-slate-800 text-xs text-slate-200 transition-colors cursor-pointer"
           >
             {t('jobs.viewDetails')}
           </button>
@@ -229,7 +235,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onSelect, onApply, onFeed
               e.stopPropagation();
               onApply(job);
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-xs font-medium text-white transition-colors shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-xs font-medium text-white transition-colors shadow-sm cursor-pointer"
           >
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>{t('jobs.applyReview')}</span>

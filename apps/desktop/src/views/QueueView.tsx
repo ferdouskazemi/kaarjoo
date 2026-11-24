@@ -23,11 +23,11 @@ import {
 import { useApplications, useExecuteReview, useSubmitApplication, useProfile } from '../queries/index.js';
 import { useApplicationStore } from '../stores/applicationStore.js';
 import { useAppStore } from '../stores/appStore.js';
+import { formatNumber } from '../utils/formatters.js';
 import type { ApplicationRecord, AtsType } from '@kaarjoo/shared';
 
 export const QueueView: React.FC = () => {
   const { t, i18n } = useTranslation();
-  const isRtl = i18n.dir() === 'rtl';
 
   const { demoMode } = useAppStore();
   const { data: dbApplications = [], refetch: refetchApps } = useApplications();
@@ -106,21 +106,21 @@ export const QueueView: React.FC = () => {
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#2b2414] text-amber-300 border border-amber-500/40 font-mono">
             <Eye className="w-3 h-3 text-amber-400" />
-            {isRtl ? 'آماده بررسی نهایی' : 'Needs Review'}
+            {t('status.needs_review')}
           </span>
         );
       case 'queued':
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#142332] text-sky-300 border border-sky-500/40 font-mono">
             <Clock className="w-3 h-3 text-sky-400" />
-            {isRtl ? 'در صف آماده‌سازی' : 'Queued'}
+            {t('status.queued')}
           </span>
         );
       case 'filling':
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#1e1c36] text-violet-300 border border-violet-500/40 animate-pulse font-mono">
             <Loader2 className="w-3 h-3 animate-spin text-violet-400" />
-            {isRtl ? 'در حال تکمیل...' : 'Filling...'}
+            {t('status.filling')}
           </span>
         );
       case 'submitted':
@@ -128,14 +128,14 @@ export const QueueView: React.FC = () => {
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#182a20] text-emerald-300 border border-emerald-500/40 font-mono">
             <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-            {isRtl ? 'ارسال شده' : 'Applied'}
+            {t('status.applied')}
           </span>
         );
       case 'needs_user':
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#2b1717] text-rose-300 border border-rose-500/40 font-mono">
             <AlertTriangle className="w-3 h-3 text-rose-400" />
-            {isRtl ? 'اقدام کاربر (کپچا / ورود)' : 'Action Required'}
+            {t('status.needs_user')}
           </span>
         );
       default:
@@ -171,24 +171,22 @@ export const QueueView: React.FC = () => {
           <div className="flex items-center gap-2 mb-1">
             <h1 className="text-2xl font-bold text-[#f4f4f5]">{t('queue.title')}</h1>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-medium bg-sky-500/10 text-sky-400 border border-sky-500/30">
-              {applications.length} {isRtl ? 'موقعیت' : 'openings'}
+              {formatNumber(applications.length, i18n.language)} {t('queue.openings')}
             </span>
           </div>
           <p className="text-xs text-[#a1a1aa] leading-relaxed">
-            {isRtl
-              ? 'اتوماسیون هدایت فرم‌های ATS در حالت بازبینی (Review Mode): تمام فیلدها و پاسخ‌ها قبل از ثبت نهایی به تأیید شما می‌رسند.'
-              : 'Autonomous form navigation in Review Mode: every form input, resume upload, and answer is presented for your review before final submission.'}
+            {t('queue.subtitle')}
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1a1a1a] border border-[#2b2b2b] text-[11px] font-medium text-emerald-400 font-mono">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span>{isRtl ? 'حالت بازبینی پیش‌فرض' : 'Review Mode Default'}</span>
+            <span>{t('queue.reviewMode')}</span>
           </div>
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1a1a1a] border border-[#2b2b2b] text-[11px] font-medium text-[#a1a1aa] font-mono">
             <Lock className="w-3.5 h-3.5 text-slate-400" />
-            <span>{isRtl ? 'عدم دور زدن کپچا (اخلاقی)' : 'No CAPTCHA Bypass'}</span>
+            <span>{t('queue.ethicalGuard')}</span>
           </div>
         </div>
       </div>
@@ -198,12 +196,10 @@ export const QueueView: React.FC = () => {
         <div className="rounded-2xl border border-[#282828] bg-[#161616] p-16 text-center flex flex-col items-center justify-center max-w-lg mx-auto">
           <Clock className="w-12 h-12 text-[#52525b] mb-4" />
           <h3 className="text-base font-semibold text-[#f4f4f5] mb-1">
-            {isRtl ? 'صف ارسال در حال حاضر خالی است' : 'Application queue is currently empty'}
+            {t('queue.emptyTitle')}
           </h3>
           <p className="text-xs text-[#a1a1aa] max-w-sm mb-6 leading-relaxed">
-            {isRtl
-              ? 'از بخش «فرصت‌های شغلی»، موقعیت مورد نظر خود را انتخاب کرده و دکمه «انتقال به صف ارسال» را بزنید.'
-              : 'From "Jobs", select an opportunity and apply to queue it for autonomous review mode.'}
+            {t('queue.emptyDesc')}
           </p>
 
           {demoMode && (
@@ -212,7 +208,7 @@ export const QueueView: React.FC = () => {
               className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-medium hover:bg-amber-500/20 transition-colors"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>بارگذاری درخواست‌های دمو (Demo Mode)</span>
+              <span>{t('queue.loadDemo')}</span>
             </button>
           )}
         </div>
@@ -221,7 +217,7 @@ export const QueueView: React.FC = () => {
           {/* Left Column: Applications List (Cards) */}
           <div className="lg:col-span-4 flex flex-col gap-2.5">
             <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#a1a1aa] px-1">
-              {isRtl ? 'درخواست‌های در صف' : 'Queued Applications'} ({applications.length})
+              {t('queue.queuedApps')} ({formatNumber(applications.length, i18n.language)})
             </h2>
 
             <div className="flex flex-col gap-2">
@@ -253,12 +249,8 @@ export const QueueView: React.FC = () => {
                       {getStatusBadge(app.status)}
                       <span className="text-[10px] font-mono text-[#71717a]">
                         {app.reviewChecklist?.length > 0
-                          ? isRtl
-                            ? `${app.reviewChecklist.length} فیلد`
-                            : `${app.reviewChecklist.length} fields`
-                          : isRtl
-                          ? 'آماده پردازش'
-                          : 'Ready'}
+                          ? `${formatNumber(app.reviewChecklist.length, i18n.language)} ${t('queue.fieldsCount')}`
+                          : t('queue.ready')}
                       </span>
                     </div>
                   </div>
@@ -291,12 +283,12 @@ export const QueueView: React.FC = () => {
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#202020] hover:bg-[#282828] border border-[#2f2f2f] text-[#d4d4d8] transition-colors"
                   >
                     <ExternalLink className="w-3.5 h-3.5 text-sky-400" />
-                    {isRtl ? 'مشاهده آگهی' : 'View Posting'}
+                    {t('queue.viewPosting')}
                   </a>
                   <button
                     onClick={() => cancelApplication(activeApp.id)}
                     className="p-1.5 rounded-lg text-[#71717a] hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
-                    title={isRtl ? 'حذف از صف' : 'Remove from queue'}
+                    title={t('queue.remove')}
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -309,7 +301,7 @@ export const QueueView: React.FC = () => {
                   <Loader2 className="w-4 h-4 text-sky-400 animate-spin shrink-0" />
                   <div className="flex-1 text-xs">
                     <span className="font-semibold text-sky-300 block mb-0.5">
-                      {isRtl ? 'اتوماسیون Playwright در حال ناوبری و پر کردن فیلدها در مرورگر سیستمی...' : 'Playwright automating system browser in review mode...'}
+                      {t('queue.executing')}
                     </span>
                     <span className="text-[#a1a1aa] font-mono text-[11px]">
                       {activeApp.applyUrl}
@@ -325,7 +317,7 @@ export const QueueView: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-[#d4d4d8] flex items-center gap-1.5">
                       <Compass className="w-3.5 h-3.5 text-sky-400" />
-                      {isRtl ? 'پیش‌نمایش زنده مرورگر' : 'Live Browser Snapshot'}
+                      {t('queue.liveSnapshot')}
                     </span>
                     {activeApp.screenshotBeforeSubmit && (
                       <button
@@ -333,7 +325,7 @@ export const QueueView: React.FC = () => {
                         className="text-[11px] text-sky-400 hover:text-sky-300 flex items-center gap-1 cursor-pointer"
                       >
                         <Maximize2 className="w-3 h-3" />
-                        {isRtl ? 'بزرگنمایی' : 'Expand'}
+                        {t('queue.expand')}
                       </button>
                     )}
                   </div>
@@ -351,7 +343,7 @@ export const QueueView: React.FC = () => {
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-[#111111]/90 via-transparent to-transparent flex items-end p-2.5">
                           <span className="text-[10px] text-[#f4f4f5] font-mono bg-[#161616]/90 px-2 py-0.5 rounded border border-[#2b2b2b]">
-                            {isRtl ? 'گام بازبینی نهایی (پیش از کلیک ارسال)' : 'Final Review Step'}
+                            {t('queue.finalStep')}
                           </span>
                         </div>
                       </>
@@ -359,7 +351,7 @@ export const QueueView: React.FC = () => {
                       <div className="p-6 text-center flex flex-col items-center justify-center text-[#52525b]">
                         <Compass className="w-8 h-8 mb-2 stroke-1" />
                         <span className="text-xs">
-                          {isRtl ? 'تصویر صفحه پس از اجرای بازبینی نمایش داده می‌شود' : 'Snapshot captured during filling'}
+                          {t('queue.snapshotPlaceholder')}
                         </span>
                       </div>
                     )}
@@ -371,31 +363,31 @@ export const QueueView: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-[#d4d4d8] flex items-center gap-1.5">
                       <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
-                      {isRtl ? 'چک‌لیست داده‌های وارد شده' : 'Filled Form Checklist'}
+                      {t('queue.checklist')}
                     </span>
                     <span className="text-[11px] font-mono text-[#71717a]">
-                      {activeApp.reviewChecklist?.length || 4} {isRtl ? 'مورد اعتبارسنجی' : 'items'}
+                      {formatNumber(activeApp.reviewChecklist?.length || 4, i18n.language)} {t('queue.itemsCount')}
                     </span>
                   </div>
 
                   <div className="rounded-xl border border-[#282828] bg-[#141414] p-3 flex flex-col gap-2 text-xs">
                     <div className="flex items-center justify-between py-1.5 border-b border-[#222222]">
-                      <span className="text-[11px] text-[#71717a] uppercase font-mono">Full Name</span>
+                      <span className="text-[11px] text-[#71717a] uppercase font-mono">{t('profile.fullName')}</span>
                       <span className="text-[11px] font-medium text-white">{profile?.contact?.fullName || 'Ferdous Kazemi'}</span>
                     </div>
 
                     <div className="flex items-center justify-between py-1.5 border-b border-[#222222]">
-                      <span className="text-[11px] text-[#71717a] uppercase font-mono">Email</span>
+                      <span className="text-[11px] text-[#71717a] uppercase font-mono">{t('profile.email')}</span>
                       <span className="text-[11px] font-medium text-sky-400 font-mono">{profile?.contact?.email || 'ferdouskazemi1000@gmail.com'}</span>
                     </div>
 
                     <div className="flex items-center justify-between py-1.5 border-b border-[#222222]">
-                      <span className="text-[11px] text-[#71717a] uppercase font-mono">Phone</span>
+                      <span className="text-[11px] text-[#71717a] uppercase font-mono">{t('profile.phone')}</span>
                       <span className="text-[11px] font-medium text-white font-mono">{profile?.contact?.phone || '+93 728 200 021'}</span>
                     </div>
 
                     <div className="flex items-center justify-between py-1.5">
-                      <span className="text-[11px] text-[#71717a] uppercase font-mono">Tailored Resume</span>
+                      <span className="text-[11px] text-[#71717a] uppercase font-mono">{t('documents.tailoredResumePdf')}</span>
                       <span className="text-[11px] font-medium text-emerald-400 flex items-center gap-1">
                         <FileText className="w-3 h-3" />
                         <span>Tailored_Resume.pdf</span>
@@ -414,7 +406,7 @@ export const QueueView: React.FC = () => {
                     className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white font-semibold text-xs transition-all shadow-md active:scale-95 cursor-pointer"
                   >
                     <Play className="w-4 h-4 fill-white" />
-                    <span>{isRtl ? 'اجرای بازبینی در مرورگر سیستمی' : 'Execute Review in System Browser'}</span>
+                    <span>{t('queue.startFilling')}</span>
                   </button>
                 ) : activeApp.status === 'needs_review' ? (
                   <button
@@ -423,7 +415,7 @@ export const QueueView: React.FC = () => {
                     className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-all shadow-md active:scale-95 cursor-pointer"
                   >
                     <Send className="w-4 h-4" />
-                    <span>{isRtl ? 'تأیید و ارسال نهایی فرم (Submit)' : 'Confirm & Submit Application'}</span>
+                    <span>{t('queue.approveSubmit')}</span>
                   </button>
                 ) : null}
               </div>

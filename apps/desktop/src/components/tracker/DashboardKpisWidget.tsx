@@ -9,14 +9,14 @@ import {
   Target,
 } from 'lucide-react';
 import { ApplicationKpis } from '../../stores/applicationStore.js';
+import { formatNumber, formatPercent } from '../../utils/formatters.js';
 
 interface DashboardKpisWidgetProps {
   kpis: ApplicationKpis;
 }
 
 export const DashboardKpisWidget: React.FC<DashboardKpisWidgetProps> = ({ kpis }) => {
-  const { i18n } = useTranslation();
-  const isRtl = i18n.dir() === 'rtl';
+  const { t, i18n } = useTranslation();
 
   return (
     <div className="flex flex-col gap-4 w-full">
@@ -26,14 +26,16 @@ export const DashboardKpisWidget: React.FC<DashboardKpisWidgetProps> = ({ kpis }
         <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-4 flex flex-col justify-between gap-3 shadow-xs">
           <div className="flex items-center justify-between text-slate-400">
             <span className="text-xs font-semibold text-slate-300">
-              {isRtl ? 'کل موقعیت‌های پیگیری‌شده' : 'Total Applications'}
+              {t('tracker.totalApplications')}
             </span>
             <Target className="w-4 h-4 text-sky-400" />
           </div>
           <div className="flex items-baseline justify-between">
-            <span className="text-2xl font-bold font-mono text-slate-100">{kpis.total}</span>
+            <span className="text-2xl font-bold font-mono text-slate-100">
+              {formatNumber(kpis.total, i18n.language)}
+            </span>
             <span className="text-[11px] text-slate-500">
-              {isRtl ? 'در سراسر بوردها' : 'Across all boards'}
+              {t('tracker.acrossBoards')}
             </span>
           </div>
         </div>
@@ -42,14 +44,16 @@ export const DashboardKpisWidget: React.FC<DashboardKpisWidgetProps> = ({ kpis }
         <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-4 flex flex-col justify-between gap-3 shadow-xs">
           <div className="flex items-center justify-between text-slate-400">
             <span className="text-xs font-semibold text-slate-300">
-              {isRtl ? 'ارسال‌های این هفته' : 'This Week Submissions'}
+              {t('tracker.thisWeek')}
             </span>
             <TrendingUp className="w-4 h-4 text-emerald-400" />
           </div>
           <div className="flex items-baseline justify-between">
-            <span className="text-2xl font-bold font-mono text-emerald-400">{kpis.thisWeek}</span>
+            <span className="text-2xl font-bold font-mono text-emerald-400">
+              {formatNumber(kpis.thisWeek, i18n.language)}
+            </span>
             <span className="text-[11px] text-slate-500 font-mono">
-              {isRtl ? 'هدف: ۱۰ در هفته' : 'Goal: 10 / wk'}
+              {t('tracker.weeklyGoal')}
             </span>
           </div>
         </div>
@@ -58,14 +62,16 @@ export const DashboardKpisWidget: React.FC<DashboardKpisWidgetProps> = ({ kpis }
         <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-4 flex flex-col justify-between gap-3 shadow-xs">
           <div className="flex items-center justify-between text-slate-400">
             <span className="text-xs font-semibold text-slate-300">
-              {isRtl ? 'نرخ تبدیل به مصاحبه' : 'Interview Conversion'}
+              {t('tracker.interviewRate')}
             </span>
             <CalendarCheck className="w-4 h-4 text-amber-400" />
           </div>
           <div className="flex items-baseline justify-between">
-            <span className="text-2xl font-bold font-mono text-amber-300">{kpis.interviewRate}%</span>
+            <span className="text-2xl font-bold font-mono text-amber-300">
+              {formatPercent(kpis.interviewRate, i18n.language)}
+            </span>
             <span className="text-[11px] text-amber-400/80 font-mono">
-              {isRtl ? 'دعوت به مصاحبه / آفر' : 'Interviews / Offers'}
+              {t('tracker.interviewOffer')}
             </span>
           </div>
         </div>
@@ -74,14 +80,16 @@ export const DashboardKpisWidget: React.FC<DashboardKpisWidgetProps> = ({ kpis }
         <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-4 flex flex-col justify-between gap-3 shadow-xs">
           <div className="flex items-center justify-between text-slate-400">
             <span className="text-xs font-semibold text-slate-300">
-              {isRtl ? 'میانگین نمره انطباق محلی' : 'Avg Local Match'}
+              {t('tracker.averageScore')}
             </span>
             <Sparkles className="w-4 h-4 text-purple-400" />
           </div>
           <div className="flex items-baseline justify-between">
-            <span className="text-2xl font-bold font-mono text-purple-300">{kpis.avgScore}%</span>
+            <span className="text-2xl font-bold font-mono text-purple-300">
+              {formatPercent(kpis.avgScore, i18n.language)}
+            </span>
             <span className="text-[11px] text-purple-400/80">
-              {isRtl ? 'محاسبه بدون کلید API' : '100% Local AI'}
+              {t('tracker.localAiBadge')}
             </span>
           </div>
         </div>
@@ -95,11 +103,11 @@ export const DashboardKpisWidget: React.FC<DashboardKpisWidgetProps> = ({ kpis }
             <div className="flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-indigo-400" />
               <span className="text-xs font-bold text-slate-200">
-                {isRtl ? 'پیشنهاد یادگیری: مهارت‌های پرتکرار مفقود در فرصت‌های برتر' : 'Learning Suggestions (Top Missing Skills)'}
+                {t('tracker.topMissingSkills')}
               </span>
             </div>
             <span className="text-[10px] text-slate-500 font-mono">
-              {isRtl ? 'تحلیل خودکار آگهی‌ها' : 'Auto analyzed'}
+              {t('tracker.autoAnalyzed')}
             </span>
           </div>
 
@@ -111,7 +119,7 @@ export const DashboardKpisWidget: React.FC<DashboardKpisWidgetProps> = ({ kpis }
               >
                 <span className="text-slate-300 font-medium">{item.skill}</span>
                 <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 font-semibold">
-                  {item.count} موقعیت
+                  {formatNumber(item.count, i18n.language)} {t('queue.openings')}
                 </span>
               </div>
             ))}
@@ -123,7 +131,7 @@ export const DashboardKpisWidget: React.FC<DashboardKpisWidgetProps> = ({ kpis }
           <div className="flex items-center gap-2">
             <Building className="w-4 h-4 text-sky-400" />
             <span className="text-xs font-bold text-slate-200">
-              {isRtl ? 'توزیع بوردها' : 'Source Distribution'}
+              {t('tracker.atsDistribution')}
             </span>
           </div>
 
@@ -133,7 +141,7 @@ export const DashboardKpisWidget: React.FC<DashboardKpisWidgetProps> = ({ kpis }
                 key={ats}
                 className="px-2 py-0.5 rounded-lg text-[10px] font-mono uppercase bg-slate-950 border border-slate-800 text-slate-400"
               >
-                {ats}: <strong className="text-slate-200">{count}</strong>
+                {ats}: <strong className="text-slate-200">{formatNumber(count, i18n.language)}</strong>
               </span>
             ))}
           </div>

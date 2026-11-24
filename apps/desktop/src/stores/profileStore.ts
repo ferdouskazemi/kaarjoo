@@ -28,7 +28,7 @@ export const DEMO_CANDIDATE_PROFILE: UserProfile = {
   createdAt: '2026-04-01',
   updatedAt: '2026-04-01',
   contact: {
-    fullName: 'Ferdous Kazemi (فردوس کاظمی)',
+    fullName: 'Ferdous Kazemi',
     email: 'ferdouskazemi1000@gmail.com',
     phone: '+93 728 200 021',
     location: 'Kabul, Afghanistan',

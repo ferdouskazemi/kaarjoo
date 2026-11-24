@@ -33,6 +33,8 @@ const navItems: NavItem[] = [
   { id: 'settings', labelKey: 'nav.settings', icon: Settings, shortcut: '6' },
 ];
 
+import { TARGET_LANGUAGE_LABELS } from '../../i18n/constants.js';
+
 export const Sidebar: React.FC = () => {
   const { t } = useTranslation();
   const { currentView, setCurrentView, language, setLanguage, theme, setTheme, setCommandPaletteOpen } = useAppStore();
@@ -111,16 +113,16 @@ export const Sidebar: React.FC = () => {
           <button
             onClick={toggleLanguage}
             className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#202020] transition-colors cursor-pointer"
-            title="تغییر زبان / Switch Language"
+            title={t('common.language')}
           >
             <Languages className="w-3.5 h-3.5" />
-            <span>{language === 'fa' ? 'English' : 'فارسی'}</span>
+            <span>{TARGET_LANGUAGE_LABELS[language]}</span>
           </button>
 
           <button
             onClick={toggleTheme}
             className="p-1.5 rounded-md text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#202020] transition-colors cursor-pointer"
-            title="تغییر پوسته / Toggle Theme"
+            title={t('common.theme')}
           >
             {theme === 'dark' ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
           </button>

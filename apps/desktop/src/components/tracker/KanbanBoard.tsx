@@ -11,6 +11,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { ApplicationRecord, ApplicationStatus, KanbanColumnId } from '@kaarjoo/shared';
+import { formatDate, formatNumber } from '../../utils/formatters.js';
 
 interface KanbanBoardProps {
   applications: ApplicationRecord[];
@@ -20,8 +21,7 @@ interface KanbanBoardProps {
 
 interface ColumnDef {
   id: KanbanColumnId;
-  titleFa: string;
-  titleEn: string;
+  titleKey: string;
   colorClass: string;
   borderClass: string;
   countBadgeClass: string;
@@ -30,48 +30,42 @@ interface ColumnDef {
 const KANBAN_COLUMNS: ColumnDef[] = [
   {
     id: 'saved',
-    titleFa: 'ذخیره‌شده',
-    titleEn: 'Saved',
+    titleKey: 'tracker.columns.saved',
     colorClass: 'text-slate-300',
     borderClass: 'border-slate-800',
     countBadgeClass: 'bg-slate-800 text-slate-300',
   },
   {
     id: 'ready',
-    titleFa: 'آماده ارسال / صف',
-    titleEn: 'Ready / Queued',
+    titleKey: 'tracker.columns.ready',
     colorClass: 'text-sky-300',
     borderClass: 'border-sky-900/60',
     countBadgeClass: 'bg-sky-500/20 text-sky-300 border border-sky-500/30',
   },
   {
     id: 'applied',
-    titleFa: 'ارسال‌شده',
-    titleEn: 'Applied',
+    titleKey: 'tracker.columns.applied',
     colorClass: 'text-indigo-300',
     borderClass: 'border-indigo-900/60',
     countBadgeClass: 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30',
   },
   {
     id: 'interview',
-    titleFa: 'مصاحبه',
-    titleEn: 'Interview',
+    titleKey: 'tracker.columns.interview',
     colorClass: 'text-amber-300',
     borderClass: 'border-amber-900/60',
     countBadgeClass: 'bg-amber-500/20 text-amber-300 border border-amber-500/30',
   },
   {
     id: 'offer',
-    titleFa: 'پیشنهاد کاری',
-    titleEn: 'Offer',
+    titleKey: 'tracker.columns.offer',
     colorClass: 'text-emerald-300',
     borderClass: 'border-emerald-900/60',
     countBadgeClass: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30',
   },
   {
     id: 'rejected',
-    titleFa: 'رد شده / بایگانی',
-    titleEn: 'Rejected',
+    titleKey: 'tracker.columns.rejected',
     colorClass: 'text-rose-300',
     borderClass: 'border-rose-900/60',
     countBadgeClass: 'bg-rose-500/20 text-rose-300 border border-rose-500/30',
@@ -83,7 +77,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
   onSelectApplication,
   onMoveStatus,
 }) => {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const isRtl = i18n.dir() === 'rtl';
 
   const mapStatusToColumn = (status: ApplicationStatus): KanbanColumnId => {
@@ -142,10 +136,10 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
             {/* Column Header */}
             <div className="flex items-center justify-between pb-2 border-b border-slate-800/70 px-1">
               <span className={`text-xs font-bold ${column.colorClass}`}>
-                {isRtl ? column.titleFa : column.titleEn}
+                {t(column.titleKey)}
               </span>
               <span className={`text-[11px] font-mono px-2 py-0.5 rounded-full font-semibold ${column.countBadgeClass}`}>
-                {columnApps.length}
+                {formatNumber(columnApps.length, i18n.language)}
               </span>
             </div>
 
@@ -171,7 +165,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                         {app.matchScore && (
                           <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-mono font-bold">
                             <Sparkles className="w-2.5 h-2.5" />
-                            {app.matchScore}%
+                            {formatNumber(app.matchScore, i18n.language)}%
                           </span>
                         )}
                       </div>
@@ -203,7 +197,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                       <div className="p-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[10px] text-amber-300 flex items-center gap-1 font-mono">
                         <Calendar className="w-3 h-3 shrink-0 text-amber-400" />
                         <span className="truncate">
-                          مصاحبه: {new Date(app.interviewDate).toLocaleDateString(isRtl ? 'fa-IR' : 'en-US')}
+                          {t('tracker.interview')}: {formatDate(app.interviewDate, i18n.language)}
                         </span>
                       </div>
                     )}
@@ -213,10 +207,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                       <span className="flex items-center gap-1">
                         <Clock className="w-3 h-3 text-slate-600" />
                         <span>
-                          {new Date(app.updatedAt).toLocaleDateString(isRtl ? 'fa-IR' : 'en-US', {
-                            month: 'numeric',
-                            day: 'numeric',
-                          })}
+                          {formatDate(app.updatedAt, i18n.language)}
                         </span>
                       </span>
 
@@ -229,8 +220,8 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                               const prevCol = KANBAN_COLUMNS[colIdx - 1];
                               onMoveStatus(app.id, prevCol.id as ApplicationStatus);
                             }}
-                            className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-slate-200"
-                            title={isRtl ? 'انتقال به ستون قبلی' : 'Move Left'}
+                            className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-slate-200 cursor-pointer"
+                            title={t('common.back')}
                           >
                             {isRtl ? <ArrowRight className="w-3 h-3" /> : <ArrowLeft className="w-3 h-3" />}
                           </button>
@@ -242,8 +233,8 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                               const nextCol = KANBAN_COLUMNS[colIdx + 1];
                               onMoveStatus(app.id, nextCol.id as ApplicationStatus);
                             }}
-                            className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-slate-200"
-                            title={isRtl ? 'انتقال به ستون بعدی' : 'Move Right'}
+                            className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-slate-200 cursor-pointer"
+                            title={t('common.next')}
                           >
                             {isRtl ? <ArrowLeft className="w-3 h-3" /> : <ArrowRight className="w-3 h-3" />}
                           </button>
@@ -254,7 +245,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                 ))
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center p-4 border border-dashed border-slate-800/80 rounded-xl text-center text-slate-600 text-xs">
-                  <span>{isRtl ? 'موقعیتی در این ستون نیست' : 'No applications'}</span>
+                  <span>{t('tracker.noAppsInColumn')}</span>
                 </div>
               )}
             </div>
