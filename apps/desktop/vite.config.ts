@@ -19,5 +19,17 @@ export default defineConfig({
     watch: {
       ignored: ['**/src-tauri/**'],
     },
+    proxy: {
+      '/api/greenhouse': {
+        target: 'https://boards-api.greenhouse.io',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/greenhouse/, ''),
+      },
+      '/api/wwr': {
+        target: 'https://weworkremotely.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/wwr/, ''),
+      },
+    },
   },
 });

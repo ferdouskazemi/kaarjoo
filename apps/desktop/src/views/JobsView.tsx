@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Briefcase,
   Search,
   RefreshCw,
   Building2,
+  Loader2,
 } from 'lucide-react';
 import { JobCard, type DisplayJob } from '../components/jobs/JobCard.js';
 import { JobDetailDrawer } from '../components/jobs/JobDetailDrawer.js';
@@ -13,145 +14,15 @@ import { TailoredDocumentsModal } from '../components/documents/TailoredDocument
 import { useApplicationStore } from '../stores/applicationStore.js';
 import { useAppStore } from '../stores/appStore.js';
 import type { CompanyBoard, AtsType } from '@kaarjoo/shared';
+import { fetchAllLiveJobs } from '../services/liveJobService.js';
 
-// Initial high-quality US & European tech job postings seeded for discovery
-const INITIAL_JOBS: DisplayJob[] = [
-  {
-    id: 'gh_stripe_501234',
-    title: 'Staff Software Engineer - Global Payments',
-    company: 'Stripe',
-    location: 'San Francisco, CA (Remote - US)',
-    remoteType: 'remote',
-    atsType: 'greenhouse',
-    applyUrl: 'https://boards.greenhouse.io/stripe/jobs/501234',
-    postedAt: '2026-02-22T14:30:00Z',
-    salaryText: '$225,000 - $290,000 / yr',
-    matchScore: 96,
-    matchedSkills: ['Distributed Systems', 'Go', 'Kubernetes', 'High-Throughput APIs', 'PostgreSQL'],
-    missingSkills: ['Raft Consensus'],
-    descriptionMarkdown: `## About Stripe
-Stripe is building economic infrastructure for the internet. Millions of businesses—from the world's most innovative tech startups to global enterprises—use Stripe to accept payments, grow their revenue, and accelerate new business opportunities.
-
-### The Role
-As a Staff Software Engineer in Global Payments, you will design and architect high-reliability payment processing pipelines that execute millions of transactions daily across North America, Europe, and Asia.
-
-### Qualifications
-- 8+ years of engineering experience with distributed backend systems
-- Strong command of Go, Java, or Rust
-- Proven track record scaling database transactions and message queues
-- Experience with zero-downtime database migrations
-- Deep empathy for developer experience and financial compliance`,
-  },
-  {
-    id: 'lever_figma_001',
-    title: 'Principal Product Designer - Editor',
-    company: 'Figma',
-    location: 'San Francisco, CA (Remote)',
-    remoteType: 'remote',
-    atsType: 'lever',
-    applyUrl: 'https://jobs.lever.co/figma/lever-figma-001',
-    postedAt: '2026-02-21T18:00:00Z',
-    salaryText: '$210,000 - $275,000 / yr',
-    matchScore: 92,
-    matchedSkills: ['Design Systems', 'Figma Tokens', 'UI/UX Architecture', 'Prototyping', 'Accessibility (a11y)'],
-    missingSkills: ['WebGL Shaders'],
-    descriptionMarkdown: `## About Figma
-Figma makes software that helps teams build software together. We're on a mission to make design accessible to all teams.
-
-### What you'll do:
-- Lead the design architecture for the core multi-player canvas editor
-- Define token semantics and design system component standards
-- Partner closely with WebAssembly and C++ rendering engineers
-- Mentor senior product designers across US and European hubs`,
-  },
-  {
-    id: 'ashby_openai_101',
-    title: 'Research Engineer - AI Alignment & Safety',
-    company: 'OpenAI',
-    location: 'San Francisco, CA (Hybrid)',
-    remoteType: 'hybrid',
-    atsType: 'ashby',
-    applyUrl: 'https://jobs.ashbyhq.com/openai/ashby-openai-101',
-    postedAt: '2026-02-20T10:00:00Z',
-    salaryText: '$240,000 - $350,000 / yr',
-    matchScore: 89,
-    matchedSkills: ['Deep Learning', 'PyTorch', 'Reinforcement Learning (RLHF)', 'Python', 'Evaluation Benchmarks'],
-    missingSkills: ['Triton Kernels'],
-    descriptionMarkdown: `## Overview
-We are looking for a Research Engineer to join our Frontier Alignment team. In this role, you will design automated auditing frameworks, model evaluations, and RLHF pipelines for multimodal foundation models.
-
-### Responsibilities
-- Scale model evaluation suites on GPU clusters
-- Implement safety guardrails and prompt steerability checks
-- Collaborate on empirical publications and open benchmark releases`,
-  },
-  {
-    id: 'gh_spotify_77201',
-    title: 'Senior Backend Engineer - Core Infrastructure',
-    company: 'Spotify',
-    location: 'Stockholm, Sweden (Remote Europe)',
-    remoteType: 'remote',
-    atsType: 'greenhouse',
-    applyUrl: 'https://boards.greenhouse.io/spotify/jobs/77201',
-    postedAt: '2026-02-19T11:00:00Z',
-    salaryText: '€95,000 - €125,000 / yr',
-    matchScore: 94,
-    matchedSkills: ['Java', 'GCP', 'Kafka', 'Microservices', 'Distributed Tracing', 'Kubernetes'],
-    missingSkills: ['Hermes Protocol'],
-    descriptionMarkdown: `## Welcome to Spotify
-We are looking for a Senior Backend Engineer to join our Core Infrastructure team in Stockholm or remote across Europe.
-
-### What you'll do
-- Build and operate the high-volume event backbone powering audio recommendations for 600M+ users
-- Drive reliability and latency SLOs under 10ms for discovery APIs
-- Champion open-source tooling and cloud-native practices`,
-  },
-  {
-    id: 'workable_klarna_9988',
-    title: 'Senior Cloud Infrastructure Architect',
-    company: 'Klarna',
-    location: 'Stockholm, Sweden / Berlin, Germany',
-    remoteType: 'remote',
-    atsType: 'workable',
-    applyUrl: 'https://apply.workable.com/klarna/j/KLRN9988',
-    postedAt: '2026-02-18T16:00:00Z',
-    salaryText: '€100,000 - €130,000 / yr',
-    matchScore: 87,
-    matchedSkills: ['Terraform', 'AWS', 'Security Automation', 'CI/CD Pipelines', 'Linux Kernel'],
-    missingSkills: ['OpenFGA'],
-    descriptionMarkdown: `## About Klarna
-Klarna is the AI-powered global payments network and shopping destination.
-
-### Role description:
-Scale our multi-region AWS cloud footprint across European banking zones with immutable infrastructure and automated disaster recovery.`,
-  },
-  {
-    id: 'wwr_gitlab_staff',
-    title: 'Staff Backend Engineer, Secure Analysis',
-    company: 'GitLab',
-    location: 'Worldwide Remote / All-Remote',
-    remoteType: 'remote',
-    atsType: 'greenhouse',
-    applyUrl: 'https://boards.greenhouse.io/gitlab/jobs/wwr_staff',
-    postedAt: '2026-02-17T09:00:00Z',
-    salaryText: '$190,000 - $245,000 / yr',
-    matchScore: 91,
-    matchedSkills: ['Ruby on Rails', 'Go', 'Static Code Analysis (SAST)', 'PostgreSQL', 'Git'],
-    missingSkills: ['Semgrep Rule Authoring'],
-    descriptionMarkdown: `## GitLab is 100% All-Remote
-You will lead technical direction for GitLab's Static Analysis scanning engines, protecting software supply chains worldwide.`,
-  },
-];
-
-const SEEDED_BOARDS_DEFAULT: CompanyBoard[] = [
-  { id: 'b1', name: 'Stripe', domain: 'stripe.com', atsType: 'greenhouse', boardSlug: 'stripe', boardUrl: 'https://boards.greenhouse.io/stripe', country: 'US', active: true, jobCount: 42 },
-  { id: 'b2', name: 'Figma', domain: 'figma.com', atsType: 'lever', boardSlug: 'figma', boardUrl: 'https://jobs.lever.co/figma', country: 'US', active: true, jobCount: 18 },
-  { id: 'b3', name: 'OpenAI', domain: 'openai.com', atsType: 'ashby', boardSlug: 'openai', boardUrl: 'https://jobs.ashbyhq.com/openai', country: 'US', active: true, jobCount: 35 },
-  { id: 'b4', name: 'Spotify', domain: 'spotify.com', atsType: 'greenhouse', boardSlug: 'spotify', boardUrl: 'https://boards.greenhouse.io/spotify', country: 'SE', active: true, jobCount: 26 },
-  { id: 'b5', name: 'Klarna', domain: 'klarna.com', atsType: 'workable', boardSlug: 'klarna', boardUrl: 'https://apply.workable.com/klarna', country: 'SE', active: true, jobCount: 15 },
-  { id: 'b6', name: 'GitLab', domain: 'gitlab.com', atsType: 'greenhouse', boardSlug: 'gitlab', boardUrl: 'https://boards.greenhouse.io/gitlab', country: 'US', active: true, jobCount: 50 },
-  { id: 'b7', name: 'DeepL', domain: 'deepl.com', atsType: 'greenhouse', boardSlug: 'deepl', boardUrl: 'https://boards.greenhouse.io/deepl', country: 'DE', active: true, jobCount: 12 },
-  { id: 'b8', name: 'Revolut', domain: 'revolut.com', atsType: 'lever', boardSlug: 'revolut', boardUrl: 'https://jobs.lever.co/revolut', country: 'GB', active: true, jobCount: 30 },
+const LIVE_COMPANY_BOARDS_DEFAULT: CompanyBoard[] = [
+  { id: 'b1', name: 'Linear', domain: 'linear.app', atsType: 'ashby', boardSlug: 'linear', boardUrl: 'https://jobs.ashbyhq.com/linear', country: 'US', active: true, jobCount: 30 },
+  { id: 'b2', name: 'Ramp', domain: 'ramp.com', atsType: 'ashby', boardSlug: 'ramp', boardUrl: 'https://jobs.ashbyhq.com/ramp', country: 'US', active: true, jobCount: 180 },
+  { id: 'b3', name: 'OpenAI', domain: 'openai.com', atsType: 'ashby', boardSlug: 'openai', boardUrl: 'https://jobs.ashbyhq.com/openai', country: 'US', active: true, jobCount: 860 },
+  { id: 'b4', name: 'GitLab', domain: 'gitlab.com', atsType: 'greenhouse', boardSlug: 'gitlab', boardUrl: 'https://boards.greenhouse.io/gitlab', country: 'US', active: true, jobCount: 250 },
+  { id: 'b5', name: 'Cloudflare', domain: 'cloudflare.com', atsType: 'greenhouse', boardSlug: 'cloudflare', boardUrl: 'https://boards.greenhouse.io/cloudflare', country: 'US', active: true, jobCount: 500 },
+  { id: 'b6', name: 'Canonical', domain: 'canonical.com', atsType: 'greenhouse', boardSlug: 'canonical', boardUrl: 'https://boards.greenhouse.io/canonical', country: 'GB', active: true, jobCount: 310 },
 ];
 
 export const JobsView: React.FC = () => {
@@ -159,14 +30,33 @@ export const JobsView: React.FC = () => {
   const { setCurrentView } = useAppStore();
   const { queueJobApplication } = useApplicationStore();
 
-  // State
-  const [jobs, setJobs] = useState<DisplayJob[]>(INITIAL_JOBS);
-  const [companyBoards, setCompanyBoards] = useState<CompanyBoard[]>(SEEDED_BOARDS_DEFAULT);
+  // State: 100% Real Live Crawled Jobs - ZERO SEED DATA
+  const [jobs, setJobs] = useState<DisplayJob[]>([]);
+  const [isLoadingLive, setIsLoadingLive] = useState(true);
+  const [companyBoards, setCompanyBoards] = useState<CompanyBoard[]>(LIVE_COMPANY_BOARDS_DEFAULT);
   const [selectedJob, setSelectedJob] = useState<DisplayJob | null>(null);
   const [tailoringJob, setTailoringJob] = useState<DisplayJob | null>(null);
   const [isBoardsModalOpen, setIsBoardsModalOpen] = useState(false);
   const [isTailoringModalOpen, setIsTailoringModalOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+
+  const loadLiveJobs = async () => {
+    setIsSyncing(true);
+    setIsLoadingLive(true);
+    try {
+      const liveJobs = await fetchAllLiveJobs();
+      setJobs(liveJobs);
+    } catch (err) {
+      console.error('Failed to fetch live jobs:', err);
+    } finally {
+      setIsSyncing(false);
+      setIsLoadingLive(false);
+    }
+  };
+
+  useEffect(() => {
+    loadLiveJobs();
+  }, []);
 
   const handleFeedback = (jobId: string, feedback: 'relevant' | 'irrelevant') => {
     setJobs((prev) =>
@@ -183,11 +73,9 @@ export const JobsView: React.FC = () => {
   const [remoteFilter, setRemoteFilter] = useState<'all' | 'remote' | 'hybrid' | 'on-site'>('all');
   const [atsFilter, setAtsFilter] = useState<'all' | AtsType>('all');
 
-  // Sync simulation / polite crawler run
+  // Real live crawler run
   const handleSync = async () => {
-    setIsSyncing(true);
-    await new Promise((r) => setTimeout(r, 1200));
-    setIsSyncing(false);
+    await loadLiveJobs();
   };
 
   const handleToggleBoard = (id: string) => {
@@ -281,7 +169,7 @@ export const JobsView: React.FC = () => {
             <h1 className="text-2xl font-bold text-slate-100">{t('jobs.title')}</h1>
             <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-950/60 text-emerald-300 border border-emerald-800/50">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              {t('jobs.sourcesHealthy')}
+              <span>خزش زنده مستقیم از بوردها (بدون داده Seed)</span>
             </span>
           </div>
           <p className="text-xs text-slate-400 max-w-2xl">
@@ -398,8 +286,16 @@ export const JobsView: React.FC = () => {
         </div>
       </div>
 
-      {/* Job Cards Feed */}
-      {filteredJobs.length > 0 ? (
+      {/* Job Cards Feed or Live Loading State */}
+      {isLoadingLive && jobs.length === 0 ? (
+        <div className="rounded-2xl border border-sky-500/20 bg-slate-900/40 p-16 text-center flex flex-col items-center justify-center gap-3">
+          <Loader2 className="w-10 h-10 text-sky-400 animate-spin" />
+          <h3 className="text-base font-bold text-slate-100">در حال خزش و دریافت مشاغل ۱۰۰٪ واقعی و زنده...</h3>
+          <p className="text-xs text-slate-400 max-w-md leading-relaxed">
+            سیستم کارجو در حال اتصال زنده به APIهای عمومی و رسمی <strong>Linear</strong>، <strong>Ramp</strong>، <strong>OpenAI</strong> (Ashby) و <strong>GitLab</strong>، <strong>Cloudflare</strong> (Greenhouse) است. تمام داده‌ها تازه و کاملاً بدون Seed هستند.
+          </p>
+        </div>
+      ) : filteredJobs.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filteredJobs.map((job) => (
             <JobCard
@@ -416,7 +312,7 @@ export const JobsView: React.FC = () => {
           <Briefcase className="w-12 h-12 text-slate-600 mb-4" />
           <h3 className="text-base font-semibold text-slate-200">{t('jobs.noJobsFound')}</h3>
           <p className="text-xs text-slate-400 mt-1 max-w-sm">
-            فیلترهای انتخابی را تغییر دهید یا شرکت‌های جدیدی را در بخش «شرکت‌های تحت رصد» فعال کنید.
+            فیلترهای انتخابی را تغییر دهید یا دکمه «خزش و بروزرسانی زنده» را کلیک نمایید.
           </p>
         </div>
       )}

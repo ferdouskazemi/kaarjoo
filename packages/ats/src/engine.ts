@@ -16,6 +16,7 @@ import { AshbyFiller } from './fillers/ashby.js';
 import { WorkableFiller } from './fillers/workable.js';
 import { GenericFormFiller } from './fillers/generic.js';
 import { discoverSystemBrowsers } from './discovery.js';
+import { seedChromiumProfile } from './utils/chromiumProfile.js';
 
 export interface ApplicationEngineOptions {
   headless?: boolean;
@@ -75,6 +76,7 @@ export class ApplicationEngine {
       filledFields: [],
       reviewChecklist: [],
       stopReason: 'none',
+      timeline: [],
       createdAt: now,
       updatedAt: now,
     };
@@ -121,6 +123,9 @@ export class ApplicationEngine {
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir, { recursive: true });
     }
+
+    // Protect Windows OS account from failed-logon lockouts (ported from flash-rive fix)
+    seedChromiumProfile(tempDir);
 
     let browserContext: BrowserContext | null = null;
     try {
