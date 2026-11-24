@@ -13,6 +13,7 @@ import {
   exportResumeToPdf,
   exportCoverLetterToPdf,
   exportResumeToDocx,
+  renderResumeHtml,
 } from './documents/index.js';
 import { ApplicationEngine } from '@kaarjoo/ats';
 import {
@@ -207,6 +208,35 @@ server.register('matching.getWeights', {
 });
 
 // --- Phase 4: Tailored Documents & Truthfulness Guard ---
+server.register('documents.tailor', {
+  inputSchema: z.object({
+    profile: UserProfileSchema,
+    job: JobPostingSchema,
+    templateId: z.string().optional(),
+    language: z.string().optional(),
+  }),
+  handler: ({ profile, job, templateId = 'ats-clean', language = 'en' }) => {
+    const tailored = tailorResume(profile as any, job as any, {
+      templateId: templateId as any,
+      language: language as any,
+    });
+    const check = TruthfulnessGuard.verifyTailoredResume(profile as any, tailored);
+    const coverLetter = generateCoverLetter(profile as any, job as any, language as any);
+    const resumeHtml = renderResumeHtml(tailored);
+
+    return {
+      jobId: job.id,
+      templateId,
+      language,
+      resumeHtml,
+      coverLetterText: coverLetter.fullText,
+      truthfulnessScore: check.score,
+      truthfulnessPassed: check.score >= 0.85,
+      warnings: check.unsupportedClaims.map((c) => `Unsupported claim: ${c.claim}`),
+    };
+  },
+});
+
 server.register('documents.tailorResume', {
   inputSchema: z.object({
     profile: UserProfileSchema,
