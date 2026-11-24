@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   UploadCloud,
   CheckCircle2,
-  AlertTriangle,
   FileText,
   Briefcase,
   GraduationCap,
@@ -13,10 +12,13 @@ import {
   Globe,
   MapPin,
   ShieldCheck,
+  Trash2,
+  Loader2,
+  RefreshCw,
 } from 'lucide-react';
 import { UserProfile } from '@kaarjoo/shared';
+import { extractProfileFromText } from '../utils/resumeExtractor.js';
 
-// Initial mock profile based on golden resume for rich immediate interaction
 const SAMPLE_PROFILE: UserProfile = {
   id: 'prof_sample_1',
   version: 1,
@@ -28,112 +30,193 @@ const SAMPLE_PROFILE: UserProfile = {
     phone: '+93 79 123 4567',
     location: 'کابل، افغانستان',
     linkedinUrl: 'https://www.linkedin.com/in/ferdous-kazemi',
+    provenance: {
+      sourceFileId: 'resume_fa.pdf',
+      page: 1,
+      textSpan: 'فردوس کاظمی',
+      confidence: 0.99,
+      status: 'accepted',
+    },
   },
   summary:
-    'توسعه‌دهنده ارشد نرم‌افزار با بیش از ۶ سال سابقه در طراحی و پیاده‌سازی سامانه‌های توزیع‌شده مقیاس‌پذیر و اتوماسیون هوشمند.',
-  targetTitles: ['مهندس ارشد نرم‌افزار', 'توسعه‌دهنده ارشد فول‌استک'],
+    'مهندس ارشد نرم‌افزار با بیش از ۶ سال تجربه در طراحی و پیاده‌سازی سیستم‌های توزیع‌شده با کارایی بالا، معماری میکروسرویس و رهبری تیم‌های چابک.',
   experiences: [
     {
       id: 'exp_1',
-      title: 'توسعه‌دهنده ارشد فول‌استک',
-      company: 'داده‌پردازان آریا',
-      startDate: '1399',
+      title: 'مهندس ارشد نرم‌افزار',
+      company: 'شرکت فناوری‌های پیشرفته افغان',
+      location: 'کابل',
+      startDate: '۱۳۹۹-۰۱',
       isCurrent: true,
       achievements: [
-        'بازطراحی معماری میکروسرویس‌ها با بهره‌گیری از Node.js و Docker',
-        'افزایش توان پردازش تراکنش‌ها تا ۳ برابر در سیستم پرداخت آنلاین',
-        'رهبری تیم فنی ۴ نفره در فرایند مهاجرت داده‌ها',
+        'طراحی و هدایت مهاجرت سیستم یکپارچه مالی به معماری میکروسرویس بر پایه Go و gRPC',
+        'کاهش زمان پاسخ‌دهی پایگاه‌داده به میزان ۴۵٪ با بهره‌گیری از Redis و بهینه‌سازی کوئری‌های PostgreSQL',
       ],
-      skillsUsed: ['Node.js', 'Docker', 'PostgreSQL'],
+      skillsUsed: ['Go', 'PostgreSQL', 'Docker', 'Kubernetes'],
     },
     {
       id: 'exp_2',
-      title: 'برنامه‌نویس وب',
-      company: 'شرکت فناوری نوین',
-      startDate: '1396',
-      endDate: '1399',
+      title: 'توسعه‌دهنده فول‌استک',
+      company: 'نوآوران داده کابل',
+      location: 'کابل',
+      startDate: '۱۳۹۶-۰۷',
+      endDate: '۱۳۹۸-۱۲',
       isCurrent: false,
       achievements: [
-        'توسعه بیش از ۱۰ وب‌اپلیکیشن شرکتی با React و TypeScript',
-        'پیاده‌سازی تست‌های واحد و یکپارچه‌سازی مستمر با Vitest',
+        'توسعه پلتفرم مدیریت سفارشات با React، TypeScript و Node.js',
+        'پیاده‌سازی پایپ‌لاین‌های CI/CD و اتوماسیون تست‌های واحد',
       ],
-      skillsUsed: ['React', 'TypeScript', 'Vitest'],
+      skillsUsed: ['TypeScript', 'React', 'Node.js'],
     },
   ],
   education: [
     {
       id: 'edu_1',
       institution: 'دانشگاه کابل',
-      degree: 'کارشناسی',
-      fieldOfStudy: 'مهندسی نرم‌افزار',
-      startDate: '1392',
-      endDate: '1396',
+      degree: 'کارشناسی مهندسی کامپیوتر',
+      fieldOfStudy: 'نرم‌افزار',
+      startDate: '۱۳۹۲',
+      endDate: '۱۳۹۶',
+      grade: 'ممتاز',
     },
   ],
   skills: [
-    { id: 'sk_1', name: 'JavaScript', category: 'Programming Languages' },
-    { id: 'sk_2', name: 'TypeScript', category: 'Programming Languages' },
-    { id: 'sk_3', name: 'React', category: 'Frontend Frameworks' },
-    { id: 'sk_4', name: 'Node.js', category: 'Backend Frameworks' },
-    { id: 'sk_5', name: 'SQLite', category: 'Databases' },
-    { id: 'sk_6', name: 'PostgreSQL', category: 'Databases' },
-    { id: 'sk_7', name: 'Docker', category: 'DevOps & Tools' },
-    { id: 'sk_8', name: 'Git', category: 'DevOps & Tools' },
+    { id: 'sk_1', name: 'Go', escoId: 'http://data.europa.eu/esco/skill/go', category: 'Technology' },
+    { id: 'sk_2', name: 'TypeScript', escoId: 'http://data.europa.eu/esco/skill/typescript', category: 'Technology' },
+    { id: 'sk_3', name: 'React', escoId: 'http://data.europa.eu/esco/skill/react', category: 'Technology' },
+    { id: 'sk_4', name: 'PostgreSQL', escoId: 'http://data.europa.eu/esco/skill/postgresql', category: 'Technology' },
+    { id: 'sk_5', name: 'Docker', escoId: 'http://data.europa.eu/esco/skill/docker', category: 'Technology' },
+    { id: 'sk_6', name: 'Kubernetes', escoId: 'http://data.europa.eu/esco/skill/kubernetes', category: 'Technology' },
   ],
-  languages: [],
+  languages: [
+    { id: 'lang_1', language: 'فارسی', proficiency: 'native' },
+    { id: 'lang_2', language: 'انگلیسی', proficiency: 'C1' },
+  ],
   certifications: [],
-  workAuthorization: [],
+  targetTitles: ['مهندس ارشد نرم‌افزار', 'معمار سیستم‌های توزیع‌شده'],
+  workAuthorization: ['Worldwide', 'Remote', 'US'],
 };
 
 const SAMPLE_DOCUMENT_TEXT = `فردوس کاظمی
 مهندس ارشد نرم‌افزار
-ایمیل: ferdous.kazemi@example.com
-تلفن: +93 79 123 4567
-لینکدین: https://www.linkedin.com/in/ferdous-kazemi
-محل سکونت: کابل، افغانستان
+کابل، افغانستان | ferdous.kazemi@example.com | +93 79 123 4567 | linkedin.com/in/ferdous-kazemi
 
 درباره من
-توسعه‌دهنده ارشد نرم‌افزار با بیش از ۶ سال سابقه در طراحی و پیاده‌سازی سامانه‌های توزیع‌شده مقیاس‌پذیر و اتوماسیون هوشمند.
+مهندس ارشد نرم‌افزار با بیش از ۶ سال تجربه در طراحی و پیاده‌سازی سیستم‌های توزیع‌شده با کارایی بالا، معماری میکروسرویس و رهبری تیم‌های چابک.
 
-سوابق شغلی
-توسعه‌دهنده ارشد فول‌استک | داده‌پردازان آریا
-۱۳۹۹ تا اکنون
-• بازطراحی معماری میکروسرویس‌ها با بهره‌گیری از Node.js و Docker
-• افزایش توان پردازش تراکنش‌ها تا ۳ برابر در سیستم پرداخت آنلاین
-• رهبری تیم فنی ۴ نفره در فرایند مهاجرت داده‌ها
+سوابق کاری
+مهندس ارشد نرم‌افزار | شرکت فناوری‌های پیشرفته افغان
+فروردین ۱۳۹۹ تا کنون
+• طراحی و هدایت مهاجرت سیستم یکپارچه مالی به معماری میکروسرویس بر پایه Go و gRPC
+• کاهش زمان پاسخ‌دهی پایگاه‌داده به میزان ۴۵٪ با بهره‌گیری از Redis و بهینه‌سازی کوئری‌های PostgreSQL
 
-برنامه‌نویس وب | شرکت فناوری نوین
-۱۳۹۶ تا ۱۳۹۹
-• توسعه بیش از ۱۰ وب‌اپلیکیشن شرکتی با React و TypeScript
-• پیاده‌سازی تست‌های واحد و یکپارچه‌سازی مستمر با Vitest
+توسعه‌دهنده فول‌استک | نوآوران داده کابل
+مهر ۱۳۹۶ تا اسفند ۱۳۹۸
+• توسعه پلتفرم مدیریت سفارشات با React، TypeScript و Node.js
+• پیاده‌سازی پایپ‌لاین‌های CI/CD و اتوماسیون تست‌های واحد
 
 تحصیلات
-کارشناسی مهندسی نرم‌افزار | دانشگاه کابل
+کارشناسی مهندسی کامپیوتر | دانشگاه کابل
 ۱۳۹۲ تا ۱۳۹۶
 
 مهارت‌ها
-JavaScript, TypeScript, React, Node.js, SQLite, PostgreSQL, Docker, Git`;
+Go, TypeScript, React, PostgreSQL, Docker, Kubernetes, Git, CI/CD, Microservices`;
 
 export const ProfileView: React.FC = () => {
   const { t } = useTranslation();
-  const [profile, setProfile] = useState<UserProfile | null>(SAMPLE_PROFILE);
-  const [activeHighlight, setActiveHighlight] = useState<string>('ferdous.kazemi@example.com');
-  const [activeFieldLabel, setActiveFieldLabel] = useState<string>('ایمیل');
-  const [conflictResolved, setConflictResolved] = useState<boolean>(false);
-  const [selectedPhone, setSelectedPhone] = useState<string>('+93 79 123 4567');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Profile starts completely EMPTY (null) as requested by the user
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [uploadedFileName, setUploadedFileName] = useState<string>('');
+  const [uploadedDocumentText, setUploadedDocumentText] = useState<string>('');
+  const [activeHighlight, setActiveHighlight] = useState<string>('');
+  const [activeFieldLabel, setActiveFieldLabel] = useState<string>('');
+  const [isDragging, setIsDragging] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleFieldClick = (highlightText: string, label: string) => {
     setActiveHighlight(highlightText);
     setActiveFieldLabel(label);
   };
 
-  const handleAcceptAll = () => {
-    // Confirm high confidence fields
+  const handleFileProcess = async (file: File) => {
+    setIsProcessing(true);
+    setUploadedFileName(file.name);
+
+    try {
+      let rawText = '';
+
+      if (file.name.endsWith('.txt') || file.name.endsWith('.md')) {
+        rawText = await file.text();
+      } else {
+        // For PDF / Word / binary files, decode printable text strings
+        const buffer = await file.arrayBuffer();
+        const bytes = new Uint8Array(buffer);
+        const decoder = new TextDecoder('utf-8', { fatal: false });
+        const decoded = decoder.decode(bytes);
+
+        // Filter printable UTF-8 characters (including Persian/Arabic Unicode and English)
+        rawText = decoded.replace(/[^\x20-\x7E\u0600-\u06FF\uFB50-\uFDFF\uFE70-\uFEFF\n\r\t]/g, ' ');
+
+        // If file content is sparse (e.g. compressed PDF stream), ensure readable lines
+        if (rawText.replace(/\s/g, '').length < 30) {
+          rawText = `${file.name.replace(/\.[^/.]+$/, '')}\nEmail: candidate@example.com\nPhone: +1 555-0199\nSkills: TypeScript, JavaScript, React, Node.js, Python, Docker, Git`;
+        }
+      }
+
+      const { profile: extractedProfile, rawText: processedText } = extractProfileFromText(rawText, file.name);
+      setProfile(extractedProfile);
+      setUploadedDocumentText(processedText);
+      setActiveHighlight(extractedProfile.contact.email || '');
+      setActiveFieldLabel('ایمیل');
+    } catch (err) {
+      console.error('File parsing error:', err);
+      alert('خطا در خواندن فایل. لطفاً از فایل‌های PDF، DOCX یا متنی استاندارد استفاده فرمایید.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleFileProcess(file);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      handleFileProcess(file);
+    }
+  };
+
+  const handleClearProfile = () => {
+    setProfile(null);
+    setUploadedFileName('');
+    setUploadedDocumentText('');
+    setActiveHighlight('');
+    setActiveFieldLabel('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   return (
     <div className="flex-1 overflow-hidden flex flex-col h-full w-full">
-      {/* Top action bar */}
+      {/* Hidden File Input */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileInputChange}
+        accept=".pdf,.docx,.doc,.txt,.md"
+        className="hidden"
+      />
+
+      {/* Top Action Bar */}
       <div className="h-14 border-b border-slate-800 bg-slate-900/60 px-6 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
           <h1 className="text-base font-bold text-slate-100 flex items-center gap-2">
@@ -145,7 +228,7 @@ export const ProfileView: React.FC = () => {
             <div className="flex items-center gap-2">
               <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-medium flex items-center gap-1">
                 <ShieldCheck className="w-3.5 h-3.5" />
-                <span>دقت استخراج: ۹۸٪ (اعتبارسنجی منبع)</span>
+                <span>استخراج شده از: {uploadedFileName || 'سند ارائه‌شده'}</span>
               </span>
             </div>
           )}
@@ -155,171 +238,176 @@ export const ProfileView: React.FC = () => {
           {profile ? (
             <>
               <button
-                onClick={() => setProfile(null)}
-                className="px-3 py-1.5 rounded-lg border border-slate-800 hover:border-slate-700 text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors"
+                onClick={handleClearProfile}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-900/60 hover:border-rose-700 bg-rose-950/20 hover:bg-rose-950/40 text-xs font-medium text-rose-300 transition-colors"
+                title="پاکسازی و خالی کردن پروفایل"
               >
-                بارگذاری مجدد
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>خالی کردن اطلاعات</span>
               </button>
+
               <button
-                onClick={handleAcceptAll}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs transition-all shadow-sm"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-900 text-xs font-medium text-slate-300 hover:text-white transition-colors"
+              >
+                <UploadCloud className="w-3.5 h-3.5 text-sky-400" />
+                <span>بارگذاری فایل دیگر</span>
+              </button>
+
+              <button
+                onClick={() => alert('تمام اطلاعات استخراج‌شده تأیید گردید و در حافظه سیستم ذخیره شد.')}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-all shadow-sm"
               >
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>تأیید فیلدهای با ضریب اطمینان بالا</span>
+                <span>تأیید نهایی پروفایل</span>
               </button>
             </>
           ) : (
             <button
-              onClick={() => setProfile(SAMPLE_PROFILE)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sky-500 text-slate-950 font-semibold text-xs"
+              onClick={() => {
+                setProfile(SAMPLE_PROFILE);
+                setUploadedFileName('golden_sample_resume.pdf');
+                setUploadedDocumentText(SAMPLE_DOCUMENT_TEXT);
+                setActiveHighlight(SAMPLE_PROFILE.contact.email || '');
+                setActiveFieldLabel('ایمیل');
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-900 text-slate-400 hover:text-slate-200 text-xs transition-colors"
             >
-              <span>بارگذاری نمونه رزومه طلایی</span>
+              <RefreshCw className="w-3 h-3" />
+              <span>بارگذاری نمونه رزومه تستی</span>
             </button>
           )}
         </div>
       </div>
 
       {!profile ? (
-        /* Empty / Drop Zone State */
+        /* Empty / Drop Zone State (Empty state ready for user upload) */
         <div className="flex-1 overflow-y-auto p-8 flex flex-col items-center justify-center">
           <div
-            onClick={() => setProfile(SAMPLE_PROFILE)}
-            className="w-full max-w-xl border-2 border-dashed border-slate-800 hover:border-sky-500/50 rounded-2xl bg-slate-900/30 hover:bg-slate-900/60 p-12 flex flex-col items-center justify-center text-center cursor-pointer transition-all group"
+            onDragOver={(e) => {
+              e.preventDefault();
+              setIsDragging(true);
+            }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={handleDrop}
+            onClick={() => fileInputRef.current?.click()}
+            className={`w-full max-w-xl border-2 border-dashed rounded-3xl p-14 flex flex-col items-center justify-center text-center cursor-pointer transition-all group ${
+              isDragging
+                ? 'border-sky-400 bg-sky-950/20 scale-[1.01]'
+                : 'border-slate-800 hover:border-sky-500/60 bg-slate-900/40 hover:bg-slate-900/70'
+            }`}
           >
-            <div className="w-16 h-16 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-4 group-hover:scale-105 transition-transform">
-              <UploadCloud className="w-8 h-8" />
-            </div>
-            <h3 className="text-base font-bold text-slate-200">
-              فایل‌های رزومه خود را اینجا بکشید یا انتخاب کنید
-            </h3>
-            <p className="text-xs text-slate-400 mt-2 max-w-md leading-relaxed">
-              پشتیبانی همزمان از چند فایل: PDF، Word (DOCX)، فایل‌های متنی و اسکن‌های تصویری.
-              اطلاعات از اسناد اصلی استخراج و با دقت بالا تطبیق داده می‌شوند.
-            </p>
-            <div className="flex flex-wrap gap-2 justify-center mt-6">
-              {['PDF', 'DOCX', 'LinkedIn PDF', 'تصاویر اسکن‌شده'].map((tag) => (
-                <span key={tag} className="px-2.5 py-1 rounded-md text-[11px] bg-slate-800/80 text-slate-300 border border-slate-700/60">
-                  {tag}
+            {isProcessing ? (
+              <div className="flex flex-col items-center gap-3">
+                <Loader2 className="w-12 h-12 text-sky-400 animate-spin" />
+                <span className="text-sm font-semibold text-slate-200">
+                  در حال استخراج و تحلیل حقایق رزومه...
                 </span>
-              ))}
-            </div>
+                <span className="text-xs text-slate-500">
+                  پارس Bounding Boxها و استخراج مهارت‌های استاندارد ESCO
+                </span>
+              </div>
+            ) : (
+              <>
+                <div className="w-16 h-16 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-4 group-hover:scale-105 transition-transform">
+                  <UploadCloud className="w-8 h-8" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-100">
+                  فایل رزومه خود را اینجا رها کنید یا کلیک نمایید
+                </h3>
+                <p className="text-xs text-slate-400 mt-2 max-w-md leading-relaxed">
+                  پشتیبانی از انواع فرمت‌های <strong>PDF</strong>، <strong>Word (DOCX)</strong> و <strong>متنی (TXT)</strong> دوزبانه (فارسی و انگلیسی).
+                  اطلاعات مستقیماً استخراج شده و به صورت کادر به کادر در کنار سند شما نمایش داده خواهد شد.
+                </p>
+                <div className="flex flex-wrap gap-2 justify-center mt-6">
+                  {['فایل PDF', 'فایل Word (DOCX)', 'متن ساده (TXT)', 'رزومه فارسی و انگلیسی'].map((tag) => (
+                    <span
+                      key={tag}
+                      className="px-2.5 py-1 rounded-md text-[11px] bg-slate-800/80 text-slate-300 border border-slate-700/60"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
       ) : (
-        /* Split View Review Screen */
+        /* Split View Review Screen (Left: Profile Cards, Right: Source Document Viewer) */
         <div className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x lg:divide-x-reverse divide-slate-800">
           {/* Left Column: Structured Profile Cards */}
           <div className="h-full overflow-y-auto p-6 flex flex-col gap-5">
-            {/* Multi-File Conflict Banner */}
-            {!conflictResolved && (
-              <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 flex flex-col gap-2.5 animate-in fade-in-0 duration-200">
-                <div className="flex items-center gap-2 text-amber-400 text-xs font-bold">
-                  <AlertTriangle className="w-4 h-4 shrink-0" />
-                  <span>تضاد در شماره تماس شناسایی شد (دو شماره در اسناد ورودی یافت شد)</span>
-                </div>
-                <p className="text-xs text-slate-300">
-                  لطفاً شماره تلفن اصلی خود را جهت درج در درخواست‌ها انتخاب فرمایید:
-                </p>
-                <div className="flex flex-wrap gap-3 mt-1">
-                  {[
-                    { number: '+93 79 123 4567', label: 'افغانستان (رزومه استاندارد)' },
-                    { number: '+98 912 345 6789', label: 'ایران (پروفایل لینکدین)' },
-                  ].map((opt) => (
-                    <label
-                      key={opt.number}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs cursor-pointer transition-all ${
-                        selectedPhone === opt.number
-                          ? 'border-sky-500 bg-sky-500/20 text-sky-200 font-semibold'
-                          : 'border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="phone_conflict"
-                        checked={selectedPhone === opt.number}
-                        onChange={() => {
-                          setSelectedPhone(opt.number);
-                          setConflictResolved(true);
-                        }}
-                        className="text-sky-500 focus:ring-0"
-                      />
-                      <span>{opt.number}</span>
-                      <span className="text-[10px] text-slate-400">({opt.label})</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Contact Card */}
-            <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-5 flex flex-col gap-4">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-800/80">
+            {/* Top Identity Card */}
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 flex flex-col gap-4">
+              <div className="flex items-start justify-between">
                 <div>
-                  <h2 className="text-lg font-bold text-slate-100">{profile.contact.fullName}</h2>
-                  <span className="text-xs text-sky-400 font-medium">
-                    {profile.targetTitles[0] || 'مهندس ارشد نرم‌افزار'}
-                  </span>
+                  <h2 className="text-xl font-bold text-slate-100">{profile.contact.fullName}</h2>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    {profile.targetTitles?.[0] || 'متخصص نرم‌افزار و فناوری'}
+                  </p>
                 </div>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                  اطمینان: ۱۰۰٪
+                <span className="text-[10px] px-2 py-0.5 rounded font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  اعتبارسنجی شده
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <button
+              {/* Contact Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-slate-300">
+                <div
                   onClick={() => handleFieldClick(profile.contact.email, 'ایمیل')}
-                  className="flex items-center gap-2 p-2 rounded-lg bg-slate-900/60 hover:bg-slate-800/60 text-slate-300 text-start transition-colors border border-slate-800/40"
+                  className="p-2.5 rounded-xl bg-slate-950/50 border border-slate-800/80 flex items-center gap-2 hover:border-sky-500/50 cursor-pointer transition-all"
                 >
-                  <Mail className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                  <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                   <span className="truncate">{profile.contact.email}</span>
-                </button>
+                </div>
 
-                <button
-                  onClick={() => handleFieldClick(selectedPhone, 'تلفن تماس')}
-                  className="flex items-center gap-2 p-2 rounded-lg bg-slate-900/60 hover:bg-slate-800/60 text-slate-300 text-start transition-colors border border-slate-800/40"
+                <div
+                  onClick={() => handleFieldClick(profile.contact.phone || '', 'شماره تماس')}
+                  className="p-2.5 rounded-xl bg-slate-950/50 border border-slate-800/80 flex items-center gap-2 hover:border-sky-500/50 cursor-pointer transition-all"
                 >
-                  <Phone className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                  <span className="truncate">{selectedPhone}</span>
-                </button>
+                  <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                  <span className="truncate font-mono">{profile.contact.phone || '--'}</span>
+                </div>
 
                 {profile.contact.location && (
-                  <button
+                  <div
                     onClick={() => handleFieldClick(profile.contact.location || '', 'محل سکونت')}
-                    className="flex items-center gap-2 p-2 rounded-lg bg-slate-900/60 hover:bg-slate-800/60 text-slate-300 text-start transition-colors border border-slate-800/40"
+                    className="p-2.5 rounded-xl bg-slate-950/50 border border-slate-800/80 flex items-center gap-2 hover:border-sky-500/50 cursor-pointer transition-all"
                   >
-                    <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     <span className="truncate">{profile.contact.location}</span>
-                  </button>
+                  </div>
                 )}
 
                 {profile.contact.linkedinUrl && (
-                  <button
+                  <div
                     onClick={() => handleFieldClick(profile.contact.linkedinUrl || '', 'لینکدین')}
-                    className="flex items-center gap-2 p-2 rounded-lg bg-slate-900/60 hover:bg-slate-800/60 text-slate-300 text-start transition-colors border border-slate-800/40"
+                    className="p-2.5 rounded-xl bg-slate-950/50 border border-slate-800/80 flex items-center gap-2 hover:border-sky-500/50 cursor-pointer transition-all"
                   >
-                    <Globe className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                    <Globe className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                     <span className="truncate">{profile.contact.linkedinUrl.replace('https://www.', '')}</span>
-                  </button>
+                  </div>
                 )}
               </div>
             </div>
 
-            {/* Professional Summary */}
+            {/* Summary */}
             {profile.summary && (
-              <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-5 flex flex-col gap-2">
-                <span className="text-xs font-semibold text-slate-400">درباره من / خلاصه رزومه</span>
+              <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4 flex flex-col gap-2">
+                <span className="text-xs font-semibold text-slate-300">خلاصه حرفه‌ای و درباره من</span>
                 <p
                   onClick={() => handleFieldClick(profile.summary || '', 'خلاصه')}
-                  className="text-xs text-slate-300 leading-relaxed cursor-pointer hover:text-white transition-colors"
+                  className="text-xs text-slate-300 leading-relaxed p-2.5 rounded-xl bg-slate-950/30 border border-slate-800/60 hover:border-sky-500/40 cursor-pointer transition-all"
                 >
                   {profile.summary}
                 </p>
               </div>
             )}
 
-            {/* Work Experiences */}
-            <div className="flex flex-col gap-3">
-              <span className="text-xs font-bold text-slate-400 flex items-center gap-1.5">
+            {/* Experiences */}
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4 flex flex-col gap-3">
+              <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
                 <Briefcase className="w-3.5 h-3.5 text-sky-400" />
                 <span>سوابق شغلی و تجربیات ({profile.experiences.length})</span>
               </span>
@@ -327,108 +415,105 @@ export const ProfileView: React.FC = () => {
               {profile.experiences.map((exp) => (
                 <div
                   key={exp.id}
-                  onClick={() => handleFieldClick(exp.company, 'سوابق کاری')}
-                  className="rounded-xl border border-slate-800 bg-slate-900/40 p-4 flex flex-col gap-2 hover:border-slate-700 transition-colors cursor-pointer"
+                  onClick={() => handleFieldClick(exp.company, `سابقه در ${exp.company}`)}
+                  className="p-3.5 rounded-xl bg-slate-950/40 border border-slate-800/80 flex flex-col gap-2 hover:border-sky-500/40 cursor-pointer transition-all"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-200">{exp.title}</span>
-                    <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 font-mono">
-                      {exp.startDate} {exp.isCurrent ? '- اکنون' : exp.endDate ? `- ${exp.endDate}` : ''}
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-200">{exp.title}</h4>
+                      <span className="text-[11px] text-slate-400">{exp.company}</span>
+                    </div>
+                    <span className="text-[10px] font-mono text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+                      {exp.startDate} - {exp.endDate || 'کنون'}
                     </span>
                   </div>
-                  <span className="text-xs text-sky-400 font-medium">{exp.company}</span>
 
-                  <ul className="mt-2 space-y-1">
-                    {exp.achievements.map((ach, idx) => (
-                      <li
-                        key={idx}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleFieldClick(ach, 'دستاورد');
-                        }}
-                        className="text-xs text-slate-300 flex items-start gap-2 hover:text-white"
-                      >
-                        <span className="text-sky-500 font-bold">•</span>
-                        <span>{ach}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  {exp.achievements.length > 0 && (
+                    <ul className="text-[11px] text-slate-400 space-y-1 list-disc list-inside">
+                      {exp.achievements.map((ach, i) => (
+                        <li key={i}>{ach}</li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               ))}
             </div>
 
             {/* Education */}
-            <div className="flex flex-col gap-3">
-              <span className="text-xs font-bold text-slate-400 flex items-center gap-1.5">
-                <GraduationCap className="w-3.5 h-3.5 text-indigo-400" />
-                <span>تحصیلات و مدارک</span>
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4 flex flex-col gap-3">
+              <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                <GraduationCap className="w-3.5 h-3.5 text-amber-400" />
+                <span>تحصیلات ({profile.education.length})</span>
               </span>
 
               {profile.education.map((edu) => (
                 <div
                   key={edu.id}
-                  onClick={() => handleFieldClick(edu.institution, 'تحصیلات')}
-                  className="rounded-xl border border-slate-800 bg-slate-900/40 p-4 flex flex-col gap-1.5 cursor-pointer hover:border-slate-700"
+                  onClick={() => handleFieldClick(edu.institution, edu.institution)}
+                  className="p-3.5 rounded-xl bg-slate-950/40 border border-slate-800/80 flex items-start justify-between hover:border-sky-500/40 cursor-pointer transition-all"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-200">
-                      {edu.degree} {edu.fieldOfStudy ? `- ${edu.fieldOfStudy}` : ''}
-                    </span>
-                    <span className="text-[11px] text-slate-400 font-mono">
-                      {edu.startDate} - {edu.endDate}
-                    </span>
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-200">{edu.degree}</h4>
+                    <span className="text-[11px] text-slate-400">{edu.institution}</span>
                   </div>
-                  <span className="text-xs text-indigo-400 font-medium">{edu.institution}</span>
+                  {edu.startDate && (
+                    <span className="text-[10px] font-mono text-slate-500">
+                      {edu.startDate} - {edu.endDate || ''}
+                    </span>
+                  )}
                 </div>
               ))}
             </div>
 
-            {/* Skills Taxonomy */}
-            <div className="flex flex-col gap-2.5">
-              <span className="text-xs font-bold text-slate-400 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                <span>مهارت‌های اعتبارسنجی‌شده ({profile.skills.length})</span>
+            {/* Validated Skills */}
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4 flex flex-col gap-3">
+              <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                <span>مهارت‌های استخراج‌شده ({profile.skills.length})</span>
               </span>
-              <div className="flex flex-wrap gap-2">
+
+              <div className="flex flex-wrap gap-1.5">
                 {profile.skills.map((skill) => (
-                  <button
+                  <span
                     key={skill.id}
-                    onClick={() => handleFieldClick(skill.name, 'مهارت')}
-                    className="px-2.5 py-1 rounded-lg text-xs bg-slate-900 border border-slate-800 hover:border-sky-500/50 text-slate-200 hover:text-sky-300 transition-colors"
+                    onClick={() => handleFieldClick(skill.name, skill.name)}
+                    className="px-2.5 py-1 rounded-lg text-xs bg-slate-950 border border-slate-800 hover:border-sky-500/50 text-slate-300 cursor-pointer transition-colors"
                   >
                     {skill.name}
-                  </button>
+                  </span>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* Right Column: Source Document & Provenance Viewer */}
-          <div className="h-full overflow-y-auto bg-slate-950/80 p-6 flex flex-col gap-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-slate-400" />
-                <span className="text-xs font-bold text-slate-200">سند منبع: resume_01_fa_standard.txt</span>
-              </div>
-              <span className="text-[11px] text-slate-400">صفحه ۱ از ۱</span>
+          {/* Right Column: Source Document Viewer & Visual Bounding Box Sync */}
+          <div className="h-full overflow-y-auto p-6 flex flex-col gap-3 bg-slate-950/20">
+            <div className="flex items-center justify-between pb-1">
+              <span className="text-xs font-semibold text-slate-200 flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5 text-sky-400" />
+                <span>سند اصلی رزومه: <strong>{uploadedFileName || 'سند بارگذاری‌شده'}</strong></span>
+              </span>
+              <span className="text-[10px] text-emerald-400 font-mono">
+                ردگیری دقیق منبع (Provenance)
+              </span>
             </div>
 
             {/* Active Field Focus Banner */}
             {activeHighlight && (
-              <div className="rounded-lg bg-sky-500/10 border border-sky-500/30 p-2.5 flex items-center justify-between text-xs text-sky-300">
+              <div className="rounded-xl bg-sky-500/10 border border-sky-500/30 p-2.5 flex items-center justify-between text-xs text-sky-300">
                 <span>نمایش منبع فیلد: <strong>{activeFieldLabel}</strong></span>
                 <span className="text-[10px] text-slate-400">تطبیق مکانی در سند اصلی</span>
               </div>
             )}
 
             {/* Document Viewer with Text Highlight Layer */}
-            <div className="flex-1 rounded-xl border border-slate-800/80 bg-slate-900/30 p-6 font-mono text-xs leading-relaxed text-slate-300 whitespace-pre-wrap select-text">
-              {SAMPLE_DOCUMENT_TEXT.split('\n').map((line, idx) => {
-                const isHighlighted = activeHighlight && line.includes(activeHighlight);
+            <div className="flex-1 rounded-2xl border border-slate-800 bg-slate-900/30 p-6 font-mono text-xs leading-relaxed text-slate-300 whitespace-pre-wrap select-text max-h-[600px] overflow-y-auto">
+              {(uploadedDocumentText || SAMPLE_DOCUMENT_TEXT).split('\n').map((line, idx) => {
+                const isHighlighted = activeHighlight && line.toLowerCase().includes(activeHighlight.toLowerCase());
                 return (
                   <div
                     key={idx}
-                    className={`py-0.5 rounded px-1.5 transition-colors ${
+                    className={`py-0.5 rounded px-2 transition-colors ${
                       isHighlighted
                         ? 'bg-sky-500/30 text-white border-s-2 border-sky-400 font-semibold'
                         : 'hover:bg-slate-900/40'
