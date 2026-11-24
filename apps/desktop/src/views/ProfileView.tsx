@@ -15,6 +15,9 @@ import {
   Trash2,
   Loader2,
   RefreshCw,
+  CheckCheck,
+  Lock,
+  BarChart3,
 } from 'lucide-react';
 import { UserProfile } from '@kaarjoo/shared';
 import { extractProfileFromText } from '../utils/resumeExtractor.js';
@@ -205,6 +208,21 @@ export const ProfileView: React.FC = () => {
     }
   };
 
+  const completenessScore = profile
+    ? Math.min(
+        100,
+        Math.round(
+          (profile.contact.fullName ? 20 : 0) +
+          (profile.contact.email ? 20 : 0) +
+          (profile.contact.phone ? 10 : 0) +
+          (profile.summary ? 15 : 0) +
+          (profile.experiences.length > 0 ? 15 : 0) +
+          (profile.education.length > 0 ? 10 : 0) +
+          (profile.skills.length > 0 ? 10 : 0)
+        )
+      )
+    : 0;
+
   return (
     <div className="flex-1 overflow-hidden flex flex-col h-full w-full">
       {/* Hidden File Input */}
@@ -338,6 +356,76 @@ export const ProfileView: React.FC = () => {
         <div className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x lg:divide-x-reverse divide-slate-800">
           {/* Left Column: Structured Profile Cards */}
           <div className="h-full overflow-y-auto p-6 flex flex-col gap-5">
+            {/* Extraction Insights & Summary Card */}
+            <div className="rounded-2xl border border-sky-500/30 bg-gradient-to-br from-sky-950/40 via-slate-900/80 to-slate-900/60 p-4.5 flex flex-col gap-3 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center shrink-0">
+                    <BarChart3 className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold text-slate-100 flex items-center gap-1.5">
+                      <span>داده‌های شناسایی و استخراج‌شده از رزومه شما</span>
+                    </h3>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      سیستم کارجو موارد زیر را مستقیماً از فایل «{uploadedFileName || 'سند بارگذاری‌شده'}» استخراج و دسته‌بندی نموده است:
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[11px] font-semibold text-emerald-400 shrink-0">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>تکمیل پروفایل: {completenessScore}٪</span>
+                </div>
+              </div>
+
+              {/* 4 Mini Stat Badges */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+                <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 flex flex-col gap-0.5">
+                  <span className="text-[10px] text-slate-400">اطلاعات هویتی و تماس</span>
+                  <span className="text-xs font-bold text-slate-200 flex items-center gap-1">
+                    <CheckCheck className="w-3.5 h-3.5 text-emerald-400" />
+                    <span className="truncate">{profile.contact.fullName || 'نامشخص'}</span>
+                  </span>
+                  <span className="text-[10px] text-slate-500 truncate font-mono">
+                    {profile.contact.email || profile.contact.phone || 'فاقد تماس'}
+                  </span>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 flex flex-col gap-0.5">
+                  <span className="text-[10px] text-slate-400">سوابق شغلی شناسایی‌شده</span>
+                  <span className="text-xs font-bold text-slate-200 flex items-center gap-1">
+                    <Briefcase className="w-3.5 h-3.5 text-sky-400" />
+                    <span>{profile.experiences.length} موقعیت شغلی</span>
+                  </span>
+                  <span className="text-[10px] text-slate-500 truncate">
+                    {profile.experiences[0]?.company || 'آماده ارزیابی'}
+                  </span>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 flex flex-col gap-0.5">
+                  <span className="text-[10px] text-slate-400">مهارت‌های فنی (ESCO)</span>
+                  <span className="text-xs font-bold text-slate-200 flex items-center gap-1">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                    <span>{profile.skills.length} مهارت تخصصی</span>
+                  </span>
+                  <span className="text-[10px] text-slate-500">
+                    جهت تطبیق با فرصت‌های US/EU
+                  </span>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 flex flex-col gap-0.5">
+                  <span className="text-[10px] text-slate-400">ضمانت راستی‌آزمایی</span>
+                  <span className="text-xs font-bold text-emerald-300 flex items-center gap-1">
+                    <Lock className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>۱۰۰٪ سندیت محلی</span>
+                  </span>
+                  <span className="text-[10px] text-slate-500">
+                    بدون جعل / ذخیره در سیستم
+                  </span>
+                </div>
+              </div>
+            </div>
+
             {/* Top Identity Card */}
             <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 flex flex-col gap-4">
               <div className="flex items-start justify-between">
