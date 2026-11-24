@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { AtsTypeSchema } from './job.js';
 
 export const ApplicationStatusSchema = z.enum([
+  'saved',
   'draft',
   'queued',
   'filling',
@@ -9,10 +10,25 @@ export const ApplicationStatusSchema = z.enum([
   'needs_review',
   'submitting',
   'submitted',
+  'applied',
+  'interview',
+  'offer',
+  'rejected',
+  'withdrawn',
   'failed',
   'cancelled',
 ]);
 export type ApplicationStatus = z.infer<typeof ApplicationStatusSchema>;
+
+export const KanbanColumnIdSchema = z.enum([
+  'saved',
+  'ready',
+  'applied',
+  'interview',
+  'offer',
+  'rejected',
+]);
+export type KanbanColumnId = z.infer<typeof KanbanColumnIdSchema>;
 
 export const ApplicationModeSchema = z.enum(['review', 'auto']);
 export type ApplicationMode = z.infer<typeof ApplicationModeSchema>;
@@ -85,11 +101,21 @@ export const ReviewChecklistItemSchema = z.object({
 });
 export type ReviewChecklistItem = z.infer<typeof ReviewChecklistItemSchema>;
 
+export const ApplicationTimelineEventSchema = z.object({
+  id: z.string(),
+  status: z.string(),
+  timestamp: z.string(),
+  title: z.string(),
+  note: z.string().optional(),
+});
+export type ApplicationTimelineEvent = z.infer<typeof ApplicationTimelineEventSchema>;
+
 export const ApplicationRecordSchema = z.object({
   id: z.string(),
   jobId: z.string(),
   jobTitle: z.string(),
   company: z.string(),
+  location: z.string().optional(),
   applyUrl: z.string(),
   atsType: AtsTypeSchema,
   mode: ApplicationModeSchema.default('review'),
@@ -97,6 +123,21 @@ export const ApplicationRecordSchema = z.object({
   profileId: z.string(),
   tailoredResumePath: z.string().optional(),
   coverLetterText: z.string().optional(),
+  matchScore: z.number().min(0).max(100).optional(),
+  salaryText: z.string().optional(),
+  notes: z.string().optional(),
+  interviewDate: z.string().optional(),
+  followUpDate: z.string().optional(),
+  timeline: z.array(ApplicationTimelineEventSchema).default([]),
+  jobSnapshot: z
+    .object({
+      title: z.string(),
+      company: z.string(),
+      location: z.string().optional(),
+      descriptionMarkdown: z.string().optional(),
+      requirements: z.array(z.string()).default([]),
+    })
+    .optional(),
   filledFields: z.array(FilledFieldValueSchema).default([]),
   reviewChecklist: z.array(ReviewChecklistItemSchema).default([]),
   screenshotBeforeSubmit: z.string().optional(),

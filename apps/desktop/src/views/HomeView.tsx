@@ -1,11 +1,14 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAppStore } from '../stores/appStore';
+import { useAppStore } from '../stores/appStore.js';
+import { useApplicationStore } from '../stores/applicationStore.js';
 import { UploadCloud, Sparkles, TrendingUp, CheckCircle, ShieldCheck, ArrowUpRight } from 'lucide-react';
 
 export const HomeView: React.FC = () => {
   const { t } = useTranslation();
   const { setCurrentView } = useAppStore();
+  const { getKpis } = useApplicationStore();
+  const kpis = getKpis();
 
   return (
     <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6 max-w-6xl mx-auto w-full">
@@ -43,7 +46,7 @@ export const HomeView: React.FC = () => {
             <TrendingUp className="w-4 h-4 text-sky-400" />
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-slate-100">۰</span>
+            <span className="text-2xl font-bold font-mono text-slate-100">{kpis.thisWeek}</span>
             <span className="text-xs text-slate-500">هدف: ۱۰ در هفته</span>
           </div>
         </div>
@@ -54,19 +57,19 @@ export const HomeView: React.FC = () => {
             <Sparkles className="w-4 h-4 text-emerald-400" />
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-slate-100">--</span>
+            <span className="text-2xl font-bold font-mono text-slate-100">{kpis.avgScore}%</span>
             <span className="text-xs text-emerald-400">محاسبه محلی با LLM</span>
           </div>
         </div>
 
         <div className="rounded-xl border border-slate-800/80 bg-slate-900/40 p-4 flex flex-col gap-2">
           <div className="flex items-center justify-between text-slate-400">
-            <span className="text-xs font-medium">نرخ پاسخ کارفرمایان</span>
-            <CheckCircle className="w-4 h-4 text-indigo-400" />
+            <span className="text-xs font-medium">نرخ دعوت به مصاحبه</span>
+            <CheckCircle className="w-4 h-4 text-amber-400" />
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-slate-100">-- %</span>
-            <span className="text-xs text-slate-500">در انتظار اولین بازخورد</span>
+            <span className="text-2xl font-bold font-mono text-amber-300">{kpis.interviewRate}%</span>
+            <span className="text-xs text-slate-500">از درخواست‌های ارسال‌شده</span>
           </div>
         </div>
 

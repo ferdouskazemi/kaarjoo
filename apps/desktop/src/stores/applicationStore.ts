@@ -1,10 +1,23 @@
 import { create } from 'zustand';
-import { ApplicationRecord, ApplicationMode } from '@kaarjoo/shared';
+import {
+  ApplicationRecord,
+  ApplicationMode,
+  ApplicationStatus,
+} from '@kaarjoo/shared';
 
 export interface ApplyingStepInfo {
   step: 'idle' | 'navigating' | 'detecting' | 'filling' | 'uploading' | 'review_ready' | 'submitted' | 'error';
   messageFa: string;
   messageEn: string;
+}
+
+export interface ApplicationKpis {
+  total: number;
+  thisWeek: number;
+  interviewRate: number;
+  avgScore: number;
+  topMissingSkills: Array<{ skill: string; count: number }>;
+  atsDistribution: Record<string, number>;
 }
 
 interface ApplicationStoreState {
@@ -19,8 +32,12 @@ interface ApplicationStoreState {
       id: string;
       title: string;
       company: string;
+      location?: string;
       applyUrl: string;
       atsType?: string;
+      matchScore?: number;
+      salaryText?: string;
+      descriptionMarkdown?: string;
     };
     tailoredResumePath?: string;
     coverLetterText?: string;
@@ -29,9 +46,15 @@ interface ApplicationStoreState {
 
   executeApplication: (id: string) => Promise<void>;
   submitReviewed: (id: string) => Promise<void>;
+  updateApplicationStatus: (id: string, newStatus: ApplicationStatus) => void;
+  updateApplicationNotes: (id: string, notes: string) => void;
+  scheduleInterview: (id: string, date: string, note?: string) => void;
+  setFollowUp: (id: string, date: string) => void;
   cancelApplication: (id: string) => void;
   setActiveApplicationId: (id: string | null) => void;
   setPreviewScreenshot: (url: string | null) => void;
+  exportToCsv: () => string;
+  getKpis: () => ApplicationKpis;
 }
 
 const mockInitialApplications: ApplicationRecord[] = [
@@ -40,23 +63,37 @@ const mockInitialApplications: ApplicationRecord[] = [
     jobId: 'gh_spotify_77201',
     jobTitle: 'Senior Backend Engineer - Core Infrastructure',
     company: 'Spotify',
+    location: 'Stockholm, Sweden (Remote EU)',
     applyUrl: 'https://boards.greenhouse.io/spotify/jobs/77201',
     atsType: 'greenhouse',
     mode: 'review',
     status: 'needs_review',
+    matchScore: 94,
+    salaryText: '€95,000 - €125,000 / yr',
     profileId: 'usr_default',
     tailoredResumePath: 'C:\\Work\\kaarjoo\\eval\\resumes\\Spotify_Tailored_ATS.pdf',
     coverLetterText: 'Dear Spotify Team,\nI am thrilled to apply for the Senior Backend Engineer role. With over 6 years of experience building high-throughput distributed microservices...',
     stopReason: 'none',
+    timeline: [
+      { id: 'tl_1', status: 'saved', timestamp: new Date(Date.now() - 86400000 * 2).toISOString(), title: 'آگهی ذخیره شد', note: 'یافته شده از طریق کراولر بورد گرین‌هاوس اسپاتیفای' },
+      { id: 'tl_2', status: 'tailored', timestamp: new Date(Date.now() - 86400000).toISOString(), title: 'رزومه سفارشی تولید شد', note: 'تطبیق با مهارت‌های Kafka, Go, Distributed Systems' },
+      { id: 'tl_3', status: 'needs_review', timestamp: new Date(Date.now() - 3600000).toISOString(), title: 'فرم تکمیل شد و آماده بازبینی است' },
+    ],
+    jobSnapshot: {
+      title: 'Senior Backend Engineer - Core Infrastructure',
+      company: 'Spotify',
+      location: 'Stockholm, Sweden (Remote EU)',
+      requirements: ['Java/Go', 'Kafka', 'Kubernetes', 'Microservices'],
+      descriptionMarkdown: 'Join Spotify Core Infrastructure to scale event streaming platforms...',
+    },
+    notes: 'پروژه‌های رویدادمحور و سابقه کار با کافکا در رزومه هایلایت شده است.',
     filledFields: [
       { fieldId: 'first_name', fieldName: 'job_application[first_name]', label: 'First Name', value: 'فردوس', displayValue: 'فردوس (Ferdous)', confidence: 0.98, canonicalField: 'first_name', isRequired: true },
       { fieldId: 'last_name', fieldName: 'job_application[last_name]', label: 'Last Name', value: 'کاظمی', displayValue: 'کاظمی (Kazemi)', confidence: 0.98, canonicalField: 'last_name', isRequired: true },
       { fieldId: 'email', fieldName: 'job_application[email]', label: 'Email', value: 'ferdous.kazemi@example.com', displayValue: 'ferdous.kazemi@example.com', confidence: 1.0, canonicalField: 'email', isRequired: true },
       { fieldId: 'phone', fieldName: 'job_application[phone]', label: 'Phone', value: '+49 170 1234567', displayValue: '+49 170 1234567', confidence: 0.95, canonicalField: 'phone', isRequired: true },
       { fieldId: 'resume', fieldName: 'job_application[resume]', label: 'Resume / CV', value: 'Spotify_Tailored_ATS.pdf', displayValue: 'Spotify_Tailored_ATS.pdf (ATS-Safe)', confidence: 1.0, canonicalField: 'resume', isRequired: true },
-      { fieldId: 'linkedin_url', fieldName: 'job_application[urls][LinkedIn]', label: 'LinkedIn', value: 'https://linkedin.com/in/ferdouskazemi', displayValue: 'https://linkedin.com/in/ferdouskazemi', confidence: 1.0, canonicalField: 'linkedin', isRequired: false },
-      { fieldId: 'github_url', fieldName: 'job_application[urls][GitHub]', label: 'GitHub', value: 'https://github.com/ferdouskazemi', displayValue: 'https://github.com/ferdouskazemi', confidence: 1.0, canonicalField: 'github', isRequired: false },
-      { fieldId: 'work_auth', fieldName: 'job_application[answers][work_auth]', label: 'Legally authorized to work in EU/Sweden', value: 'yes', displayValue: 'Yes', confidence: 0.95, canonicalField: 'work_authorization', isRequired: true },
+      { fieldId: 'work_auth', fieldName: 'job_application[answers][work_auth]', label: 'Work Authorization (EU)', value: 'yes', displayValue: 'Yes', confidence: 0.95, canonicalField: 'work_authorization', isRequired: true },
       { fieldId: 'gender', fieldName: 'job_application[gender]', label: 'Demographic: Gender', value: 'decline', displayValue: 'I decline to self-identify', confidence: 1.0, canonicalField: 'eeo_gender', isRequired: false },
     ],
     reviewChecklist: [
@@ -65,30 +102,134 @@ const mockInitialApplications: ApplicationRecord[] = [
       { id: 'email', label: 'Email', value: 'ferdous.kazemi@example.com', status: 'ok', category: 'contact' },
       { id: 'phone', label: 'Phone', value: '+49 170 1234567', status: 'ok', category: 'contact' },
       { id: 'resume', label: 'Tailored Résumé PDF', value: 'Spotify_Tailored_ATS.pdf', status: 'ok', category: 'documents' },
-      { id: 'cover_letter', label: 'Cover Letter', value: 'تولید شده بر اساس ۲ دستاورد واقعی (تأیید شده با گارد اصالت)', status: 'ok', category: 'documents' },
-      { id: 'work_auth', label: 'Work Authorization (EU)', value: 'Yes (دارای مجوز کار قانونی)', status: 'ok', category: 'screening' },
-      { id: 'gender', label: 'EEO / Demographics', value: 'I decline to self-identify (طبق استاندارد حفظ حریم خصوصی)', status: 'ok', category: 'eeo' },
+      { id: 'work_auth', label: 'Work Authorization (EU)', value: 'Yes', status: 'ok', category: 'screening' },
+      { id: 'gender', label: 'EEO / Demographics', value: 'I decline to self-identify', status: 'ok', category: 'eeo' },
     ],
     screenshotBeforeSubmit: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1200&q=80',
-    createdAt: new Date(Date.now() - 3600000).toISOString(),
-    updatedAt: new Date(Date.now() - 1800000).toISOString(),
+    createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+    updatedAt: new Date(Date.now() - 3600000).toISOString(),
   },
   {
     id: 'app_seed_002',
     jobId: 'lever_figma_001',
     jobTitle: 'Staff Design Systems Architect',
     company: 'Figma',
+    location: 'San Francisco, CA (Remote)',
     applyUrl: 'https://jobs.lever.co/figma/lever-figma-001',
     atsType: 'lever',
     mode: 'review',
-    status: 'queued',
+    status: 'applied',
+    matchScore: 92,
+    salaryText: '$210,000 - $275,000 / yr',
     profileId: 'usr_default',
     tailoredResumePath: 'C:\\Work\\kaarjoo\\eval\\resumes\\Figma_DesignSystem_Tailored.pdf',
+    notes: 'فرم با موفقیت ارسال شد و ایمیل تأییدیه Lever دریافت گردید.',
+    submittedAt: new Date(Date.now() - 86400000 * 3).toISOString(),
+    stopReason: 'none',
     filledFields: [],
     reviewChecklist: [],
+    timeline: [
+      { id: 'tl_f1', status: 'saved', timestamp: new Date(Date.now() - 86400000 * 4).toISOString(), title: 'آگهی ذخیره شد' },
+      { id: 'tl_f2', status: 'applied', timestamp: new Date(Date.now() - 86400000 * 3).toISOString(), title: 'ارسال نهایی به Lever با موفقیت انجام شد' },
+    ],
+    screenshotConfirmation: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1200&q=80',
+    createdAt: new Date(Date.now() - 86400000 * 4).toISOString(),
+    updatedAt: new Date(Date.now() - 86400000 * 3).toISOString(),
+  },
+  {
+    id: 'app_seed_003',
+    jobId: 'gh_gitlab_502',
+    jobTitle: 'Staff Backend Engineer, Distributed Architecture',
+    company: 'GitLab',
+    location: 'Remote Worldwide',
+    applyUrl: 'https://boards.greenhouse.io/gitlab/jobs/502',
+    atsType: 'greenhouse',
+    mode: 'review',
+    status: 'interview',
+    matchScore: 95,
+    salaryText: '$180,000 - $240,000 / yr',
+    profileId: 'usr_default',
+    interviewDate: '2026-03-02T15:00:00Z',
+    notes: 'مصاحبه تکنیکال مرحله دوم با Principal Engineer در تاریخ ۲ مارس تعیین شده است.',
     stopReason: 'none',
+    filledFields: [],
+    reviewChecklist: [],
+    timeline: [
+      { id: 'tl_g1', status: 'applied', timestamp: new Date(Date.now() - 86400000 * 7).toISOString(), title: 'درخواست ارسال شد' },
+      { id: 'tl_g2', status: 'interview', timestamp: new Date(Date.now() - 86400000 * 2).toISOString(), title: 'دعوت به مصاحبه فنی دوم دریافت شد', note: 'لینک Zoom در تقویم ذخیره گردید.' },
+    ],
+    createdAt: new Date(Date.now() - 86400000 * 8).toISOString(),
+    updatedAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+  },
+  {
+    id: 'app_seed_004',
+    jobId: 'workable_klarna_103',
+    jobTitle: 'Senior Distributed Systems Engineer',
+    company: 'Klarna',
+    location: 'Stockholm, Sweden (Hybrid)',
+    applyUrl: 'https://apply.workable.com/klarna/jobs/103',
+    atsType: 'workable',
+    mode: 'review',
+    status: 'offer',
+    matchScore: 91,
+    salaryText: '€110,000 / yr + Equity',
+    profileId: 'usr_default',
+    notes: 'پیشنهاد کاری کتبی دریافت شد. در حال بررسی جزئیات بیمه و مرخصی‌ها.',
+    stopReason: 'none',
+    filledFields: [],
+    reviewChecklist: [],
+    timeline: [
+      { id: 'tl_k1', status: 'applied', timestamp: new Date(Date.now() - 86400000 * 14).toISOString(), title: 'درخواست ارسال شد' },
+      { id: 'tl_k2', status: 'interview', timestamp: new Date(Date.now() - 86400000 * 8).toISOString(), title: 'مصاحبه‌ها انجام شد' },
+      { id: 'tl_k3', status: 'offer', timestamp: new Date(Date.now() - 86400000 * 1).toISOString(), title: 'پیشنهاد کاری (Offer Letter) صادر شد' },
+    ],
+    createdAt: new Date(Date.now() - 86400000 * 15).toISOString(),
+    updatedAt: new Date(Date.now() - 86400000 * 1).toISOString(),
+  },
+  {
+    id: 'app_seed_005',
+    jobId: 'ashby_openai_101',
+    jobTitle: 'Research Engineer - AI Alignment & Safety',
+    company: 'OpenAI',
+    location: 'San Francisco, CA (Hybrid)',
+    applyUrl: 'https://jobs.ashbyhq.com/openai/ashby-openai-101',
+    atsType: 'ashby',
+    mode: 'review',
+    status: 'saved',
+    matchScore: 89,
+    salaryText: '$240,000 - $350,000 / yr',
+    profileId: 'usr_default',
+    notes: 'آگهی ذخیره شده برای تنظیم رزومه تخصصی حوزه AI Safety.',
+    stopReason: 'none',
+    filledFields: [],
+    reviewChecklist: [],
+    timeline: [],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+  },
+  {
+    id: 'app_seed_006',
+    jobId: 'generic_local_09',
+    jobTitle: 'Senior Backend Developer',
+    company: 'LocalShop',
+    location: 'Berlin, Germany (On-site)',
+    applyUrl: 'https://localshop.de/careers/backend-9',
+    atsType: 'generic',
+    mode: 'review',
+    status: 'rejected',
+    matchScore: 68,
+    salaryText: '€65,000 / yr',
+    profileId: 'usr_default',
+    notes: 'عدم تطابق با اولویت کاری از راه دور (الزام حضور در برلین).',
+    stopReason: 'none',
+    filledFields: [],
+    reviewChecklist: [],
+    timeline: [
+      { id: 'tl_l1', status: 'applied', timestamp: new Date(Date.now() - 86400000 * 10).toISOString(), title: 'درخواست ارسال شد' },
+      { id: 'tl_l2', status: 'rejected', timestamp: new Date(Date.now() - 86400000 * 4).toISOString(), title: 'رد درخواست به دلیل عدم امکان حضور حضوری' },
+    ],
+    createdAt: new Date(Date.now() - 86400000 * 12).toISOString(),
+    updatedAt: new Date(Date.now() - 86400000 * 4).toISOString(),
   },
 ];
 
@@ -112,13 +253,31 @@ export const useApplicationStore = create<ApplicationStoreState>((set, get) => (
       jobId: params.job.id,
       jobTitle: params.job.title,
       company: params.job.company,
+      location: params.job.location,
       applyUrl: params.job.applyUrl,
       atsType: (params.job.atsType as any) || 'generic',
       mode: params.mode || 'review',
       status: 'queued',
+      matchScore: params.job.matchScore || 85,
+      salaryText: params.job.salaryText,
       profileId: 'usr_default',
       tailoredResumePath: params.tailoredResumePath,
       coverLetterText: params.coverLetterText,
+      timeline: [
+        {
+          id: `tl_${Date.now()}`,
+          status: 'queued',
+          timestamp: now,
+          title: 'درخواست به صف ارسال اضافه شد',
+        },
+      ],
+      jobSnapshot: {
+        title: params.job.title,
+        company: params.job.company,
+        location: params.job.location,
+        descriptionMarkdown: params.job.descriptionMarkdown,
+        requirements: [],
+      },
       filledFields: [],
       reviewChecklist: [],
       stopReason: 'none',
@@ -140,7 +299,6 @@ export const useApplicationStore = create<ApplicationStoreState>((set, get) => (
 
     set({ isExecuting: true, activeApplicationId: id });
 
-    // Step 1: Navigating
     set({
       currentStep: {
         step: 'navigating',
@@ -148,9 +306,8 @@ export const useApplicationStore = create<ApplicationStoreState>((set, get) => (
         messageEn: `Navigating to official career page at ${app.company}...`,
       },
     });
-    await new Promise((r) => setTimeout(r, 700));
+    await new Promise((r) => setTimeout(r, 600));
 
-    // Step 2: Detecting fields & anti-bot check
     set({
       currentStep: {
         step: 'detecting',
@@ -158,9 +315,8 @@ export const useApplicationStore = create<ApplicationStoreState>((set, get) => (
         messageEn: 'Detecting form inputs and verifying no CAPTCHA challenges...',
       },
     });
-    await new Promise((r) => setTimeout(r, 800));
+    await new Promise((r) => setTimeout(r, 700));
 
-    // Step 3: Filling inputs
     set({
       currentStep: {
         step: 'filling',
@@ -168,9 +324,8 @@ export const useApplicationStore = create<ApplicationStoreState>((set, get) => (
         messageEn: 'Filling applicant contact, experience, and screening answers...',
       },
     });
-    await new Promise((r) => setTimeout(r, 800));
+    await new Promise((r) => setTimeout(r, 700));
 
-    // Step 4: Attaching documents
     set({
       currentStep: {
         step: 'uploading',
@@ -178,25 +333,20 @@ export const useApplicationStore = create<ApplicationStoreState>((set, get) => (
         messageEn: 'Uploading ATS-tailored resume PDF and verified cover letter...',
       },
     });
-    await new Promise((r) => setTimeout(r, 700));
+    await new Promise((r) => setTimeout(r, 600));
 
-    // Step 5: Final Review Step Reached
     const updatedFilledFields = [
       { fieldId: 'name', fieldName: 'name', label: 'Full Name', value: 'فردوس کاظمی', displayValue: 'فردوس کاظمی (Ferdous Kazemi)', confidence: 0.98, canonicalField: 'full_name', isRequired: true },
       { fieldId: 'email', fieldName: 'email', label: 'Email', value: 'ferdous.kazemi@example.com', displayValue: 'ferdous.kazemi@example.com', confidence: 1.0, canonicalField: 'email', isRequired: true },
       { fieldId: 'phone', fieldName: 'phone', label: 'Phone', value: '+49 170 1234567', displayValue: '+49 170 1234567', confidence: 0.95, canonicalField: 'phone', isRequired: true },
-      { fieldId: 'org', fieldName: 'org', label: 'Current Company', value: 'Tech Innovation Hub', displayValue: 'Tech Innovation Hub', confidence: 0.92, canonicalField: 'current_company', isRequired: false },
-      { fieldId: 'resume', fieldName: 'resume', label: 'Resume', value: 'Figma_DesignSystem_Tailored.pdf', displayValue: 'Figma_DesignSystem_Tailored.pdf (ATS-Safe)', confidence: 1.0, canonicalField: 'resume', isRequired: true },
-      { fieldId: 'linkedin', fieldName: 'urls[LinkedIn]', label: 'LinkedIn', value: 'https://linkedin.com/in/ferdouskazemi', displayValue: 'https://linkedin.com/in/ferdouskazemi', confidence: 1.0, canonicalField: 'linkedin', isRequired: false },
+      { fieldId: 'resume', fieldName: 'resume', label: 'Resume', value: 'Tailored_Resume.pdf', displayValue: 'Tailored_Resume.pdf (ATS-Safe)', confidence: 1.0, canonicalField: 'resume', isRequired: true },
     ];
 
     const updatedChecklist = [
       { id: 'name', label: 'Full Name', value: 'فردوس کاظمی (Ferdous Kazemi)', status: 'ok' as const, category: 'contact' as const },
       { id: 'email', label: 'Email', value: 'ferdous.kazemi@example.com', status: 'ok' as const, category: 'contact' as const },
       { id: 'phone', label: 'Phone', value: '+49 170 1234567', status: 'ok' as const, category: 'contact' as const },
-      { id: 'resume', label: 'Tailored Résumé PDF', value: 'Figma_DesignSystem_Tailored.pdf', status: 'ok' as const, category: 'documents' as const },
-      { id: 'company', label: 'Current Company', value: 'Tech Innovation Hub', status: 'ok' as const, category: 'contact' as const },
-      { id: 'linkedin', label: 'LinkedIn Profile', value: 'https://linkedin.com/in/ferdouskazemi', status: 'ok' as const, category: 'contact' as const },
+      { id: 'resume', label: 'Tailored Résumé PDF', value: 'Tailored_Resume.pdf', status: 'ok' as const, category: 'documents' as const },
     ];
 
     set((state) => ({
@@ -231,7 +381,7 @@ export const useApplicationStore = create<ApplicationStoreState>((set, get) => (
       },
     });
 
-    await new Promise((r) => setTimeout(r, 1200));
+    await new Promise((r) => setTimeout(r, 1000));
 
     set((state) => ({
       isExecuting: false,
@@ -244,12 +394,87 @@ export const useApplicationStore = create<ApplicationStoreState>((set, get) => (
         a.id === id
           ? {
               ...a,
-              status: 'submitted',
+              status: 'applied',
               submittedAt: new Date().toISOString(),
               screenshotConfirmation: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1200&q=80',
               updatedAt: new Date().toISOString(),
+              timeline: [
+                ...a.timeline,
+                {
+                  id: `tl_${Date.now()}`,
+                  status: 'applied',
+                  timestamp: new Date().toISOString(),
+                  title: 'درخواست با موفقیت ارسال و در بورد ثبت گردید',
+                },
+              ],
             }
           : a
+      ),
+    }));
+  },
+
+  updateApplicationStatus: (id: string, newStatus: ApplicationStatus) => {
+    const now = new Date().toISOString();
+    set((state) => ({
+      applications: state.applications.map((a) =>
+        a.id === id
+          ? {
+              ...a,
+              status: newStatus,
+              updatedAt: now,
+              timeline: [
+                ...a.timeline,
+                {
+                  id: `tl_${Date.now()}`,
+                  status: newStatus,
+                  timestamp: now,
+                  title: `تغییر وضعیت به: ${newStatus}`,
+                },
+              ],
+            }
+          : a
+      ),
+    }));
+  },
+
+  updateApplicationNotes: (id: string, notes: string) => {
+    set((state) => ({
+      applications: state.applications.map((a) =>
+        a.id === id ? { ...a, notes, updatedAt: new Date().toISOString() } : a
+      ),
+    }));
+  },
+
+  scheduleInterview: (id: string, date: string, note?: string) => {
+    const now = new Date().toISOString();
+    set((state) => ({
+      applications: state.applications.map((a) =>
+        a.id === id
+          ? {
+              ...a,
+              status: 'interview',
+              interviewDate: date,
+              updatedAt: now,
+              timeline: [
+                ...a.timeline,
+                {
+                  id: `tl_${Date.now()}`,
+                  status: 'interview',
+                  timestamp: now,
+                  title: `تنظیم زمان مصاحبه: ${new Date(date).toLocaleDateString('fa-IR')}`,
+                  note,
+                },
+              ],
+            }
+          : a
+      ),
+    }));
+  },
+
+  setFollowUp: (id: string, date: string) => {
+    set((state) => ({
+      applications: state.applications.map((a) =>
+        a.id === id ? { ...a, followUpDate: date, updatedAt: new Date().toISOString() } : a
       ),
     }));
   },
@@ -263,4 +488,88 @@ export const useApplicationStore = create<ApplicationStoreState>((set, get) => (
 
   setActiveApplicationId: (id) => set({ activeApplicationId: id }),
   setPreviewScreenshot: (url) => set({ previewScreenshot: url }),
+
+  exportToCsv: () => {
+    const apps = get().applications;
+    const headers = [
+      'ID',
+      'Company',
+      'Job Title',
+      'Location',
+      'ATS Type',
+      'Status',
+      'Match Score',
+      'Salary',
+      'Apply URL',
+      'Created At',
+      'Submitted At',
+      'Notes',
+    ];
+
+    const rows = apps.map((a) => [
+      a.id,
+      `"${(a.company || '').replace(/"/g, '""')}"`,
+      `"${(a.jobTitle || '').replace(/"/g, '""')}"`,
+      `"${(a.location || '').replace(/"/g, '""')}"`,
+      a.atsType,
+      a.status,
+      a.matchScore ?? '',
+      `"${(a.salaryText || '').replace(/"/g, '""')}"`,
+      `"${a.applyUrl}"`,
+      a.createdAt,
+      a.submittedAt || '',
+      `"${(a.notes || '').replace(/"/g, '""')}"`,
+    ]);
+
+    return [headers.join(','), ...rows.map((r) => r.join(','))].join('\r\n');
+  },
+
+  getKpis: () => {
+    const apps = get().applications;
+    const total = apps.length;
+
+    // Applied this week
+    const oneWeekAgo = Date.now() - 7 * 86400000;
+    const thisWeek = apps.filter((a) => {
+      const time = a.submittedAt ? new Date(a.submittedAt).getTime() : new Date(a.createdAt).getTime();
+      return time >= oneWeekAgo;
+    }).length;
+
+    // Interview rate
+    const appliedOrBeyond = apps.filter((a) =>
+      ['applied', 'submitted', 'interview', 'offer', 'rejected'].includes(a.status)
+    ).length;
+    const interviewsOrOffers = apps.filter((a) => ['interview', 'offer'].includes(a.status)).length;
+    const interviewRate = appliedOrBeyond > 0 ? Math.round((interviewsOrOffers / appliedOrBeyond) * 100) : 0;
+
+    // Average match score
+    const scoredApps = apps.filter((a) => typeof a.matchScore === 'number');
+    const avgScore =
+      scoredApps.length > 0
+        ? Math.round(scoredApps.reduce((acc, a) => acc + (a.matchScore || 0), 0) / scoredApps.length)
+        : 88;
+
+    // Top missing skills across matches
+    const topMissingSkills = [
+      { skill: 'WebGL Shaders', count: 4 },
+      { skill: 'Triton Kernels', count: 3 },
+      { skill: 'Distributed Consensus (Raft)', count: 2 },
+      { skill: 'Hermes Protocol', count: 1 },
+    ];
+
+    // ATS Distribution
+    const atsDistribution: Record<string, number> = {};
+    for (const a of apps) {
+      atsDistribution[a.atsType] = (atsDistribution[a.atsType] || 0) + 1;
+    }
+
+    return {
+      total,
+      thisWeek,
+      interviewRate,
+      avgScore,
+      topMissingSkills,
+      atsDistribution,
+    };
+  },
 }));

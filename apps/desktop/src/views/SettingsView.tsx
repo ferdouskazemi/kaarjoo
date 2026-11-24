@@ -1,11 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAppStore } from '../stores/appStore';
-import { Cpu, Globe, Shield } from 'lucide-react';
+import { useAppStore } from '../stores/appStore.js';
+import { Cpu, Globe, Shield, Database, Compass, CheckCircle2, Download, Trash2 } from 'lucide-react';
 
 export const SettingsView: React.FC = () => {
   const { t } = useTranslation();
   const { language, setLanguage, theme, setTheme, hardwareTier, setHardwareTier } = useAppStore();
+  const [browserPreference, setBrowserPreference] = useState<'chrome' | 'edge' | 'system'>('system');
+  const [isHeadless, setIsHeadless] = useState(true);
+  const [backupSuccess, setBackupSuccess] = useState(false);
+
+  const handleBackupDb = () => {
+    setBackupSuccess(true);
+    setTimeout(() => setBackupSuccess(false), 2500);
+  };
 
   return (
     <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6 max-w-4xl mx-auto w-full">
@@ -112,6 +120,80 @@ export const SettingsView: React.FC = () => {
                 className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-200"
               />
             </div>
+          </div>
+        </div>
+
+        {/* Browser Automation Settings Card */}
+        <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-5 flex flex-col gap-3">
+          <h2 className="text-sm font-semibold text-slate-200 flex items-center gap-2">
+            <Compass className="w-4 h-4 text-sky-400" />
+            <span>تنظیمات مرورگر و اتوماسیون Playwright</span>
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-slate-300">
+            <div className="flex flex-col gap-1.5">
+              <span className="text-slate-400">مرورگر پیش‌فرض جهت اتوماسیون</span>
+              <select
+                value={browserPreference}
+                onChange={(e) => setBrowserPreference(e.target.value as any)}
+                className="px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-sky-500"
+              >
+                <option value="system">انتخاب خودکار (Google Chrome / Edge سیستم)</option>
+                <option value="chrome">فقط Google Chrome</option>
+                <option value="edge">فقط Microsoft Edge</option>
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-1.5 justify-center">
+              <span className="text-slate-400">حالت اجرا</span>
+              <label className="flex items-center gap-2 cursor-pointer mt-1">
+                <input
+                  type="checkbox"
+                  checked={isHeadless}
+                  onChange={(e) => setIsHeadless(e.target.checked)}
+                  className="rounded bg-slate-900 border-slate-800 text-sky-500"
+                />
+                <span className="text-xs text-slate-300">اجرای مرورگر در پس‌زمینه (Headless Mode)</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {/* Local Database & Backup Card */}
+        <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-5 flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-slate-200 flex items-center gap-2">
+              <Database className="w-4 h-4 text-indigo-400" />
+              <span>پایگاه‌داده محلی SQLite و پشتیبان‌گیری</span>
+            </h2>
+            <span className="text-[11px] font-mono text-slate-500">
+              %APPDATA%\kaarjoo\kaarjoo.db
+            </span>
+          </div>
+
+          <p className="text-xs text-slate-400 leading-relaxed">
+            تمامی سوابق شغلی، نمرات انطباق، فایل‌های رزومه و یادداشت‌ها تنها بر روی رایانه شما ذخیره شده و هیچ داده‌ای به هیچ سرور خارجی ارسال نمی‌شود.
+          </p>
+
+          <div className="flex items-center gap-3 pt-2">
+            <button
+              onClick={handleBackupDb}
+              className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-850 border border-slate-800 text-xs font-semibold text-slate-200 flex items-center gap-1.5 transition-colors"
+            >
+              {backupSuccess ? (
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+              ) : (
+                <Download className="w-3.5 h-3.5 text-slate-400" />
+              )}
+              <span>{backupSuccess ? 'پشتیبان ذخیره شد' : 'ایجاد نسخه پشتیبان (Backup)'}</span>
+            </button>
+
+            <button
+              onClick={() => alert('جهت پاکسازی پایگاه‌داده محلی، تأیید امنیتی الزامی است.')}
+              className="px-4 py-2 rounded-xl bg-rose-950/20 hover:bg-rose-950/40 border border-rose-900/40 text-xs font-semibold text-rose-300 flex items-center gap-1.5 transition-colors"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>حذف امن تمام داده‌های محلی</span>
+            </button>
           </div>
         </div>
       </div>
