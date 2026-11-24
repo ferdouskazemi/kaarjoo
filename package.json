@@ -5,6 +5,9 @@
   "description": "Kaarjoo (کارجو) - Local-first AI job application desktop app",
   "scripts": {
     "dev": "pnpm --filter desktop dev",
+    "tauri": "pnpm --filter desktop tauri",
+    "tauri:dev": "pnpm --filter desktop tauri dev",
+    "desktop": "pnpm --filter desktop tauri dev",
     "build": "pnpm --filter shared build && pnpm --filter engine build && pnpm --filter desktop build",
     "test": "vitest run",
     "lint": "eslint . && prettier --check .",

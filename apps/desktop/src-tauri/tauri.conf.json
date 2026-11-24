@@ -5,7 +5,7 @@
   "identifier": "com.kaarjoo.app",
   "build": {
     "beforeDevCommand": "pnpm dev",
-    "devUrl": "http://localhost:5173",
+    "devUrl": "http://localhost:1420",
     "beforeBuildCommand": "pnpm build",
     "frontendDist": "../dist"
   },
@@ -13,7 +13,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "کارجو | Kaarjoo",
+        "title": "Kaarjoo | Local-First ATS",
         "width": 1280,
         "height": 820,
         "minWidth": 960,
