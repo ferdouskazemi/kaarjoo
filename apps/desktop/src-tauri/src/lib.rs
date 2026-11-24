@@ -21,6 +21,11 @@ pub struct SystemStatus {
 }
 
 pub fn run() {
+    std::panic::set_hook(Box::new(|info| {
+        let log_msg = format!("PANIC: {:?}\nLocation: {:?}\n", info.payload().downcast_ref::<&str>(), info.location());
+        let _ = std::fs::write("C:\\Work\\kaarjoo\\panic.log", log_msg);
+    }));
+
     let specta_builder = Builder::<tauri::Wry>::new().commands(collect_commands![
         commands::get_system_status,
         commands::profile_get,
@@ -64,10 +69,9 @@ pub fn run() {
             let app_data_dir = app
                 .path()
                 .app_data_dir()
-                .unwrap_or_else(|_| std::env::temp_dir().join("com.kaarjoo.app"));
+                .unwrap_or_else(|_| std::env::temp_dir().join("com.kaarjoo.desktop"));
 
             std::fs::create_dir_all(&app_data_dir)?;
-            info!("Kaarjoo App Data Directory: {:?}", app_data_dir);
 
             // Initialize SQLite DB with WAL mode & embedded migrations
             let pool = tauri::async_runtime::block_on(async {

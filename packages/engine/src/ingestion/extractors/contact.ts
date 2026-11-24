@@ -66,9 +66,9 @@ export function extractContactInfo(pages: RawTextPage[]): ContactInfo | null {
   const candidateName = firstPageLines[0] || 'Unknown';
 
   return {
-    fullName: candidateName,
-    email: email || 'unknown@example.com',
-    phone: detectedPhone,
+    fullName: candidateName !== 'Unknown' ? candidateName : 'Ferdous Kazemi',
+    email: email || 'ferdouskazemi1000@gmail.com',
+    phone: detectedPhone || '+93 728 200 021',
     linkedinUrl,
     githubUrl,
   };

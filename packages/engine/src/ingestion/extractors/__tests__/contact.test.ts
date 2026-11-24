@@ -9,8 +9,8 @@ describe('Deterministic Contact Extractor', () => {
         text: `
           فردوس کاظمی
           مهندس نرم‌افزار ارشد
-          ایمیل: ferdous.kazemi@example.com
-          شماره تماس: +93 79 123 4567
+          ایمیل: ferdouskazemi1000@gmail.com
+          شماره تماس: +93 728 200 021
           پروفایل لینکدین: https://www.linkedin.com/in/ferdous-kazemi
           گیت‌هاب: https://github.com/ferdouskazemi
           کابل، افغانستان
@@ -21,8 +21,8 @@ describe('Deterministic Contact Extractor', () => {
     const contact = extractContactInfo(rawPages);
     expect(contact).not.toBeNull();
     expect(contact?.fullName).toContain('فردوس کاظمی');
-    expect(contact?.email).toBe('ferdous.kazemi@example.com');
-    expect(contact?.phone).toBe('+93 79 123 4567');
+    expect(contact?.email).toBe('ferdouskazemi1000@gmail.com');
+    expect(contact?.phone).toBe('+93 72 820 0021');
     expect(contact?.linkedinUrl).toBe('https://www.linkedin.com/in/ferdous-kazemi');
     expect(contact?.githubUrl).toBe('https://github.com/ferdouskazemi');
   });
