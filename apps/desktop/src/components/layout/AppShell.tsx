@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { TitleBar } from './TitleBar';
 import { Sidebar } from './Sidebar';
 import { CommandPalette } from './CommandPalette';
 import { useAppStore } from '../../stores/appStore';
+import { commands } from '../../bindings';
 import { HomeView } from '../../views/HomeView';
 import { ProfileView } from '../../views/ProfileView';
 import { JobsView } from '../../views/JobsView';
@@ -11,7 +12,27 @@ import { ApplicationsView } from '../../views/ApplicationsView';
 import { SettingsView } from '../../views/SettingsView';
 
 export const AppShell: React.FC = () => {
-  const { currentView } = useAppStore();
+  const { currentView, setEngineConnected } = useAppStore();
+
+  useEffect(() => {
+    let mounted = true;
+    const check = async () => {
+      try {
+        const res = await commands.getSystemStatus();
+        if (mounted && res.status === 'ok') {
+          setEngineConnected(res.data.is_ready);
+        }
+      } catch {
+        if (mounted) setEngineConnected(false);
+      }
+    };
+    check();
+    const interval = setInterval(check, 5000);
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
+  }, [setEngineConnected]);
 
   const renderCurrentView = () => {
     switch (currentView) {

@@ -12,13 +12,15 @@ interface AppState {
   isCommandPaletteOpen: boolean;
   engineConnected: boolean;
   hardwareTier: 'lite' | 'standard' | 'pro';
-  
+  demoMode: boolean;
+
   setCurrentView: (view: AppView) => void;
   setTheme: (theme: AppTheme) => void;
   setLanguage: (lang: AppLanguage) => void;
   setCommandPaletteOpen: (open: boolean) => void;
   setEngineConnected: (connected: boolean) => void;
   setHardwareTier: (tier: 'lite' | 'standard' | 'pro') => void;
+  setDemoMode: (demo: boolean) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -28,6 +30,7 @@ export const useAppStore = create<AppState>((set) => ({
   isCommandPaletteOpen: false,
   engineConnected: false,
   hardwareTier: 'standard',
+  demoMode: false,
 
   setCurrentView: (view) => set({ currentView: view }),
   setTheme: (theme) => {
@@ -49,4 +52,5 @@ export const useAppStore = create<AppState>((set) => ({
   setCommandPaletteOpen: (isCommandPaletteOpen) => set({ isCommandPaletteOpen }),
   setEngineConnected: (engineConnected) => set({ engineConnected }),
   setHardwareTier: (hardwareTier) => set({ hardwareTier }),
+  setDemoMode: (demoMode) => set({ demoMode }),
 }));

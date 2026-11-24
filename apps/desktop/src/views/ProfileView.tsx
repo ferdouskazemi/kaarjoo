@@ -5,7 +5,6 @@ import {
   CheckCircle2,
   FileText,
   Briefcase,
-  GraduationCap,
   Sparkles,
   Phone,
   Mail,
@@ -22,27 +21,29 @@ import {
   Check,
   Code2,
 } from 'lucide-react';
-import { parseDocumentFile } from '../utils/documentParser.js';
-import { extractProfileFromText } from '../utils/resumeExtractor.js';
-import { useProfileStore, INITIAL_CANDIDATE_PROFILE } from '../stores/profileStore.js';
+import { open } from '@tauri-apps/plugin-dialog';
+import { useProfile, useExtractProfile, useClearProfile } from '../queries/index.js';
+import { useProfileStore, DEMO_CANDIDATE_PROFILE } from '../stores/profileStore.js';
 import { useApplicationStore } from '../stores/applicationStore.js';
+import { useAppStore } from '../stores/appStore.js';
 
 export const ProfileView: React.FC = () => {
   const { t, i18n } = useTranslation();
   const isRtl = i18n.dir() === 'rtl';
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const { demoMode } = useAppStore();
+  const { data: dbProfile } = useProfile();
+  const extractMutation = useExtractProfile();
+  const clearMutation = useClearProfile();
+
   const {
-    profile,
     uploadedFileName,
     uploadedDocumentText,
-    documentMeta,
-    activeHighlight,
-    activeFieldLabel,
-    setProfile,
     setUploadedDocument,
     setActiveHighlight,
     clearProfile,
+    loadDemoProfile,
   } = useProfileStore();
 
   const [isDragging, setIsDragging] = useState(false);
@@ -50,62 +51,41 @@ export const ProfileView: React.FC = () => {
   const [copied, setCopied] = useState(false);
   const [confirmToast, setConfirmToast] = useState(false);
 
+  // Active profile: SQLite database profile takes precedence
+  const profile = dbProfile ?? null;
+
   const handleFieldClick = (highlightText: string, label: string) => {
     setActiveHighlight(highlightText, label);
   };
 
-  const handleFileProcess = async (file: File) => {
-    setIsProcessing(true);
+  const handlePickNativeFile = async () => {
     try {
-      // 1. Engineering-grade document parsing (PDF via PDF.js, Word via Mammoth, TXT/MD)
-      const parseResult = await parseDocumentFile(file);
-
-      // 2. Structured profile extraction
-      const { profile: extractedProfile, rawText: processedText } = extractProfileFromText(
-        parseResult.text,
-        file.name
-      );
-
-      setUploadedDocument({
-        fileName: file.name,
-        text: processedText,
-        meta: { pageCount: parseResult.pageCount, fileType: parseResult.fileType },
+      const selected = await open({
+        multiple: false,
+        filters: [{ name: 'Resume', extensions: ['pdf', 'docx', 'doc', 'txt', 'md'] }],
       });
-      setProfile(extractedProfile);
-      setActiveHighlight(extractedProfile.contact.email || extractedProfile.contact.fullName || '', 'Email');
-
-      // 3. Immediately synchronize all application forms and queue checklists with the user's real email & details
-      useApplicationStore.getState().syncWithProfile(extractedProfile);
+      if (selected && typeof selected === 'string') {
+        setIsProcessing(true);
+        const res = await extractMutation.mutateAsync(selected);
+        const fileName = selected.split(/[\\/]/).pop() || 'Resume';
+        setUploadedDocument({
+          fileName,
+          text: res.rawText,
+          meta: { pageCount: 1, fileType: selected.endsWith('.docx') ? 'docx' : 'pdf' },
+        });
+        useApplicationStore.getState().syncWithProfile(res.profile as any);
+      }
     } catch (err) {
-      console.error('File parsing error:', err);
-      alert(
-        isRtl
-          ? 'خطا در خواندن و تحلیل فایل. لطفاً از فایل‌های استاندارد PDF، DOCX یا متنی استفاده فرمایید.'
-          : 'Error parsing document. Please use standard PDF, DOCX, or text files.'
-      );
+      console.error('File pick error:', err);
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      handleFileProcess(file);
-    }
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file) {
-      handleFileProcess(file);
-    }
-  };
-
-  const handleClearProfile = () => {
+  const handleClearProfile = async () => {
+    await clearMutation.mutateAsync();
     clearProfile();
+    useApplicationStore.getState().syncWithProfile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -113,7 +93,7 @@ export const ProfileView: React.FC = () => {
 
   const handleConfirmProfile = () => {
     if (profile) {
-      useApplicationStore.getState().syncWithProfile(profile);
+      useApplicationStore.getState().syncWithProfile(profile as any);
       setConfirmToast(true);
       setTimeout(() => setConfirmToast(false), 3500);
     }
@@ -131,41 +111,41 @@ export const ProfileView: React.FC = () => {
     ? Math.min(
         100,
         Math.round(
-          (profile.contact.fullName ? 20 : 0) +
-          (profile.contact.email ? 20 : 0) +
-          (profile.contact.phone ? 10 : 0) +
+          (profile.contact?.fullName ? 20 : 0) +
+          (profile.contact?.email ? 20 : 0) +
+          (profile.contact?.phone ? 10 : 0) +
           (profile.summary ? 15 : 0) +
-          (profile.experiences.length > 0 ? 15 : 0) +
-          (profile.education.length > 0 ? 10 : 0) +
-          (profile.skills.length > 0 ? 10 : 0)
+          (profile.experiences && profile.experiences.length > 0 ? 15 : 0) +
+          (profile.education && profile.education.length > 0 ? 10 : 0) +
+          (profile.skills && profile.skills.length > 0 ? 10 : 0)
         )
       )
     : 0;
 
   return (
     <div className="flex-1 overflow-hidden flex flex-col h-full w-full bg-[#111111] text-[#f4f4f5]">
-      {/* Hidden File Input */}
+      {/* Hidden File Input fallback */}
       <input
         type="file"
         ref={fileInputRef}
-        onChange={handleFileInputChange}
+        onChange={() => handlePickNativeFile()}
         accept=".pdf,.docx,.doc,.txt,.md"
         className="hidden"
       />
 
-      {/* Confirmation Toast (Flash-Rive micro-interaction) */}
+      {/* Confirmation Toast */}
       {confirmToast && (
         <div className="fixed top-12 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-[#1c2e24] border border-emerald-500/40 text-emerald-300 text-xs shadow-2xl active-ring backdrop-blur transition-all">
           <CheckCircle2 className="w-4 h-4 text-emerald-400" />
           <span>
             {isRtl
-              ? 'تمام داده‌های استخراج‌شده تأیید و در صف ارسال و تمام فرم‌های ATS سینک شدند.'
-              : 'Candidate profile verified and synchronized across all queued ATS applications.'}
+              ? 'تمام داده‌های استخراج‌شده تأیید و در صف ارسال و فرم‌های ATS سینک شدند.'
+              : 'Candidate profile verified and synchronized across all application forms.'}
           </span>
         </div>
       )}
 
-      {/* Top Action Bar (Obsidian Dock Style) */}
+      {/* Top Action Bar */}
       <div className="h-12 border-b border-[#282828] bg-[#161616] px-6 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
           <h1 className="text-xs font-semibold text-[#f4f4f5] flex items-center gap-2">
@@ -198,7 +178,7 @@ export const ProfileView: React.FC = () => {
               </button>
 
               <button
-                onClick={() => fileInputRef.current?.click()}
+                onClick={handlePickNativeFile}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-[#333333] hover:border-[#484848] bg-[#202020] hover:bg-[#262626] text-[11px] font-medium text-[#d4d4d8] hover:text-white transition-colors cursor-pointer"
               >
                 <UploadCloud className="w-3 h-3 text-sky-400" />
@@ -213,23 +193,23 @@ export const ProfileView: React.FC = () => {
                 <span>{t('profile.confirm')}</span>
               </button>
             </>
-          ) : (
+          ) : demoMode ? (
             <button
               onClick={() => {
-                setProfile(INITIAL_CANDIDATE_PROFILE);
-                useApplicationStore.getState().syncWithProfile(INITIAL_CANDIDATE_PROFILE);
+                loadDemoProfile();
+                useApplicationStore.getState().syncWithProfile(DEMO_CANDIDATE_PROFILE);
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-[#333333] hover:border-[#484848] bg-[#202020] text-[#a1a1aa] hover:text-white text-[11px] transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-amber-500/40 hover:border-amber-500 bg-amber-500/10 text-amber-300 text-[11px] transition-colors cursor-pointer"
             >
-              <RefreshCw className="w-3 h-3 text-sky-400" />
-              <span>{t('profile.loadSample')}</span>
+              <RefreshCw className="w-3 h-3 text-amber-400" />
+              <span>بارگذاری پروفایل دمو (Demo Mode)</span>
             </button>
-          )}
+          ) : null}
         </div>
       </div>
 
       {!profile ? (
-        /* Empty / Drop Zone State (Clean minimal Obsidian drop zone) */
+        /* Empty / Drop Zone State */
         <div className="flex-1 overflow-y-auto p-8 flex flex-col items-center justify-center">
           <div
             onDragOver={(e) => {
@@ -237,8 +217,12 @@ export const ProfileView: React.FC = () => {
               setIsDragging(true);
             }}
             onDragLeave={() => setIsDragging(false)}
-            onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
+            onDrop={(e) => {
+              e.preventDefault();
+              setIsDragging(false);
+              handlePickNativeFile();
+            }}
+            onClick={handlePickNativeFile}
             className={`w-full max-w-xl p-10 rounded-2xl border-2 border-dashed transition-all flex flex-col items-center text-center cursor-pointer group ${
               isDragging
                 ? 'border-sky-500 bg-[#16222f]'
@@ -275,7 +259,7 @@ export const ProfileView: React.FC = () => {
           </div>
         </div>
       ) : (
-        /* Split View Review Screen (Left: Clean Extracted Cards, Right: Clean Raw Text Inspector) */
+        /* Split View Review Screen */
         <div className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x lg:divide-x-reverse divide-[#242424]">
           {/* Left Column: Structured Profile Cards */}
           <div className="h-full overflow-y-auto p-5 flex flex-col gap-4">
@@ -307,10 +291,10 @@ export const ProfileView: React.FC = () => {
                   <span className="text-[10px] text-[#71717a]">{t('profile.identity')}</span>
                   <span className="text-[11px] font-semibold text-[#e4e4e7] flex items-center gap-1 truncate">
                     <CheckCheck className="w-3 h-3 text-emerald-400" />
-                    <span className="truncate">{profile.contact.fullName || 'Unknown'}</span>
+                    <span className="truncate">{profile.contact?.fullName || 'Ferdous Kazemi'}</span>
                   </span>
                   <span className="text-[10px] text-[#a1a1aa] truncate font-mono">
-                    {profile.contact.email}
+                    {profile.contact?.email}
                   </span>
                 </div>
 
@@ -318,10 +302,10 @@ export const ProfileView: React.FC = () => {
                   <span className="text-[10px] text-[#71717a]">{t('profile.experience')}</span>
                   <span className="text-[11px] font-semibold text-[#e4e4e7] flex items-center gap-1">
                     <Briefcase className="w-3 h-3 text-sky-400" />
-                    <span>{profile.experiences.length} roles</span>
+                    <span>{profile.experiences?.length || 0} roles</span>
                   </span>
                   <span className="text-[10px] text-[#a1a1aa] truncate">
-                    {profile.experiences[0]?.company || 'Active'}
+                    {profile.experiences?.[0]?.company || 'Active'}
                   </span>
                 </div>
 
@@ -329,7 +313,7 @@ export const ProfileView: React.FC = () => {
                   <span className="text-[10px] text-[#71717a]">{t('profile.skills')}</span>
                   <span className="text-[11px] font-semibold text-[#e4e4e7] flex items-center gap-1">
                     <Sparkles className="w-3 h-3 text-amber-400" />
-                    <span>{profile.skills.length} skills</span>
+                    <span>{profile.skills?.length || 0} skills</span>
                   </span>
                   <span className="text-[10px] text-[#a1a1aa] font-mono">
                     Live ATS Match
@@ -353,9 +337,9 @@ export const ProfileView: React.FC = () => {
             <div className="rounded-xl border border-[#282828] bg-[#1a1a1a] p-4 flex flex-col gap-3">
               <div className="flex items-start justify-between">
                 <div>
-                  <h2 className="text-base font-bold text-[#f4f4f5]">{profile.contact.fullName}</h2>
+                  <h2 className="text-base font-bold text-[#f4f4f5]">{profile.contact?.fullName}</h2>
                   <p className="text-xs text-[#a1a1aa] mt-0.5 font-mono">
-                    {profile.targetTitles?.[0] || 'Senior / Mid-Level Software Engineer'}
+                    {profile.targetTitles?.[0] || 'Senior Frontend & Software Engineer'}
                   </p>
                 </div>
                 <span className="text-[10px] px-2 py-0.5 rounded font-mono bg-[#1b2b21] text-emerald-400 border border-emerald-500/20">
@@ -363,25 +347,25 @@ export const ProfileView: React.FC = () => {
                 </span>
               </div>
 
-              {/* Contact Grid with Precision Click-to-highlight */}
+              {/* Contact Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-[#d4d4d8]">
                 <div
-                  onClick={() => handleFieldClick(profile.contact.email, isRtl ? 'ایمیل' : 'Email')}
+                  onClick={() => handleFieldClick(profile.contact?.email || '', isRtl ? 'ایمیل' : 'Email')}
                   className="p-2 rounded-lg bg-[#141414] border border-[#262626] hover:border-sky-500/50 flex items-center gap-2 cursor-pointer transition-colors"
                 >
                   <Mail className="w-3.5 h-3.5 text-sky-400 shrink-0" />
-                  <span className="truncate font-mono text-[11px] text-[#e4e4e7]">{profile.contact.email}</span>
+                  <span className="truncate font-mono text-[11px] text-[#e4e4e7]">{profile.contact?.email}</span>
                 </div>
 
                 <div
-                  onClick={() => handleFieldClick(profile.contact.phone || '', isRtl ? 'شماره تماس' : 'Phone')}
+                  onClick={() => handleFieldClick(profile.contact?.phone || '', isRtl ? 'شماره تماس' : 'Phone')}
                   className="p-2 rounded-lg bg-[#141414] border border-[#262626] hover:border-sky-500/50 flex items-center gap-2 cursor-pointer transition-colors"
                 >
                   <Phone className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                  <span className="truncate font-mono text-[11px] text-[#e4e4e7]">{profile.contact.phone || '--'}</span>
+                  <span className="truncate font-mono text-[11px] text-[#e4e4e7]">{profile.contact?.phone || '--'}</span>
                 </div>
 
-                {profile.contact.location && (
+                {profile.contact?.location && (
                   <div
                     onClick={() => handleFieldClick(profile.contact.location || '', isRtl ? 'محل سکونت' : 'Location')}
                     className="p-2 rounded-lg bg-[#141414] border border-[#262626] hover:border-sky-500/50 flex items-center gap-2 cursor-pointer transition-colors"
@@ -391,7 +375,7 @@ export const ProfileView: React.FC = () => {
                   </div>
                 )}
 
-                {profile.contact.linkedinUrl && (
+                {profile.contact?.linkedinUrl && (
                   <div
                     onClick={() => handleFieldClick(profile.contact.linkedinUrl || '', 'LinkedIn')}
                     className="p-2 rounded-lg bg-[#141414] border border-[#262626] hover:border-sky-500/50 flex items-center gap-2 cursor-pointer transition-colors"
@@ -405,170 +389,81 @@ export const ProfileView: React.FC = () => {
 
             {/* Summary */}
             {profile.summary && (
-              <div className="rounded-xl border border-[#282828] bg-[#1a1a1a] p-3.5 flex flex-col gap-1.5">
-                <span className="text-[11px] font-semibold text-[#a1a1aa]">{t('profile.summary')}</span>
-                <p
-                  onClick={() => handleFieldClick(profile.summary || '', isRtl ? 'خلاصه' : 'Summary')}
-                  className="text-xs text-[#d4d4d8] leading-relaxed p-2.5 rounded-lg bg-[#141414] border border-[#242424] hover:border-sky-500/40 cursor-pointer transition-colors"
-                >
-                  {profile.summary}
-                </p>
+              <div className="rounded-xl border border-[#282828] bg-[#1a1a1a] p-4 flex flex-col gap-2">
+                <span className="text-[11px] font-semibold text-[#a1a1aa] uppercase tracking-wider">
+                  {t('profile.summaryTitle')}
+                </span>
+                <p className="text-xs text-[#d4d4d8] leading-relaxed">{profile.summary}</p>
               </div>
             )}
 
-            {/* Experiences */}
-            <div className="rounded-xl border border-[#282828] bg-[#1a1a1a] p-3.5 flex flex-col gap-2.5">
-              <span className="text-[11px] font-semibold text-[#a1a1aa] flex items-center gap-1.5">
-                <Briefcase className="w-3.5 h-3.5 text-sky-400" />
-                <span>{t('profile.experience')} ({profile.experiences.length})</span>
-              </span>
-
-              {profile.experiences.map((exp) => (
-                <div
-                  key={exp.id}
-                  onClick={() => handleFieldClick(exp.company, exp.company)}
-                  className="p-3 rounded-lg bg-[#141414] border border-[#242424] flex flex-col gap-1.5 hover:border-sky-500/40 cursor-pointer transition-colors"
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h4 className="text-xs font-bold text-[#f4f4f5]">{exp.title}</h4>
-                      <span className="text-[11px] text-sky-400">{exp.company}</span>
+            {/* Experiences List */}
+            {profile.experiences && profile.experiences.length > 0 && (
+              <div className="rounded-xl border border-[#282828] bg-[#1a1a1a] p-4 flex flex-col gap-3">
+                <span className="text-[11px] font-semibold text-[#a1a1aa] uppercase tracking-wider flex items-center gap-1.5">
+                  <Briefcase className="w-3.5 h-3.5 text-sky-400" />
+                  <span>{t('profile.experience')} ({profile.experiences.length})</span>
+                </span>
+                <div className="flex flex-col gap-2.5">
+                  {profile.experiences.map((exp) => (
+                    <div key={exp.id} className="p-3 rounded-lg bg-[#141414] border border-[#262626] flex flex-col gap-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-white">{exp.title}</span>
+                        <span className="text-[10px] font-mono text-[#71717a]">{exp.startDate} - {exp.isCurrent ? 'Present' : exp.endDate || ''}</span>
+                      </div>
+                      <span className="text-[11px] text-sky-400 font-medium">{exp.company} {exp.location ? `· ${exp.location}` : ''}</span>
+                      {exp.achievements && exp.achievements.length > 0 && (
+                        <ul className="list-disc list-inside text-[11px] text-[#a1a1aa] flex flex-col gap-1 mt-1">
+                          {exp.achievements.map((ach, i) => (
+                            <li key={i} className="line-clamp-2">{ach}</li>
+                          ))}
+                        </ul>
+                      )}
                     </div>
-                    <span className="text-[10px] font-mono text-[#a1a1aa] bg-[#202020] px-2 py-0.5 rounded border border-[#2b2b2b]">
-                      {exp.startDate} - {exp.endDate || (isRtl ? 'کنون' : 'Present')}
-                    </span>
-                  </div>
-
-                  {exp.achievements.length > 0 && (
-                    <ul className="text-[11px] text-[#a1a1aa] space-y-1 list-disc list-inside">
-                      {exp.achievements.map((ach, i) => (
-                        <li key={i}>{ach}</li>
-                      ))}
-                    </ul>
-                  )}
+                  ))}
                 </div>
-              ))}
-            </div>
-
-            {/* Education */}
-            <div className="rounded-xl border border-[#282828] bg-[#1a1a1a] p-3.5 flex flex-col gap-2">
-              <span className="text-[11px] font-semibold text-[#a1a1aa] flex items-center gap-1.5">
-                <GraduationCap className="w-3.5 h-3.5 text-amber-400" />
-                <span>{t('profile.education')} ({profile.education.length})</span>
-              </span>
-
-              {profile.education.map((edu) => (
-                <div
-                  key={edu.id}
-                  onClick={() => handleFieldClick(edu.institution, edu.institution)}
-                  className="p-2.5 rounded-lg bg-[#141414] border border-[#242424] flex items-start justify-between hover:border-sky-500/40 cursor-pointer transition-colors"
-                >
-                  <div>
-                    <h4 className="text-xs font-bold text-[#f4f4f5]">{edu.degree}</h4>
-                    <span className="text-[11px] text-[#a1a1aa]">{edu.institution}</span>
-                  </div>
-                  {edu.startDate && (
-                    <span className="text-[10px] font-mono text-[#71717a]">
-                      {edu.startDate} - {edu.endDate || ''}
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {/* Validated Skills */}
-            <div className="rounded-xl border border-[#282828] bg-[#1a1a1a] p-3.5 flex flex-col gap-2">
-              <span className="text-[11px] font-semibold text-[#a1a1aa] flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-                <span>{t('profile.skills')} ({profile.skills.length})</span>
-              </span>
-
-              <div className="flex flex-wrap gap-1.5">
-                {profile.skills.map((skill) => (
-                  <span
-                    key={skill.id}
-                    onClick={() => handleFieldClick(skill.name, skill.name)}
-                    className="px-2 py-0.5 rounded text-[11px] bg-[#141414] border border-[#2b2b2b] hover:border-sky-500/50 text-[#d4d4d8] font-mono cursor-pointer transition-colors"
-                  >
-                    {skill.name}
-                  </span>
-                ))}
               </div>
-            </div>
+            )}
+
+            {/* Skills Badges */}
+            {profile.skills && profile.skills.length > 0 && (
+              <div className="rounded-xl border border-[#282828] bg-[#1a1a1a] p-4 flex flex-col gap-2.5">
+                <span className="text-[11px] font-semibold text-[#a1a1aa] uppercase tracking-wider flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                  <span>{t('profile.skills')} ({profile.skills.length})</span>
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {profile.skills.map((s) => (
+                    <span
+                      key={s.id}
+                      className="px-2.5 py-1 rounded-md text-[11px] font-medium bg-[#141414] border border-[#2b2b2b] text-[#e4e4e7]"
+                    >
+                      {s.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Right Column: Source Document Viewer (Obsidian Code Inspector Style) */}
-          <div className="h-full overflow-hidden flex flex-col bg-[#141414]">
-            {/* Inspector Header Bar */}
-            <div className="h-10 px-4 border-b border-[#242424] bg-[#181818] flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-2">
+          {/* Right Column: Clean Raw Text Inspector */}
+          <div className="h-full overflow-y-auto p-5 flex flex-col gap-3 bg-[#141414]">
+            <div className="flex items-center justify-between pb-2 border-b border-[#242424]">
+              <span className="text-xs font-semibold text-[#d4d4d8] flex items-center gap-1.5">
                 <Code2 className="w-3.5 h-3.5 text-sky-400" />
-                <span className="text-xs font-medium text-[#e4e4e7] truncate max-w-[200px]">
-                  {uploadedFileName || 'Resume Document Text'}
-                </span>
-                {documentMeta && (
-                  <span className="text-[10px] font-mono text-[#a1a1aa] bg-[#222222] px-2 py-0.5 rounded border border-[#2f2f2f]">
-                    {documentMeta.pageCount}P • {documentMeta.fileType.toUpperCase()}
-                  </span>
-                )}
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleCopyText}
-                  className="flex items-center gap-1 px-2 py-0.5 rounded bg-[#202020] hover:bg-[#282828] border border-[#303030] text-[10px] text-[#d4d4d8] transition-colors cursor-pointer"
-                  title={t('profile.copyText')}
-                >
-                  {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                  <span>{copied ? t('profile.copied') : t('profile.copyText')}</span>
-                </button>
-              </div>
+                <span>{uploadedFileName || 'Resume Document Source'}</span>
+              </span>
+              <button
+                onClick={handleCopyText}
+                className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-white px-2 py-1 rounded bg-[#202020] border border-[#2e2e2e]"
+              >
+                {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                <span>{copied ? 'Copied' : 'Copy'}</span>
+              </button>
             </div>
-
-            {/* Active Field Focus Banner */}
-            {activeHighlight && (
-              <div className="px-4 py-2 bg-[#12222d] border-b border-sky-500/30 flex items-center justify-between text-[11px] text-sky-300">
-                <span>
-                  {t('profile.provenanceField')} <strong>{activeFieldLabel}</strong>
-                </span>
-                <span className="font-mono text-[10px] text-sky-400/80 bg-sky-950/60 px-2 py-0.5 rounded border border-sky-800/40">
-                  {activeHighlight}
-                </span>
-              </div>
-            )}
-
-            {/* Document Viewer with Line Numbers and Precision Text Rendering */}
-            <div className="flex-1 overflow-y-auto p-4 font-mono text-xs leading-relaxed text-[#d4d4d8] select-text">
-              {uploadedDocumentText ? (
-                uploadedDocumentText.split('\n').map((line, idx) => {
-                  const isHighlighted =
-                    activeHighlight &&
-                    line.toLowerCase().includes(activeHighlight.toLowerCase());
-
-                  return (
-                    <div
-                      key={idx}
-                      className={`flex items-start gap-3 py-0.5 px-2 rounded transition-colors ${
-                        isHighlighted
-                          ? 'bg-[#1a3344] text-white border-s-2 border-sky-400 font-semibold shadow-sm'
-                          : 'hover:bg-[#1c1c1c]'
-                      }`}
-                    >
-                      <span className="w-8 shrink-0 text-right select-none text-[10px] text-[#52525b] font-mono">
-                        {idx + 1}
-                      </span>
-                      <span className="flex-1 whitespace-pre-wrap break-all">
-                        {line || '\u00A0'}
-                      </span>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="p-8 text-center text-[#52525b] text-xs">
-                  {isRtl ? 'متن سندی برای نمایش بارگذاری نشده است.' : 'No document text loaded yet.'}
-                </div>
-              )}
-            </div>
+            <pre className="text-xs font-mono text-[#a1a1aa] whitespace-pre-wrap leading-relaxed select-text">
+              {uploadedDocumentText || 'Raw extracted resume text will appear here.'}
+            </pre>
           </div>
         </div>
       )}

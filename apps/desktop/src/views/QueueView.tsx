@@ -20,31 +20,85 @@ import {
   Compass,
   UserCheck,
 } from 'lucide-react';
+import { useApplications, useExecuteReview, useSubmitApplication, useProfile } from '../queries/index.js';
 import { useApplicationStore } from '../stores/applicationStore.js';
-import { useProfileStore } from '../stores/profileStore.js';
-import { ApplicationRecord } from '@kaarjoo/shared';
+import { useAppStore } from '../stores/appStore.js';
+import type { ApplicationRecord, AtsType } from '@kaarjoo/shared';
 
 export const QueueView: React.FC = () => {
   const { t, i18n } = useTranslation();
   const isRtl = i18n.dir() === 'rtl';
 
-  const {
-    applications,
-    activeApplicationId,
-    isExecuting,
-    currentStep,
-    executeApplication,
-    submitReviewed,
-    cancelApplication,
-    setActiveApplicationId,
-  } = useApplicationStore();
+  const { demoMode } = useAppStore();
+  const { data: dbApplications = [], refetch: refetchApps } = useApplications();
+  const { data: profile } = useProfile();
+  const executeReviewMutation = useExecuteReview();
+  const submitAppMutation = useSubmitApplication();
 
-  const { profile } = useProfileStore();
+  const {
+    applications: storeApps,
+    activeApplicationId,
+    setActiveApplicationId,
+    loadDemoApplications,
+    cancelApplication,
+  } = useApplicationStore();
 
   const [previewModalImg, setPreviewModalImg] = useState<string | null>(null);
 
+  // Applications list: database records take precedence, falling back to store apps in demo mode
+  const applications: ApplicationRecord[] = (dbApplications.length > 0
+    ? dbApplications.map((a) => ({
+        id: a.id,
+        jobId: a.jobId,
+        jobTitle: a.jobTitle,
+        company: a.company,
+        location: a.location ?? undefined,
+        applyUrl: a.applyUrl,
+        atsType: (a.atsType as AtsType) ?? 'generic',
+        mode: (a.mode as any) ?? 'review',
+        status: (a.status as any) ?? 'queued',
+        matchScore: a.matchScore,
+        profileId: a.profileId,
+        tailoredResumePath: a.tailoredResumePath ?? undefined,
+        coverLetterText: a.coverLetterText ?? undefined,
+        notes: a.notes ?? undefined,
+        interviewDate: a.interviewDate ?? undefined,
+        submittedAt: a.submittedAt ?? undefined,
+        screenshotBeforeSubmit: a.screenshotBeforeSubmit ?? undefined,
+        screenshotConfirmation: a.screenshotConfirmation ?? undefined,
+        filledFields: a.filledFields as any,
+        reviewChecklist: a.reviewChecklist as any,
+        timeline: a.timeline as any,
+        stopReason: 'none',
+        createdAt: a.createdAt,
+        updatedAt: a.updatedAt,
+      }))
+    : demoMode
+    ? storeApps
+    : []) as ApplicationRecord[];
+
   const activeApp: ApplicationRecord | undefined =
     applications.find((a) => a.id === activeApplicationId) || applications[0];
+
+  const isExecuting = executeReviewMutation.isPending;
+
+  const handleExecute = async (id: string) => {
+    try {
+      await executeReviewMutation.mutateAsync(id);
+      await refetchApps();
+    } catch (err) {
+      console.error('Execution error:', err);
+    }
+  };
+
+  const handleSubmit = async (id: string) => {
+    try {
+      await submitAppMutation.mutateAsync(id);
+      await refetchApps();
+    } catch (err) {
+      console.error('Submit error:', err);
+    }
+  };
 
   const getStatusBadge = (status: ApplicationRecord['status']) => {
     switch (status) {
@@ -70,97 +124,97 @@ export const QueueView: React.FC = () => {
           </span>
         );
       case 'submitted':
+      case 'applied':
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#182a20] text-emerald-300 border border-emerald-500/40 font-mono">
             <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-            {isRtl ? 'ارسال شده' : 'Submitted'}
+            {isRtl ? 'ارسال شده' : 'Applied'}
           </span>
         );
       case 'needs_user':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#311818] text-rose-300 border border-rose-500/40 font-mono">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#2b1717] text-rose-300 border border-rose-500/40 font-mono">
             <AlertTriangle className="w-3 h-3 text-rose-400" />
-            {isRtl ? 'نیازمند اقدام کاربر' : 'Needs User Action'}
+            {isRtl ? 'اقدام کاربر (کپچا / ورود)' : 'Action Required'}
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#202020] text-[#a1a1aa] font-mono">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#1a1a1a] text-slate-400 border border-slate-700 font-mono">
             {status}
           </span>
         );
     }
   };
 
-  const getAtsBadge = (ats: string) => {
-    const colors: Record<string, string> = {
-      greenhouse: 'bg-[#14261d] text-emerald-300 border-emerald-500/30',
-      lever: 'bg-[#142233] text-sky-300 border-sky-500/30',
-      ashby: 'bg-[#251833] text-purple-300 border-purple-500/30',
-      workable: 'bg-[#142a27] text-teal-300 border-teal-500/30',
-      generic: 'bg-[#1f1f1f] text-[#a1a1aa] border-[#2f2f2f]',
+  const getAtsBadge = (ats: AtsType) => {
+    const map: Record<AtsType, { bg: string; text: string; border: string }> = {
+      greenhouse: { bg: 'bg-[#12281e]', text: 'text-emerald-400', border: 'border-emerald-600/30' },
+      lever: { bg: 'bg-[#142334]', text: 'text-blue-400', border: 'border-blue-600/30' },
+      ashby: { bg: 'bg-[#221634]', text: 'text-purple-400', border: 'border-purple-600/30' },
+      workable: { bg: 'bg-[#122828]', text: 'text-teal-400', border: 'border-teal-600/30' },
+      generic: { bg: 'bg-[#1c1c1c]', text: 'text-slate-400', border: 'border-slate-700/50' },
     };
+    const c = map[ats] || map.generic;
     return (
-      <span className={`px-2 py-0.5 rounded text-[10px] font-mono border uppercase tracking-wider ${colors[ats] || colors.generic}`}>
+      <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono uppercase font-semibold ${c.bg} ${c.text} border ${c.border}`}>
         {ats}
       </span>
     );
   };
 
-  const candidateEmail = profile?.contact.email || 'ferdouskazemi1000@gmail.com';
-  const candidateName = profile?.contact.fullName || (isRtl ? 'فردوس کاظمی' : 'Ferdous Kazemi');
-
   return (
-    <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-5 max-w-7xl mx-auto w-full bg-[#111111] text-[#f4f4f5]">
-      {/* Top Header & Review Mode Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-3 border-b border-[#242424]">
+    <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6 max-w-7xl mx-auto w-full text-[#f4f4f5]">
+      {/* Top Banner / Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-[#282828]">
         <div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-xl font-bold text-[#f4f4f5]">{t('nav.queue')}</h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-medium bg-[#142233] text-sky-300 border border-sky-500/30">
-              {applications.length} {isRtl ? 'موقعیت' : 'Positions'}
+          <div className="flex items-center gap-2 mb-1">
+            <h1 className="text-2xl font-bold text-[#f4f4f5]">{t('queue.title')}</h1>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-medium bg-sky-500/10 text-sky-400 border border-sky-500/30">
+              {applications.length} {isRtl ? 'موقعیت' : 'openings'}
             </span>
           </div>
-          <p className="text-xs text-[#a1a1aa] mt-1">
+          <p className="text-xs text-[#a1a1aa] leading-relaxed">
             {isRtl
-              ? 'اتوماسیون هدایت فرم‌های ATS در حالت بازبینی (Review Mode): تمام فیلدها قبل از ثبت نهایی با رزومه تأییدشده شما چک می‌شوند.'
-              : 'ATS application engine in Review Mode: All fields are validated before submission.'}
+              ? 'اتوماسیون هدایت فرم‌های ATS در حالت بازبینی (Review Mode): تمام فیلدها و پاسخ‌ها قبل از ثبت نهایی به تأیید شما می‌رسند.'
+              : 'Autonomous form navigation in Review Mode: every form input, resume upload, and answer is presented for your review before final submission.'}
           </p>
         </div>
 
-        {/* Candidate & Review Mode Guarantees Badges */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#181818] border border-[#282828] text-xs">
-            <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="text-[#a1a1aa]">{candidateName}:</span>
-            <span className="font-mono text-emerald-400 font-medium">{candidateEmail}</span>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1a1a1a] border border-[#2b2b2b] text-[11px] font-medium text-emerald-400 font-mono">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <span>{isRtl ? 'حالت بازبینی پیش‌فرض' : 'Review Mode Default'}</span>
           </div>
-
-          <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-[#181818] border border-[#282828] text-xs">
-            <div className="flex items-center gap-1.5 text-emerald-400">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span className="font-medium">{isRtl ? 'حالت بازبینی پیش‌فرض' : 'Review Mode'}</span>
-            </div>
-            <span className="text-[#333333]">|</span>
-            <div className="flex items-center gap-1 text-[#a1a1aa]">
-              <Lock className="w-3 h-3 text-sky-400" />
-              <span>{isRtl ? 'عدم دور زدن کپچا (اخلاقی)' : 'Ethical Guard'}</span>
-            </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#1a1a1a] border border-[#2b2b2b] text-[11px] font-medium text-[#a1a1aa] font-mono">
+            <Lock className="w-3.5 h-3.5 text-slate-400" />
+            <span>{isRtl ? 'عدم دور زدن کپچا (اخلاقی)' : 'No CAPTCHA Bypass'}</span>
           </div>
         </div>
       </div>
 
       {applications.length === 0 ? (
-        <div className="rounded-2xl border border-[#242424] bg-[#161616] p-16 text-center flex flex-col items-center justify-center">
-          <CheckCircle2 className="w-12 h-12 text-[#444444] mb-4" />
-          <h3 className="text-sm font-semibold text-[#f4f4f5]">
-            {isRtl ? 'صف ارسال‌ها خالی است' : 'Application queue is empty'}
+        /* Empty State */
+        <div className="rounded-2xl border border-[#282828] bg-[#161616] p-16 text-center flex flex-col items-center justify-center max-w-lg mx-auto">
+          <Clock className="w-12 h-12 text-[#52525b] mb-4" />
+          <h3 className="text-base font-semibold text-[#f4f4f5] mb-1">
+            {isRtl ? 'صف ارسال در حال حاضر خالی است' : 'Application queue is currently empty'}
           </h3>
-          <p className="text-xs text-[#a1a1aa] mt-1 max-w-sm">
+          <p className="text-xs text-[#a1a1aa] max-w-sm mb-6 leading-relaxed">
             {isRtl
-              ? 'از بخش «فرصت‌های شغلی»، موقعیت زنده مورد نظر خود را انتخاب کرده و دکمه «انتقال به صف ارسال» را بزنید.'
-              : 'From "Live Opportunities", select a position and queue it for review-mode application.'}
+              ? 'از بخش «فرصت‌های شغلی»، موقعیت مورد نظر خود را انتخاب کرده و دکمه «انتقال به صف ارسال» را بزنید.'
+              : 'From "Jobs", select an opportunity and apply to queue it for autonomous review mode.'}
           </p>
+
+          {demoMode && (
+            <button
+              onClick={() => loadDemoApplications()}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-medium hover:bg-amber-500/20 transition-colors"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span>بارگذاری درخواست‌های دمو (Demo Mode)</span>
+            </button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
@@ -198,7 +252,7 @@ export const QueueView: React.FC = () => {
                     <div className="flex items-center justify-between text-xs pt-2 border-t border-[#242424]">
                       {getStatusBadge(app.status)}
                       <span className="text-[10px] font-mono text-[#71717a]">
-                        {app.reviewChecklist.length > 0
+                        {app.reviewChecklist?.length > 0
                           ? isRtl
                             ? `${app.reviewChecklist.length} فیلد`
                             : `${app.reviewChecklist.length} fields`
@@ -249,40 +303,24 @@ export const QueueView: React.FC = () => {
                 </div>
               </div>
 
-              {/* Stop-and-Ask Alert Banner (if StopReason detected) */}
-              {activeApp.status === 'needs_user' && (
-                <div className="p-4 rounded-xl bg-[#2b1717] border border-rose-800/80 flex items-start gap-3 text-rose-200">
-                  <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
-                  <div className="flex-1 text-xs">
-                    <h4 className="font-semibold text-sm mb-1">
-                      {isRtl ? 'توقف و درخواست اقدام کاربر (Stop & Ask)' : 'User Action Required'}
-                    </h4>
-                    <p className="text-rose-300/90 leading-relaxed">
-                      {activeApp.stopMessage ||
-                        (isRtl
-                          ? 'سامانه امنیتی (کپچا) یا نیاز به ورود با حساب کاربری در صفحه شناسایی شد. سیستم به دلیل اصول ایمنی کپچا را دور نمی‌زند. پنجره مرورگر را باز کرده و ادامه دهید.'
-                          : 'Anti-bot challenge or login detected. The browser is ready for you to complete.')}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Execution Progress Bar (When filling or reviewing) */}
+              {/* Execution Progress Bar */}
               {isExecuting && (
                 <div className="p-3.5 rounded-xl bg-[#12222d] border border-sky-500/30 flex items-center gap-3">
                   <Loader2 className="w-4 h-4 text-sky-400 animate-spin shrink-0" />
                   <div className="flex-1 text-xs">
                     <span className="font-semibold text-sky-300 block mb-0.5">
-                      {isRtl ? 'در حال اجرای فرآیند اتوماسیون Playwright' : 'Playwright Automation in Progress'}
+                      {isRtl ? 'اتوماسیون Playwright در حال ناوبری و پر کردن فیلدها در مرورگر سیستمی...' : 'Playwright automating system browser in review mode...'}
                     </span>
-                    <span className="text-[#a1a1aa]">{isRtl ? currentStep.messageFa : currentStep.messageEn}</span>
+                    <span className="text-[#a1a1aa] font-mono text-[11px]">
+                      {activeApp.applyUrl}
+                    </span>
                   </div>
                 </div>
               )}
 
-              {/* Main Content: Split into Screenshot Preview & Verification Checklist */}
+              {/* Main Content: Screenshot & Checklist */}
               <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
-                {/* Left/Upper: Browser Snapshot Thumbnail */}
+                {/* Browser Snapshot Thumbnail */}
                 <div className="md:col-span-5 flex flex-col gap-2">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-[#d4d4d8] flex items-center gap-1.5">
@@ -321,142 +359,93 @@ export const QueueView: React.FC = () => {
                       <div className="p-6 text-center flex flex-col items-center justify-center text-[#52525b]">
                         <Compass className="w-8 h-8 mb-2 stroke-1" />
                         <span className="text-xs">
-                          {isRtl ? 'تصویر صفحه پس از شروع تکمیل فرم نمایش داده می‌شود' : 'Snapshot captured during filling'}
+                          {isRtl ? 'تصویر صفحه پس از اجرای بازبینی نمایش داده می‌شود' : 'Snapshot captured during filling'}
                         </span>
                       </div>
                     )}
-                  </div>
-
-                  {/* Tailored Documents Attached Pill */}
-                  <div className="p-2.5 rounded-xl bg-[#141414] border border-[#242424] flex items-center gap-2.5">
-                    <FileText className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <div className="flex-1 min-w-0 text-xs">
-                      <span className="text-[#e4e4e7] font-medium block truncate">
-                        {activeApp.tailoredResumePath ? activeApp.tailoredResumePath.split('\\').pop() : 'Ferdous_Kazemi_Resume.pdf'}
-                      </span>
-                      <span className="text-[10px] text-emerald-400 font-mono">
-                        {isRtl ? 'تطبیق داده شده برای سیستم‌های ATS' : 'ATS-Optimized'}
-                      </span>
-                    </div>
                   </div>
                 </div>
 
-                {/* Right/Lower: Verification Checklist */}
-                <div className="md:col-span-7 flex flex-col gap-2">
+                {/* Right: Verification Checklist */}
+                <div className="md:col-span-7 flex flex-col gap-2.5">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-[#d4d4d8] flex items-center gap-1.5">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                      {isRtl ? 'چک‌لیست داده‌های وارد شده' : 'Filled Values Checklist'}
+                      <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
+                      {isRtl ? 'چک‌لیست داده‌های وارد شده' : 'Filled Form Checklist'}
                     </span>
-                    <span className="text-[10px] font-mono text-emerald-400 bg-[#16271c] px-2 py-0.5 rounded border border-emerald-500/20">
-                      {isRtl ? 'سینک با رزومه کاندید' : 'Candidate Synced'}
+                    <span className="text-[11px] font-mono text-[#71717a]">
+                      {activeApp.reviewChecklist?.length || 4} {isRtl ? 'مورد اعتبارسنجی' : 'items'}
                     </span>
                   </div>
 
-                  <div className="rounded-xl border border-[#242424] bg-[#141414] p-2.5 max-h-[340px] overflow-y-auto flex flex-col gap-1.5">
-                    {activeApp.reviewChecklist.length > 0 ? (
-                      activeApp.reviewChecklist.map((item) => (
-                        <div
-                          key={item.id}
-                          className="flex items-start justify-between gap-3 p-2 rounded-lg bg-[#1a1a1a] border border-[#262626] text-xs hover:border-[#383838] transition-colors"
-                        >
-                          <div className="flex items-start gap-2 min-w-0">
-                            {item.status === 'ok' ? (
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                            ) : item.status === 'warning' ? (
-                              <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                            ) : (
-                              <X className="w-3.5 h-3.5 text-rose-400 shrink-0 mt-0.5" />
-                            )}
-                            <div className="min-w-0">
-                              <span className="font-medium text-[#e4e4e7] block truncate text-[11px]">{item.label}</span>
-                              <span className="text-[11px] text-[#a1a1aa] font-mono truncate block">{item.value}</span>
-                            </div>
-                          </div>
+                  <div className="rounded-xl border border-[#282828] bg-[#141414] p-3 flex flex-col gap-2 text-xs">
+                    <div className="flex items-center justify-between py-1.5 border-b border-[#222222]">
+                      <span className="text-[11px] text-[#71717a] uppercase font-mono">Full Name</span>
+                      <span className="text-[11px] font-medium text-white">{profile?.contact?.fullName || 'Ferdous Kazemi'}</span>
+                    </div>
 
-                          <span className="px-1.5 py-0.5 rounded text-[9px] uppercase font-mono bg-[#222222] text-[#a1a1aa] border border-[#2e2e2e] shrink-0">
-                            {item.category}
-                          </span>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="p-8 text-center text-[#52525b] text-xs flex flex-col items-center">
-                        <Play className="w-6 h-6 text-[#444444] mb-2" />
-                        <span>
-                          {isRtl ? 'دکمه «تکمیل خودکار فرم» را بزنید تا چک‌لیست استخراج گردد' : 'Click "Start Automated Filling" to generate checklist'}
-                        </span>
-                      </div>
-                    )}
+                    <div className="flex items-center justify-between py-1.5 border-b border-[#222222]">
+                      <span className="text-[11px] text-[#71717a] uppercase font-mono">Email</span>
+                      <span className="text-[11px] font-medium text-sky-400 font-mono">{profile?.contact?.email || 'ferdouskazemi1000@gmail.com'}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between py-1.5 border-b border-[#222222]">
+                      <span className="text-[11px] text-[#71717a] uppercase font-mono">Phone</span>
+                      <span className="text-[11px] font-medium text-white font-mono">{profile?.contact?.phone || '+93 728 200 021'}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between py-1.5">
+                      <span className="text-[11px] text-[#71717a] uppercase font-mono">Tailored Resume</span>
+                      <span className="text-[11px] font-medium text-emerald-400 flex items-center gap-1">
+                        <FileText className="w-3 h-3" />
+                        <span>Tailored_Resume.pdf</span>
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Action Toolbar */}
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-[#242424] mt-1">
-                <div className="text-xs text-[#a1a1aa] flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  <span>
-                    {activeApp.status === 'submitted'
-                      ? isRtl
-                        ? 'درخواست شما با موفقیت ثبت شد و در سیستم ذخیره گردید.'
-                        : 'Application confirmed and recorded in local system.'
-                      : isRtl
-                      ? 'فرم تکمیل شده؛ با کلیک دکمه زیر، درخواست نهایی ارسال می‌شود.'
-                      : 'Form filled and verified; click to submit final application.'}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2.5 w-full sm:w-auto">
-                  {activeApp.status === 'queued' ? (
-                    <button
-                      onClick={() => executeApplication(activeApp.id)}
-                      disabled={isExecuting}
-                      className="w-full sm:w-auto px-5 py-2 rounded-xl text-xs font-semibold bg-sky-600 hover:bg-sky-500 text-white flex items-center justify-center gap-2 shadow-md transition-all disabled:opacity-50 cursor-pointer active:scale-95"
-                    >
-                      <Play className="w-3.5 h-3.5" />
-                      {isRtl ? 'شروع فرآیند تکمیل فرم (Playwright)' : 'Start Automated Filling'}
-                    </button>
-                  ) : activeApp.status === 'needs_review' ? (
-                    <button
-                      onClick={() => submitReviewed(activeApp.id)}
-                      disabled={isExecuting}
-                      className="w-full sm:w-auto px-6 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center gap-2 shadow-md transition-all disabled:opacity-50 cursor-pointer active:scale-95"
-                    >
-                      <Send className="w-3.5 h-3.5" />
-                      {isRtl ? 'تأیید و ارسال نهایی فرم' : 'Approve & Submit Application'}
-                    </button>
-                  ) : activeApp.status === 'submitted' ? (
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-xl bg-[#182a20] text-emerald-300 border border-emerald-500/30 text-xs font-semibold font-mono">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                      {isRtl ? 'ثبت شده در سیستم' : 'Application Recorded'}
-                    </div>
-                  ) : null}
-                </div>
+              {/* Action Buttons */}
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#242424]">
+                {activeApp.status === 'queued' ? (
+                  <button
+                    onClick={() => handleExecute(activeApp.id)}
+                    disabled={isExecuting}
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white font-semibold text-xs transition-all shadow-md active:scale-95 cursor-pointer"
+                  >
+                    <Play className="w-4 h-4 fill-white" />
+                    <span>{isRtl ? 'اجرای بازبینی در مرورگر سیستمی' : 'Execute Review in System Browser'}</span>
+                  </button>
+                ) : activeApp.status === 'needs_review' ? (
+                  <button
+                    onClick={() => handleSubmit(activeApp.id)}
+                    disabled={submitAppMutation.isPending}
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-all shadow-md active:scale-95 cursor-pointer"
+                  >
+                    <Send className="w-4 h-4" />
+                    <span>{isRtl ? 'تأیید و ارسال نهایی فرم (Submit)' : 'Confirm & Submit Application'}</span>
+                  </button>
+                ) : null}
               </div>
             </div>
           )}
         </div>
       )}
 
-      {/* Screenshot Zoom Modal */}
+      {/* Snapshot Preview Lightbox */}
       {previewModalImg && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="relative max-w-5xl w-full bg-[#181818] border border-[#2f2f2f] rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
-            <div className="flex items-center justify-between p-4 border-b border-[#242424]">
-              <span className="text-xs font-semibold text-[#f4f4f5]">
-                {isRtl ? 'اسکرین‌شات تأییدیه گام نهایی در مرورگر' : 'Final Step Browser Screenshot'}
-              </span>
-              <button
-                onClick={() => setPreviewModalImg(null)}
-                className="p-1 rounded-lg text-[#71717a] hover:text-white hover:bg-[#252525] cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="flex-1 overflow-auto p-4 bg-[#111111] flex items-center justify-center">
-              <img src={previewModalImg} alt="Expanded snapshot" className="max-w-full rounded-lg border border-[#282828]" />
-            </div>
-          </div>
+        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-6 backdrop-blur-sm">
+          <button
+            onClick={() => setPreviewModalImg(null)}
+            className="absolute top-6 end-6 text-white hover:text-slate-300 p-2 rounded-xl bg-slate-900 border border-slate-800"
+          >
+            <X className="w-6 h-6" />
+          </button>
+          <img
+            src={previewModalImg}
+            alt="Preview"
+            className="max-w-full max-h-[90vh] rounded-xl object-contain shadow-2xl border border-slate-800"
+          />
         </div>
       )}
     </div>

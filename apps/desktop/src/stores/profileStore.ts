@@ -18,18 +18,20 @@ export interface ProfileStoreState {
   }) => void;
   setActiveHighlight: (text: string, label: string) => void;
   clearProfile: () => void;
+  loadDemoProfile: () => void;
 }
 
-export const INITIAL_CANDIDATE_PROFILE: UserProfile = {
+// Fixture used ONLY when Demo Mode is explicitly toggled ON by the user
+export const DEMO_CANDIDATE_PROFILE: UserProfile = {
   id: 'prof_ferdous_kazemi',
   version: 1,
   createdAt: '2026-04-01',
   updatedAt: '2026-04-01',
   contact: {
-    fullName: 'فردوس کاظمی',
+    fullName: 'Ferdous Kazemi (فردوس کاظمی)',
     email: 'ferdouskazemi1000@gmail.com',
     phone: '+93 728 200 021',
-    location: 'کابل، افغانستان',
+    location: 'Kabul, Afghanistan',
     linkedinUrl: 'https://linkedin.com/in/ferdous-kazemi',
     githubUrl: 'https://github.com/skazemi1000',
     provenance: {
@@ -41,7 +43,7 @@ export const INITIAL_CANDIDATE_PROFILE: UserProfile = {
     },
   },
   summary:
-    'مهندس ارشد و فرانت‌اند با تسلط عمیق بر معماری‌های واکنشی، طراحی کامپوننت‌های بهینه‌سازی‌شده، توسعه سیستم‌های توزیع‌شده با Go و پلتفرم‌های تعاملی مدرن.',
+    'Senior Frontend & Full Stack Software Engineer with deep expertise in reactive architectures, component design systems, distributed backend services with Go, and modern interactive desktop applications.',
   experiences: [
     {
       id: 'exp_1',
@@ -51,8 +53,8 @@ export const INITIAL_CANDIDATE_PROFILE: UserProfile = {
       startDate: '2022-01',
       isCurrent: true,
       achievements: [
-        'توسعه و نگهداری وب‌اپلیکیشن‌های پیشرفته با React, Next.js, TypeScript و Tailwind CSS',
-        'پیاده‌سازی ماژول‌های بلادرنگ و بهینه‌سازی بارگذاری تا ۶۰٪ با متدهای مدرن State Management',
+        'Developed and maintained high-performance web applications with React, Next.js, TypeScript, and Tailwind CSS',
+        'Implemented real-time modules and improved page load times by up to 60% with modern state management techniques',
       ],
       skillsUsed: ['React', 'TypeScript', 'Next.js', 'Tailwind CSS', 'Redux'],
     },
@@ -65,8 +67,8 @@ export const INITIAL_CANDIDATE_PROFILE: UserProfile = {
       endDate: '2021-12',
       isCurrent: false,
       achievements: [
-        'طراحی میکروسرویس‌های مقیاس‌پذیر با Go و ارتباط gRPC با پایگاه‌داده PostgreSQL',
-        'پیاده‌سازی پایپ‌لاین‌های CI/CD و اتوماسیون تست‌های نرم‌افزار',
+        'Engineered scalable microservices in Go communicating via gRPC with PostgreSQL databases',
+        'Built automated CI/CD pipelines and end-to-end integration test suites',
       ],
       skillsUsed: ['Go', 'PostgreSQL', 'Docker', 'REST APIs'],
     },
@@ -74,55 +76,43 @@ export const INITIAL_CANDIDATE_PROFILE: UserProfile = {
   education: [
     {
       id: 'edu_1',
-      institution: 'دانشگاه کابل',
-      degree: 'کارشناسی مهندسی کامپیوتر',
-      fieldOfStudy: 'مهندسی نرم‌افزار',
+      institution: 'Kabul University',
+      degree: 'B.Sc. Computer Science & Software Engineering',
+      fieldOfStudy: 'Software Engineering',
       startDate: '2015',
       endDate: '2019',
-      grade: 'ممتاز',
+      grade: 'Top 5%',
     },
   ],
   skills: [
-    { id: 'sk_1', name: 'TypeScript', escoId: 'http://data.europa.eu/esco/skill/typescript', category: 'Technology' },
-    { id: 'sk_2', name: 'React', escoId: 'http://data.europa.eu/esco/skill/react', category: 'Technology' },
-    { id: 'sk_3', name: 'Go', escoId: 'http://data.europa.eu/esco/skill/go', category: 'Technology' },
-    { id: 'sk_4', name: 'Next.js', escoId: 'http://data.europa.eu/esco/skill/nextjs', category: 'Technology' },
-    { id: 'sk_5', name: 'Tailwind CSS', escoId: 'http://data.europa.eu/esco/skill/tailwind', category: 'Technology' },
-    { id: 'sk_6', name: 'PostgreSQL', escoId: 'http://data.europa.eu/esco/skill/postgresql', category: 'Technology' },
-    { id: 'sk_7', name: 'Docker', escoId: 'http://data.europa.eu/esco/skill/docker', category: 'Technology' },
-    { id: 'sk_8', name: 'System Design', escoId: 'http://data.europa.eu/esco/skill/system-design', category: 'Technology' },
+    { id: 'sk_1', name: 'TypeScript', level: 'expert', yearsOfExperience: 5 },
+    { id: 'sk_2', name: 'React', level: 'expert', yearsOfExperience: 5 },
+    { id: 'sk_3', name: 'Go', level: 'advanced', yearsOfExperience: 3 },
+    { id: 'sk_4', name: 'Next.js', level: 'advanced', yearsOfExperience: 4 },
+    { id: 'sk_5', name: 'Tailwind CSS', level: 'expert', yearsOfExperience: 4 },
+    { id: 'sk_6', name: 'PostgreSQL', level: 'intermediate', yearsOfExperience: 3 },
+    { id: 'sk_7', name: 'Docker', level: 'intermediate', yearsOfExperience: 2 },
   ],
   languages: [
-    { id: 'lang_1', language: 'فارسی', proficiency: 'native' },
-    { id: 'lang_2', language: 'انگلیسی', proficiency: 'C1' },
+    { id: 'lang_1', language: 'Persian / Dari', proficiency: 'native' },
+    { id: 'lang_2', language: 'English', proficiency: 'C1' },
+    { id: 'lang_3', language: 'Pashto', proficiency: 'C1' },
   ],
-  certifications: [],
-  targetTitles: ['Senior Front-End Developer', 'Full Stack Engineer', 'Distributed Systems Engineer'],
-  workAuthorization: ['Worldwide Remote', 'Germany', 'US', 'EU'],
+  certifications: ['Certified Kubernetes Application Developer (CKAD)'],
+  targetTitles: ['Senior Frontend Engineer', 'Staff Fullstack Engineer', 'Software Architect'],
+  workAuthorization: ['Worldwide Remote', 'EU Remote', 'US Remote'],
 };
 
 export const useProfileStore = create<ProfileStoreState>()(
   persist(
     (set) => ({
-      profile: INITIAL_CANDIDATE_PROFILE,
-      uploadedFileName: 'Ferdous Kazemi Resume (april 2025).pdf',
-      uploadedDocumentText: `FERDOUS KAZEMI
-Mid-Level Front-End Developer
-Kabul, Afghanistan | ferdouskazemi1000@gmail.com | +93 728 200 021 | linkedin.com/in/ferdous-kazemi
-
-Professional Summary:
-Passionate Front-End and Full-Stack Software Engineer with proven expertise building scalable responsive interfaces and distributed microservices.
-
-Experience:
-Mid-Level Front-End Developer | INOLITIX (2022 - Present)
-• Architected dynamic client applications with React, Next.js, and TypeScript.
-• Optimized state lifecycles and accelerated render times by 60%.
-
-Skills:
-TypeScript, React, Go, Next.js, Tailwind CSS, PostgreSQL, Docker, Git, CI/CD`,
-      documentMeta: { pageCount: 2, fileType: 'pdf' },
-      activeHighlight: 'ferdouskazemi1000@gmail.com',
-      activeFieldLabel: 'ایمیل',
+      // Production path: CLEAN EMPTY INITIAL STATE - ZERO MOCK DATA
+      profile: null,
+      uploadedFileName: '',
+      uploadedDocumentText: '',
+      documentMeta: null,
+      activeHighlight: '',
+      activeFieldLabel: '',
 
       setProfile: (profile) => set({ profile }),
 
@@ -148,9 +138,19 @@ TypeScript, React, Go, Next.js, Tailwind CSS, PostgreSQL, Docker, Git, CI/CD`,
           activeHighlight: '',
           activeFieldLabel: '',
         }),
+
+      loadDemoProfile: () =>
+        set({
+          profile: DEMO_CANDIDATE_PROFILE,
+          uploadedFileName: 'Ferdous Kazemi Resume (april 2025).pdf',
+          uploadedDocumentText: `FERDOUS KAZEMI\nEmail: ferdouskazemi1000@gmail.com\nPhone: +93 728 200 021\nLocation: Kabul, Afghanistan\n\nFull Stack & Frontend Engineer`,
+          documentMeta: { pageCount: 2, fileType: 'pdf' },
+          activeHighlight: 'ferdouskazemi1000@gmail.com',
+          activeFieldLabel: 'Email',
+        }),
     }),
     {
-      name: 'kaarjoo_candidate_profile_v2',
+      name: 'kaarjoo_candidate_profile_v3',
     }
   )
 );

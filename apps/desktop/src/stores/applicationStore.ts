@@ -58,6 +58,8 @@ interface ApplicationStoreState {
   exportToCsv: () => string;
   getKpis: () => ApplicationKpis;
   syncWithProfile: (profile: UserProfile | null) => void;
+  loadDemoApplications: () => void;
+  clearApplications: () => void;
 }
 
 const mockInitialApplications: ApplicationRecord[] = [
@@ -237,8 +239,9 @@ const mockInitialApplications: ApplicationRecord[] = [
 ];
 
 export const useApplicationStore = create<ApplicationStoreState>((set, get) => ({
-  applications: mockInitialApplications,
-  activeApplicationId: 'app_seed_001',
+  // Production path: CLEAN EMPTY INITIAL STATE - ZERO MOCK DATA
+  applications: [],
+  activeApplicationId: null,
   isExecuting: false,
   currentStep: {
     step: 'idle',
@@ -246,6 +249,18 @@ export const useApplicationStore = create<ApplicationStoreState>((set, get) => (
     messageEn: 'System ready to review applications.',
   },
   previewScreenshot: null,
+
+  loadDemoApplications: () =>
+    set({
+      applications: mockInitialApplications,
+      activeApplicationId: mockInitialApplications[0]?.id || null,
+    }),
+
+  clearApplications: () =>
+    set({
+      applications: [],
+      activeApplicationId: null,
+    }),
 
   queueJobApplication: (params) => {
     const id = `app_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;

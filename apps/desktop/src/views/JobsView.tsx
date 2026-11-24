@@ -1,11 +1,12 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Briefcase,
   Search,
   RefreshCw,
-  Building2,
   Loader2,
+  FileText,
+  UploadCloud,
 } from 'lucide-react';
 import { JobCard, type DisplayJob } from '../components/jobs/JobCard.js';
 import { JobDetailDrawer } from '../components/jobs/JobDetailDrawer.js';
@@ -13,17 +14,9 @@ import { CompanyBoardsModal } from '../components/jobs/CompanyBoardsModal.js';
 import { TailoredDocumentsModal } from '../components/documents/TailoredDocumentsModal.js';
 import { useApplicationStore } from '../stores/applicationStore.js';
 import { useAppStore } from '../stores/appStore.js';
+import { useProfile, useJobs } from '../queries/index.js';
+import { commands } from '../bindings.js';
 import type { CompanyBoard, AtsType } from '@kaarjoo/shared';
-import { fetchAllLiveJobs } from '../services/liveJobService.js';
-
-const LIVE_COMPANY_BOARDS_DEFAULT: CompanyBoard[] = [
-  { id: 'b1', name: 'Linear', domain: 'linear.app', atsType: 'ashby', boardSlug: 'linear', boardUrl: 'https://jobs.ashbyhq.com/linear', country: 'US', active: true, jobCount: 30 },
-  { id: 'b2', name: 'Ramp', domain: 'ramp.com', atsType: 'ashby', boardSlug: 'ramp', boardUrl: 'https://jobs.ashbyhq.com/ramp', country: 'US', active: true, jobCount: 180 },
-  { id: 'b3', name: 'OpenAI', domain: 'openai.com', atsType: 'ashby', boardSlug: 'openai', boardUrl: 'https://jobs.ashbyhq.com/openai', country: 'US', active: true, jobCount: 860 },
-  { id: 'b4', name: 'GitLab', domain: 'gitlab.com', atsType: 'greenhouse', boardSlug: 'gitlab', boardUrl: 'https://boards.greenhouse.io/gitlab', country: 'US', active: true, jobCount: 250 },
-  { id: 'b5', name: 'Cloudflare', domain: 'cloudflare.com', atsType: 'greenhouse', boardSlug: 'cloudflare', boardUrl: 'https://boards.greenhouse.io/cloudflare', country: 'US', active: true, jobCount: 500 },
-  { id: 'b6', name: 'Canonical', domain: 'canonical.com', atsType: 'greenhouse', boardSlug: 'canonical', boardUrl: 'https://boards.greenhouse.io/canonical', country: 'GB', active: true, jobCount: 310 },
-];
 
 export const JobsView: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -31,42 +24,15 @@ export const JobsView: React.FC = () => {
   const { setCurrentView } = useAppStore();
   const { queueJobApplication } = useApplicationStore();
 
-  // State: 100% Real Live Crawled Jobs - ZERO SEED DATA
-  const [jobs, setJobs] = useState<DisplayJob[]>([]);
-  const [isLoadingLive, setIsLoadingLive] = useState(true);
-  const [companyBoards, setCompanyBoards] = useState<CompanyBoard[]>(LIVE_COMPANY_BOARDS_DEFAULT);
+  const { data: profile, isLoading: isProfileLoading } = useProfile();
+  const { data: dbJobs = [], refetch: refetchJobs } = useJobs();
+
+  const [isSyncing, setIsSyncing] = useState(false);
   const [selectedJob, setSelectedJob] = useState<DisplayJob | null>(null);
   const [tailoringJob, setTailoringJob] = useState<DisplayJob | null>(null);
   const [isBoardsModalOpen, setIsBoardsModalOpen] = useState(false);
   const [isTailoringModalOpen, setIsTailoringModalOpen] = useState(false);
-  const [isSyncing, setIsSyncing] = useState(false);
-
-  const loadLiveJobs = async () => {
-    setIsSyncing(true);
-    setIsLoadingLive(true);
-    try {
-      const liveJobs = await fetchAllLiveJobs();
-      setJobs(liveJobs);
-    } catch (err) {
-      console.error('Failed to fetch live jobs:', err);
-    } finally {
-      setIsSyncing(false);
-      setIsLoadingLive(false);
-    }
-  };
-
-  useEffect(() => {
-    loadLiveJobs();
-  }, []);
-
-  const handleFeedback = (jobId: string, feedback: 'relevant' | 'irrelevant') => {
-    setJobs((prev) =>
-      prev.map((j) => (j.id === jobId ? { ...j, userFeedback: feedback } : j))
-    );
-    if (selectedJob && selectedJob.id === jobId) {
-      setSelectedJob((prev) => (prev ? { ...prev, userFeedback: feedback } : null));
-    }
-  };
+  const [companyBoards, setCompanyBoards] = useState<CompanyBoard[]>([]);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -75,46 +41,88 @@ export const JobsView: React.FC = () => {
   const [atsFilter, setAtsFilter] = useState<'all' | AtsType>('all');
   const [stackFilter, setStackFilter] = useState<string>('all');
 
-  // Real live crawler run
+  // Live crawl via Node engine sidecar & Rust core
   const handleSync = async () => {
-    await loadLiveJobs();
+    setIsSyncing(true);
+    try {
+      const keywords = profile?.skills?.map((s) => s.name).slice(0, 5) || null;
+      await commands.jobsSearch({
+        keywords,
+        locations: null,
+        remoteOnly: null,
+        company: null,
+        atsType: null,
+        limit: 50,
+      });
+      await refetchJobs();
+    } catch (err) {
+      console.error('Failed to sync live jobs:', err);
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
-  const handleToggleBoard = (id: string) => {
-    setCompanyBoards((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, active: !b.active } : b))
-    );
-  };
+  const displayJobs: DisplayJob[] = useMemo(() => {
+    return dbJobs.map((j) => ({
+      id: j.id,
+      title: j.title,
+      company: j.company,
+      location: j.location ?? undefined,
+      remoteType: (j.remoteType as any) ?? 'remote',
+      atsType: (j.atsType as AtsType) ?? 'generic',
+      applyUrl: j.applyUrl,
+      postedAt: j.postedAt ?? undefined,
+      descriptionMarkdown: j.descriptionMarkdown,
+      requirements: j.requirements,
+      matchScore: j.matchScore ? Math.round(j.matchScore) : undefined,
+    }));
+  }, [dbJobs]);
 
-  const handleAddBoard = (newBoard: CompanyBoard) => {
-    setCompanyBoards((prev) => [newBoard, ...prev]);
-  };
+  const filteredJobs = useMemo(() => {
+    return displayJobs.filter((job) => {
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchesTitle = job.title.toLowerCase().includes(q);
+        const matchesCompany = job.company.toLowerCase().includes(q);
+        const matchesLocation = (job.location || '').toLowerCase().includes(q);
+        if (!matchesTitle && !matchesCompany && !matchesLocation) {
+          return false;
+        }
+      }
 
-  const handleDetectAts = async (url: string) => {
-    const l = url.toLowerCase();
-    if (l.includes('greenhouse.io')) {
-      const slug = url.split('/').filter(Boolean).pop() || 'company';
-      return { atsType: 'greenhouse', boardSlug: slug, boardUrl: `https://boards.greenhouse.io/${slug}`, companyName: slug.toUpperCase() };
-    }
-    if (l.includes('lever.co')) {
-      const slug = url.split('/').filter(Boolean).pop() || 'company';
-      return { atsType: 'lever', boardSlug: slug, boardUrl: `https://jobs.lever.co/${slug}`, companyName: slug.toUpperCase() };
-    }
-    if (l.includes('ashbyhq.com')) {
-      const slug = url.split('/').filter(Boolean).pop() || 'company';
-      return { atsType: 'ashby', boardSlug: slug, boardUrl: `https://jobs.ashbyhq.com/${slug}`, companyName: slug.toUpperCase() };
-    }
-    if (l.includes('workable.com')) {
-      const slug = url.split('/').filter(Boolean).pop() || 'company';
-      return { atsType: 'workable', boardSlug: slug, boardUrl: `https://apply.workable.com/${slug}`, companyName: slug.toUpperCase() };
-    }
-    return {
-      atsType: 'greenhouse',
-      boardSlug: 'custom',
-      boardUrl: url,
-      companyName: 'Custom Company',
-    };
-  };
+      if (regionFilter === 'us') {
+        const loc = (job.location || '').toLowerCase();
+        if (!loc.includes('us') && !loc.includes('united states') && !loc.includes('san francisco') && !loc.includes('ca')) {
+          return false;
+        }
+      } else if (regionFilter === 'eu') {
+        const loc = (job.location || '').toLowerCase();
+        if (!loc.includes('eu') && !loc.includes('europe') && !loc.includes('sweden') && !loc.includes('germany') && !loc.includes('uk')) {
+          return false;
+        }
+      } else if (regionFilter === 'remote') {
+        if (job.remoteType !== 'remote') return false;
+      }
+
+      if (remoteFilter !== 'all' && job.remoteType !== remoteFilter) {
+        return false;
+      }
+
+      if (stackFilter !== 'all') {
+        const textToSearch = `${job.title} ${job.descriptionMarkdown || ''}`.toLowerCase();
+        if (stackFilter === 'frontend' && !textToSearch.includes('frontend') && !textToSearch.includes('front-end') && !textToSearch.includes('react')) return false;
+        if (stackFilter === 'fullstack' && !textToSearch.includes('fullstack') && !textToSearch.includes('full-stack') && !textToSearch.includes('software')) return false;
+        if (stackFilter === 'typescript' && !textToSearch.includes('typescript') && !textToSearch.includes('javascript')) return false;
+        if (stackFilter === 'design' && !textToSearch.includes('design') && !textToSearch.includes('ui/ux') && !textToSearch.includes('figma')) return false;
+      }
+
+      if (atsFilter !== 'all' && job.atsType !== atsFilter) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [displayJobs, searchQuery, regionFilter, remoteFilter, atsFilter, stackFilter]);
 
   const handleApply = (job: DisplayJob) => {
     setSelectedJob(null);
@@ -122,54 +130,31 @@ export const JobsView: React.FC = () => {
     setIsTailoringModalOpen(true);
   };
 
-  // Filtered jobs
-  const filteredJobs = useMemo(() => {
-    return jobs.filter((job) => {
-      // Keyword search
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const matchesTitle = job.title.toLowerCase().includes(q);
-        const matchesCompany = job.company.toLowerCase().includes(q);
-        const matchesLocation = (job.location || '').toLowerCase().includes(q);
-        const matchesSkills = job.matchedSkills?.some((s) => s.toLowerCase().includes(q));
-        if (!matchesTitle && !matchesCompany && !matchesLocation && !matchesSkills) {
-          return false;
-        }
-      }
-
-      // Region filter
-      if (regionFilter === 'us') {
-        const isUs = (job.location || '').includes('US') || (job.location || '').includes('San Francisco') || (job.location || '').includes('CA');
-        if (!isUs) return false;
-      } else if (regionFilter === 'eu') {
-        const isEu = (job.location || '').includes('Europe') || (job.location || '').includes('Sweden') || (job.location || '').includes('Stockholm') || (job.location || '').includes('Germany');
-        if (!isEu) return false;
-      } else if (regionFilter === 'remote') {
-        if (job.remoteType !== 'remote') return false;
-      }
-
-      // Remote filter
-      if (remoteFilter !== 'all' && job.remoteType !== remoteFilter) {
-        return false;
-      }
-
-      // Stack filter
-      if (stackFilter !== 'all') {
-        const textToSearch = `${job.title} ${(job.matchedSkills || []).join(' ')}`.toLowerCase();
-        if (stackFilter === 'frontend' && !textToSearch.includes('frontend') && !textToSearch.includes('front-end') && !textToSearch.includes('react') && !textToSearch.includes('web')) return false;
-        if (stackFilter === 'fullstack' && !textToSearch.includes('fullstack') && !textToSearch.includes('full-stack') && !textToSearch.includes('software')) return false;
-        if (stackFilter === 'typescript' && !textToSearch.includes('typescript') && !textToSearch.includes('javascript') && !textToSearch.includes('react')) return false;
-        if (stackFilter === 'design' && !textToSearch.includes('design') && !textToSearch.includes('product') && !textToSearch.includes('ui/ux') && !textToSearch.includes('figma')) return false;
-      }
-
-      // ATS filter
-      if (atsFilter !== 'all' && job.atsType !== atsFilter) {
-        return false;
-      }
-
-      return true;
-    });
-  }, [jobs, searchQuery, regionFilter, remoteFilter, atsFilter, stackFilter]);
+  // 1. If user has no profile, show clean empty state prompting résumé upload
+  if (!isProfileLoading && !profile) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center max-w-lg mx-auto">
+        <div className="w-16 h-16 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center mb-4">
+          <FileText className="w-8 h-8 text-sky-400" />
+        </div>
+        <h2 className="text-xl font-bold text-slate-100 mb-2">
+          {isRtl ? 'ابتدا رزومه خود را بارگذاری کنید' : 'Upload your résumé first'}
+        </h2>
+        <p className="text-sm text-slate-400 mb-6 leading-relaxed">
+          {isRtl
+            ? 'برای کشف و امتیازدهی دقیق فرصت‌های شغلی مطابق با تجربیات و مهارت‌های واقعی شما، لطفاً رزومه خود را در بخش پروفایل آپلود کنید.'
+            : 'To discover and accurately score jobs matching your experience and skills, please upload your résumé in the Profile section.'}
+        </p>
+        <button
+          onClick={() => setCurrentView('profile')}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-medium text-sm transition-colors shadow-lg shadow-sky-600/20"
+        >
+          <UploadCloud className="w-4 h-4" />
+          <span>{isRtl ? 'رفتن به بخش پروفایل' : 'Go to Profile'}</span>
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6 max-w-7xl mx-auto w-full">
@@ -178,29 +163,18 @@ export const JobsView: React.FC = () => {
         <div>
           <div className="flex items-center gap-2 mb-1.5 flex-wrap">
             <h1 className="text-2xl font-bold text-slate-100">{t('jobs.title')}</h1>
-            <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-950/60 text-emerald-300 border border-emerald-800/50">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>خزش زنده مستقیم از بوردها (بدون داده Seed)</span>
+            <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+              {displayJobs.length} {isRtl ? 'موقعیت زنده' : 'openings'}
             </span>
           </div>
-          <p className="text-xs text-slate-400 max-w-2xl">
-            {t('jobs.subtitle')}
+          <p className="text-xs text-slate-400">
+            {isRtl
+              ? 'موقعیت‌های شغلی زنده خزش‌شده از Greenhouse، Lever و Ashby با امتیازدهی محلی و بدون دیتای ساختگی.'
+              : 'Live career openings crawled directly from Greenhouse, Lever, and Ashby with local scoring and zero mock data.'}
           </p>
         </div>
 
-        {/* Action Controls */}
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <button
-            onClick={() => setIsBoardsModalOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-medium text-slate-200 transition-colors shadow-sm"
-          >
-            <Building2 className="w-3.5 h-3.5 text-sky-400" />
-            <span>{t('jobs.companyBoards')}</span>
-            <span className="ms-1 px-1.5 py-0.2 rounded-full bg-slate-800 text-[10px] text-slate-300 font-mono">
-              {companyBoards.filter((b) => b.active).length}
-            </span>
-          </button>
-
+        <div className="flex items-center gap-2.5 self-stretch sm:self-auto">
           <button
             onClick={handleSync}
             disabled={isSyncing}
@@ -224,8 +198,8 @@ export const JobsView: React.FC = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={
                 isRtl
-                  ? 'جستجو در عنوان شغل، نام شرکت یا مهارت (مثلاً Distributed Systems, Go, React)...'
-                  : 'Search job title, company, or skills (e.g. Distributed Systems, Go, React)...'
+                  ? 'جستجو در عنوان شغل یا نام شرکت...'
+                  : 'Search job title or company...'
               }
               className="w-full ps-9 pe-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-sky-500 transition-colors"
             />
@@ -255,7 +229,7 @@ export const JobsView: React.FC = () => {
           </div>
         </div>
 
-        {/* Quick Tech Stack Filter Ribbon (Sub-millisecond instant matching) */}
+        {/* Quick Tech Stack Filter Ribbon */}
         <div className="flex items-center gap-1.5 flex-wrap pt-2 border-t border-slate-800/40">
           <span className="text-[11px] text-slate-400 font-medium me-1">
             {isRtl ? 'تخصص شما:' : 'Your Stack:'}
@@ -328,22 +302,22 @@ export const JobsView: React.FC = () => {
           </div>
 
           <span className="text-xs text-slate-500 font-medium font-mono">
-            {isRtl ? `نمایش ${filteredJobs.length} موقعیت شغلی` : `Showing ${filteredJobs.length} live openings`}
+            {isRtl ? `نمایش ${filteredJobs.length} موقعیت شغلی` : `Showing ${filteredJobs.length} openings`}
           </span>
         </div>
       </div>
 
-      {/* Job Cards Feed or Live Loading State */}
-      {isLoadingLive && jobs.length === 0 ? (
+      {/* Job Cards Feed or Empty State */}
+      {isSyncing ? (
         <div className="rounded-2xl border border-sky-500/20 bg-slate-900/40 p-16 text-center flex flex-col items-center justify-center gap-3">
           <Loader2 className="w-10 h-10 text-sky-400 animate-spin" />
           <h3 className="text-base font-bold text-slate-100">
-            {isRtl ? 'در حال خزش و دریافت مشاغل ۱۰۰٪ واقعی و زنده...' : 'Crawling 100% Real Live Career Boards...'}
+            {isRtl ? 'در حال دریافت و ارزیابی زنده فرصت‌های شغلی...' : 'Discovering and scoring live opportunities...'}
           </h3>
           <p className="text-xs text-slate-400 max-w-md leading-relaxed">
             {isRtl
-              ? 'سیستم کارجو در حال اتصال زنده به APIهای عمومی و رسمی Linear، Ramp، OpenAI (Ashby) و GitLab، Cloudflare (Greenhouse) است.'
-              : 'Streaming live job openings from Ashby (Linear, Ramp, OpenAI) and Greenhouse (GitLab, Cloudflare, Canonical) with zero seed data.'}
+              ? 'اتصال به بوردها و تطبیق مستقیم سرفصل‌ها با رزومه شما از طریق موتور هوش مصنوعی محلی.'
+              : 'Connecting to boards and calculating true semantic and requirement match scores.'}
           </p>
         </div>
       ) : filteredJobs.length > 0 ? (
@@ -354,18 +328,25 @@ export const JobsView: React.FC = () => {
               job={job}
               onSelect={setSelectedJob}
               onApply={handleApply}
-              onFeedback={handleFeedback}
             />
           ))}
         </div>
       ) : (
         <div className="rounded-2xl border border-slate-800/80 bg-slate-900/30 p-16 text-center flex flex-col items-center justify-center">
           <Briefcase className="w-12 h-12 text-slate-600 mb-4" />
-          <h3 className="text-base font-semibold text-slate-200">{t('jobs.noJobsFound')}</h3>
+          <h3 className="text-base font-semibold text-slate-200">
+            {displayJobs.length === 0
+              ? isRtl ? 'هنوز فرصت شغلی دریافت نشده است' : 'No jobs in database yet'
+              : t('jobs.noJobsFound')}
+          </h3>
           <p className="text-xs text-slate-400 mt-1 max-w-sm">
-            {isRtl
-              ? 'فیلترهای انتخابی را تغییر دهید یا دکمه «خزش و بروزرسانی زنده» را کلیک نمایید.'
-              : 'Adjust your filters or click "Sync Feed" to refresh live openings.'}
+            {displayJobs.length === 0
+              ? isRtl
+                ? 'روی دکمه «خزش و بروزرسانی زنده» کلیک کنید تا فرصت‌های زنده متناسب با پروفایل شما کشف شوند.'
+                : 'Click "Sync Feed" above to discover live openings matching your profile.'
+              : isRtl
+              ? 'فیلترهای انتخابی را تغییر دهید.'
+              : 'Adjust your filters or sync again.'}
           </p>
         </div>
       )}
@@ -375,7 +356,6 @@ export const JobsView: React.FC = () => {
         job={selectedJob}
         onClose={() => setSelectedJob(null)}
         onApply={handleApply}
-        onFeedback={handleFeedback}
       />
 
       {/* Monitored Company Boards Modal */}
@@ -383,9 +363,9 @@ export const JobsView: React.FC = () => {
         isOpen={isBoardsModalOpen}
         onClose={() => setIsBoardsModalOpen(false)}
         boards={companyBoards}
-        onToggleBoard={handleToggleBoard}
-        onAddBoard={handleAddBoard}
-        onDetectAts={handleDetectAts}
+        onToggleBoard={(id) => setCompanyBoards(b => b.map(x => x.id === id ? { ...x, active: !x.active } : x))}
+        onAddBoard={(nb) => setCompanyBoards(b => [nb, ...b])}
+        onDetectAts={async (url) => ({ atsType: 'generic' as AtsType, boardSlug: 'custom', boardUrl: url, companyName: 'Custom' })}
       />
 
       {/* Tailored Documents Studio Modal (Phase 4) */}

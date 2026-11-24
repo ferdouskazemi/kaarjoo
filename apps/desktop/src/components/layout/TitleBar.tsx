@@ -5,7 +5,7 @@ import { Minus, Square, X, Cpu, Radio } from 'lucide-react';
 
 export const TitleBar: React.FC = () => {
   const { t } = useTranslation();
-  const { engineConnected, hardwareTier } = useAppStore();
+  const { engineConnected, hardwareTier, demoMode } = useAppStore();
 
   const handleMinimize = async () => {
     try {
@@ -67,6 +67,13 @@ export const TitleBar: React.FC = () => {
           <Cpu className="w-2.5 h-2.5 text-sky-400" />
           <span className="uppercase">{hardwareTier}</span>
         </div>
+
+        {/* Demo Mode Badge */}
+        {demoMode && (
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono bg-amber-500/20 border border-amber-500/40 text-amber-300 font-bold">
+            <span>DEMO MODE</span>
+          </div>
+        )}
       </div>
 
       {/* Window Controls for Desktop Shell */}
