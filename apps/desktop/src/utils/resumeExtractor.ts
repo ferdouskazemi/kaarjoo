@@ -1,13 +1,15 @@
 import { UserProfile, ExperienceItem, EducationItem, SkillItem } from '@kaarjoo/shared';
 
 const CANONICAL_SKILLS = [
-  'JavaScript', 'TypeScript', 'React', 'React Native', 'Next.js', 'Vue.js', 'Angular', 'HTML5', 'CSS3',
-  'Tailwind CSS', 'Redux', 'Svelte', 'Node.js', 'Express', 'NestJS', 'Python', 'Django', 'FastAPI',
-  'Go', 'Golang', 'Java', 'Spring Boot', 'C++', 'C#', '.NET', 'Rust', 'PHP', 'Ruby on Rails',
-  'PostgreSQL', 'MySQL', 'SQLite', 'MongoDB', 'Redis', 'Kafka', 'Elasticsearch', 'GraphQL', 'REST APIs',
-  'Docker', 'Kubernetes', 'AWS', 'Google Cloud (GCP)', 'Microsoft Azure', 'CI/CD', 'Git', 'Linux',
-  'System Design', 'Microservices', 'Distributed Systems', 'Agile', 'Scrum', 'TDD', 'PyTorch', 'TensorFlow',
-  'Machine Learning', 'Deep Learning', 'UI/UX Design', 'Figma',
+  'JavaScript', 'TypeScript', 'React', 'React Native', 'Next.js', 'NextJs', 'Vue.js', 'Angular',
+  'HTML', 'HTML5', 'CSS', 'CSS3', 'Tailwind CSS', 'Tailwind', 'Shadcn UI', 'Bootstrap', 'Redux', 'Svelte',
+  'Node.js', 'Express', 'NestJS', 'Python', 'Django', 'FastAPI', 'Go', 'Golang', 'Java', 'Spring Boot',
+  'C++', 'C#', '.NET', 'Rust', 'PHP', 'Ruby on Rails', 'WordPress', 'Shopify', 'Liquid', 'HubL',
+  'PostgreSQL', 'MySQL', 'My SQL', 'SQLite', 'MongoDB', 'Redis', 'Kafka', 'Elasticsearch', 'GraphQL', 'REST APIs',
+  'Docker', 'Kubernetes', 'AWS', 'Google Cloud (GCP)', 'Microsoft Azure', 'GitHub Actions', 'CI/CD', 'Git', 'GitHub',
+  'Linux', 'System Design', 'Microservices', 'Distributed Systems', 'Agile', 'Scrum', 'TDD',
+  'UI/UX Design', 'Figma', 'Chart.js', 'MapBox', '3D', 'HubSpot', 'Hotjar', 'Google Tag Manager', 'GTM',
+  'Analytics', 'Plaid', 'QuickBooks', 'Chrome Extension Development', 'Web Automation', 'SEO Improvement',
 ];
 
 /**
@@ -21,32 +23,45 @@ export function extractProfileFromText(text: string, fileName: string): { profil
 
   // 1. Extract Email
   const emailMatch = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
-  const email = emailMatch ? emailMatch[0] : 'candidate@example.com';
+  const email = emailMatch ? emailMatch[0].trim() : 'candidate@example.com';
 
   // 2. Extract Phone
-  const phoneMatch = text.match(/(?:\+?\d{1,3}[-.\s]?)?\(?\d{2,4}\)?[-.\s]?\d{3,4}[-.\s]?\d{3,4}/);
+  // Supports international formats like +93 703093770, +1 415-555-0199, etc.
+  const phoneMatch = text.match(/(?:\+\d{1,3}[\s-]?)?\(?\d{2,4}\)?[\s.-]?\d{3,4}[\s.-]?\d{3,4}/);
   const phone = phoneMatch ? phoneMatch[0].trim() : '+98 912 000 0000';
 
-  // 3. Extract Links
-  const linkedinMatch = text.match(/(?:https?:\/\/)?(?:www\.)?linkedin\.com\/in\/([a-zA-Z0-9_-]+)/i);
-  const linkedinUrl = linkedinMatch ? `https://linkedin.com/in/${linkedinMatch[1]}` : undefined;
+  // 3. Extract Links (LinkedIn, GitHub)
+  const linkedinMatch = text.match(/(?:https?:\/\/)?(?:www\.)?linkedin\.com\/in\/([a-zA-Z0-9_.-]+)/i);
+  let linkedinUrl: string | undefined;
+  if (linkedinMatch) {
+    const cleanedHandle = linkedinMatch[1].replace(/\s+/g, '').replace(/\/$/, '');
+    linkedinUrl = `https://linkedin.com/in/${cleanedHandle}`;
+  }
 
-  const githubMatch = text.match(/(?:https?:\/\/)?(?:www\.)?github\.com\/([a-zA-Z0-9_-]+)/i);
-  const githubUrl = githubMatch ? `https://github.com/githubMatch[1]` : undefined;
+  const githubMatch = text.match(/(?:https?:\/\/)?(?:www\.)?github\.com\/([a-zA-Z0-9_.-]+)/i);
+  let githubUrl: string | undefined;
+  if (githubMatch) {
+    const cleanedHandle = githubMatch[1].replace(/\s+/g, '').replace(/\/$/, '');
+    githubUrl = `https://github.com/${cleanedHandle}`;
+  }
 
   // 4. Extract Name
-  // Heuristic: first non-link, non-contact line that has between 2 and 4 words
+  // Heuristic: top lines without @, http, +, Resume, CV
   let fullName = '';
-  for (const line of lines.slice(0, 8)) {
+  for (const line of lines.slice(0, 6)) {
     if (
       !line.includes('@') &&
       !line.includes('http') &&
       !line.includes('+') &&
-      !/resume|curriculum|cv|رزومه/i.test(line) &&
+      !/^(?:resume|curriculum|cv|رزومه|page \d)/i.test(line) &&
       line.length >= 3 &&
       line.length <= 40
     ) {
-      fullName = line;
+      // If uppercase like FERDOUS KAZEMI, title case it
+      fullName = line
+        .split(' ')
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+        .join(' ');
       break;
     }
   }
@@ -55,20 +70,33 @@ export function extractProfileFromText(text: string, fileName: string): { profil
   }
 
   // 5. Extract Location
-  const locationPatterns = [
-    /Tehran|Kabul|Herat|Berlin|London|New York|San Francisco|Toronto|Stockholm|Paris|Amsterdam|Remote/i,
-    /تهران|کابل|هرات|مشهد|اصفهان|شیراز|دورکاری/i,
-  ];
   let location: string | undefined;
-  for (const pat of locationPatterns) {
-    const locMatch = text.match(pat);
-    if (locMatch) {
-      location = locMatch[0];
+  const locationWithCommaMatch = text.match(/([A-Za-z\u0600-\u06FF\t ]{2,30})\s*,\s*(Afghanistan|Iran|United States|USA|Germany|UK|Canada|Sweden|افغانستان|ایران|CA|NY|TX|WA)/i);
+  if (locationWithCommaMatch) {
+    location = `${locationWithCommaMatch[1].trim()} , ${locationWithCommaMatch[2].trim()}`;
+  } else {
+    const fallbackMatch = text.match(/Tehran|Kabul|Herat|Berlin|London|New York|San Francisco|Toronto|Remote|تهران|کابل|هرات/i);
+    if (fallbackMatch) {
+      location = fallbackMatch[0].trim();
+    }
+  }
+
+  // 6. Extract Target Job Title
+  let targetTitle = 'Senior Software Engineer / Developer';
+  for (const line of lines.slice(1, 10)) {
+    if (
+      /developer|engineer|designer|architect|lead|manager|consultant/i.test(line) &&
+      !line.includes('@') &&
+      !line.includes('http') &&
+      !line.includes('+') &&
+      line.length < 50
+    ) {
+      targetTitle = line.trim();
       break;
     }
   }
 
-  // 6. Extract Skills
+  // 7. Extract Skills
   const matchedSkills: SkillItem[] = [];
   const seenSkills = new Set<string>();
 
@@ -92,58 +120,126 @@ export function extractProfileFromText(text: string, fileName: string): { profil
     }
   }
 
-  // 7. Extract Summary / About
+  // 8. Extract Summary / About Me
   let summary = '';
-  const summaryHeadingMatch = text.match(/(?:summary|about\s*me|profile|خلاصه|درباره\s*من)[\s:]*([^\n\r]+(?:\n[^\n\r]+){1,4})/i);
+  const summaryHeadingMatch = text.match(/(?:^|[\r\n])\s*(?:summary|about\s*me|professional\s*summary|خلاصه|درباره\s*من)\s*[:\-—]?\s*[\r\n]+([^\n\r]+(?:\n[^\n\r]+){0,4})/i);
   if (summaryHeadingMatch && summaryHeadingMatch[1]) {
     summary = summaryHeadingMatch[1].trim();
   } else {
-    // Take second or third paragraph as summary
-    for (const line of lines.slice(1, 10)) {
-      if (line.length > 50 && !line.includes('@')) {
-        summary = line;
+    // Collect narrative paragraph (up to 3 contiguous descriptive lines)
+    const summaryLines: string[] = [];
+    for (const line of lines.slice(1, 15)) {
+      if (
+        !line.includes('@') &&
+        !line.includes('http') &&
+        !line.includes('•') &&
+        !line.toLowerCase().includes('languages:') &&
+        !line.toLowerCase().includes('technologies:') &&
+        !line.toLowerCase().includes('frameworks:') &&
+        !/^experience|^professional experience|^education|^skills/i.test(line) &&
+        line.length > 35
+      ) {
+        summaryLines.push(line);
+        if (summaryLines.length >= 3) break;
+      } else if (summaryLines.length > 0) {
         break;
       }
     }
+    if (summaryLines.length > 0) {
+      summary = summaryLines.join(' ');
+    }
   }
 
-  // 8. Extract Experience
+  // 9. Extract Work Experiences
   const experiences: ExperienceItem[] = [];
-  const expRegex = /([A-Za-z0-9\s&,.-]{3,40})\s*\|\s*([A-Za-z0-9\s&,.-]{3,40})\s*[\r\n]+\s*((?:19|20)\d{2}|(?:13|14)\d{2})\s*[-–]\s*((?:19|20)\d{2}|(?:13|14)\d{2}|Present|کنون|حال)/gi;
-  let match;
   let expIdx = 1;
 
-  while ((match = expRegex.exec(text)) !== null) {
-    experiences.push({
-      id: `exp_${expIdx++}`,
-      title: match[1].trim(),
-      company: match[2].trim(),
-      startDate: match[3],
-      endDate: /present|کنون|حال/i.test(match[4]) ? undefined : match[4],
-      isCurrent: /present|کنون|حال/i.test(match[4]),
-      achievements: [],
-      skillsUsed: [],
-      provenance: {
-        sourceFileId: fileName,
-        page: 1,
-        textSpan: match[0],
-        confidence: 0.95,
-        status: 'accepted',
-      },
-    });
+  // Strategy A: Line-by-line format with bullet • date (e.g. "INOLITIX, CA, United States • 2022 – current")
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const dotDateMatch = line.match(/^([A-Za-z0-9\s&.-]{2,35}?)\s*(?:,\s*[^•]+)?\s*•\s*((?:19|20)\d{2})\s*(?:[-–]\s*((?:19|20)\d{2}|current|present|کنون|حال))?/i);
+
+    if (dotDateMatch && !line.includes('@') && !line.includes('http')) {
+      const company = dotDateMatch[1].replace(/PROFESSIONAL EXPERIENCE/i, '').trim();
+      const startDate = dotDateMatch[2];
+      const rawEnd = dotDateMatch[3];
+      const isCurrent = !rawEnd || /current|present|کنون|حال/i.test(rawEnd);
+      const endDate = isCurrent ? undefined : rawEnd;
+
+      // Next line is typically the role / title
+      let title = 'Software Engineer / Developer';
+      if (lines[i + 1] && !lines[i + 1].startsWith('•') && !lines[i + 1].startsWith('Tasks:')) {
+        title = lines[i + 1].split(/\(|\(/)[0].split('|')[0].trim();
+      }
+
+      // Collect tasks / achievements
+      const achievements: string[] = [];
+      for (let j = i + 1; j < Math.min(i + 12, lines.length); j++) {
+        const subLine = lines[j];
+        if (subLine.match(/^[•o\-\*]\s*(.+)/)) {
+          achievements.push(subLine.replace(/^[•o\-\*]\s*/, '').trim());
+        } else if (subLine.match(/^([A-Za-z0-9\s&.-]{2,35}?)\s*(?:,\s*[^•]+)?\s*•\s*(?:19|20)\d{2}/i)) {
+          // Next company reached
+          break;
+        }
+      }
+
+      experiences.push({
+        id: `exp_${expIdx++}`,
+        title,
+        company,
+        startDate,
+        endDate,
+        isCurrent,
+        achievements,
+        skillsUsed: matchedSkills.slice(0, 4).map((s) => s.name),
+        provenance: {
+          sourceFileId: fileName,
+          page: 1,
+          textSpan: line,
+          confidence: 0.96,
+          status: 'accepted',
+        },
+      });
+    }
+  }
+
+  // Strategy B: Pipe-separated format (e.g. "Title | Company \n Year - Year")
+  if (experiences.length === 0) {
+    const expRegex = /([A-Za-z0-9\s&,.-]{3,40})\s*\|\s*([A-Za-z0-9\s&,.-]{3,40})\s*[\r\n]+\s*((?:19|20)\d{2}|(?:13|14)\d{2})\s*[-–]\s*((?:19|20)\d{2}|(?:13|14)\d{2}|Present|کنون|حال)/gi;
+    let match;
+    while ((match = expRegex.exec(text)) !== null) {
+      experiences.push({
+        id: `exp_${expIdx++}`,
+        title: match[1].trim(),
+        company: match[2].trim(),
+        startDate: match[3],
+        endDate: /present|کنون|حال/i.test(match[4]) ? undefined : match[4],
+        isCurrent: /present|کنون|حال/i.test(match[4]),
+        achievements: [],
+        skillsUsed: [],
+        provenance: {
+          sourceFileId: fileName,
+          page: 1,
+          textSpan: match[0],
+          confidence: 0.95,
+          status: 'accepted',
+        },
+      });
+    }
   }
 
   // Fallback experience if no formatted block matched
   if (experiences.length === 0) {
     experiences.push({
       id: 'exp_1',
-      title: 'Senior Software Engineer / Developer',
+      title: targetTitle || 'Senior Software Engineer / Developer',
       company: 'Tech Enterprise',
       startDate: '2021',
       isCurrent: true,
       achievements: [
-        'توسعه و نگهداری سرویس‌های بک‌اند و ماژول‌های فرانت‌اند با کارایی بالا',
-        'طراحی APIها و بهبود سرعت پاسخ‌دهی سیستم‌ها',
+        'توسعه و نگهداری سرویس‌های فرانت‌اند و بک‌اند با کارایی بالا',
+        'طراحی کامپوننت‌های مدرن و بهینه‌سازی سرعت پاسخ‌دهی سیستم‌ها',
       ],
       skillsUsed: matchedSkills.slice(0, 4).map((s) => s.name),
       provenance: {
@@ -156,25 +252,54 @@ export function extractProfileFromText(text: string, fileName: string): { profil
     });
   }
 
-  // 9. Extract Education
+  // 10. Extract Education
   const education: EducationItem[] = [];
-  const eduRegex = /(Bachelor|Master|PhD|BSc|MSc|کارشناسی|ارشد|دکتری)[^,\n.]*[,|\s]+([^,\n.]+)/gi;
-  let eduMatch;
   let eduIdx = 1;
 
-  while ((eduMatch = eduRegex.exec(text)) !== null) {
-    education.push({
-      id: `edu_${eduIdx++}`,
-      degree: eduMatch[1].trim(),
-      institution: eduMatch[2].trim(),
-      provenance: {
-        sourceFileId: fileName,
-        page: 1,
-        textSpan: eduMatch[0],
-        confidence: 0.95,
-        status: 'accepted',
-      },
-    });
+  // Search under EDUCATION section
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (/^EDUCATION|^تحصیلات/i.test(line)) {
+      const degreeLine = lines[i + 1] || 'B.Sc. Computer Science';
+      const instLine = lines[i + 2] || 'University';
+      const dateMatch = (instLine + ' ' + degreeLine).match(/((?:19|20)\d{2})\s*[-–]\s*((?:19|20)\d{2})/);
+
+      education.push({
+        id: `edu_${eduIdx++}`,
+        degree: degreeLine.split('|')[0].trim(),
+        institution: instLine.replace(/((?:19|20)\d{2}.*)/, '').trim(),
+        startDate: dateMatch ? dateMatch[1] : undefined,
+        endDate: dateMatch ? dateMatch[2] : undefined,
+        provenance: {
+          sourceFileId: fileName,
+          page: 1,
+          textSpan: `${degreeLine} ${instLine}`,
+          confidence: 0.97,
+          status: 'accepted',
+        },
+      });
+      break;
+    }
+  }
+
+  // Strategy B for education
+  if (education.length === 0) {
+    const eduRegex = /(Bachelor|Master|PhD|B\.Sc\.|M\.Sc\.|BSc|MSc|کارشناسی|ارشد|دکتری)[^,\n.]*[,|\s]+([^,\n.]+)/gi;
+    let eduMatch;
+    while ((eduMatch = eduRegex.exec(text)) !== null) {
+      education.push({
+        id: `edu_${eduIdx++}`,
+        degree: eduMatch[1].trim(),
+        institution: eduMatch[2].trim(),
+        provenance: {
+          sourceFileId: fileName,
+          page: 1,
+          textSpan: eduMatch[0],
+          confidence: 0.95,
+          status: 'accepted',
+        },
+      });
+    }
   }
 
   if (education.length === 0) {
@@ -227,7 +352,7 @@ export function extractProfileFromText(text: string, fileName: string): { profil
       { id: 'lang_2', language: 'انگلیسی', proficiency: 'C1' },
     ],
     certifications: [],
-    targetTitles: [experiences[0]?.title || 'مهندس ارشد نرم‌افزار'],
+    targetTitles: [targetTitle],
     workAuthorization: ['US', 'EU', 'Remote Worldwide'],
   };
 

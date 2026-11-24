@@ -20,6 +20,7 @@ import {
   BarChart3,
 } from 'lucide-react';
 import { UserProfile } from '@kaarjoo/shared';
+import { parseDocumentFile } from '../utils/documentParser.js';
 import { extractProfileFromText } from '../utils/resumeExtractor.js';
 
 const SAMPLE_PROFILE: UserProfile = {
@@ -138,6 +139,8 @@ export const ProfileView: React.FC = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  const [documentMeta, setDocumentMeta] = useState<{ pageCount: number; fileType: string } | null>(null);
+
   const handleFieldClick = (highlightText: string, label: string) => {
     setActiveHighlight(highlightText);
     setActiveFieldLabel(label);
@@ -148,34 +151,19 @@ export const ProfileView: React.FC = () => {
     setUploadedFileName(file.name);
 
     try {
-      let rawText = '';
+      // 1. Engineering-grade document parsing (PDF via PDF.js, Word via Mammoth, TXT/MD)
+      const parseResult = await parseDocumentFile(file);
+      setDocumentMeta({ pageCount: parseResult.pageCount, fileType: parseResult.fileType });
 
-      if (file.name.endsWith('.txt') || file.name.endsWith('.md')) {
-        rawText = await file.text();
-      } else {
-        // For PDF / Word / binary files, decode printable text strings
-        const buffer = await file.arrayBuffer();
-        const bytes = new Uint8Array(buffer);
-        const decoder = new TextDecoder('utf-8', { fatal: false });
-        const decoded = decoder.decode(bytes);
-
-        // Filter printable UTF-8 characters (including Persian/Arabic Unicode and English)
-        rawText = decoded.replace(/[^\x20-\x7E\u0600-\u06FF\uFB50-\uFDFF\uFE70-\uFEFF\n\r\t]/g, ' ');
-
-        // If file content is sparse (e.g. compressed PDF stream), ensure readable lines
-        if (rawText.replace(/\s/g, '').length < 30) {
-          rawText = `${file.name.replace(/\.[^/.]+$/, '')}\nEmail: candidate@example.com\nPhone: +1 555-0199\nSkills: TypeScript, JavaScript, React, Node.js, Python, Docker, Git`;
-        }
-      }
-
-      const { profile: extractedProfile, rawText: processedText } = extractProfileFromText(rawText, file.name);
+      // 2. Structured profile extraction
+      const { profile: extractedProfile, rawText: processedText } = extractProfileFromText(parseResult.text, file.name);
       setProfile(extractedProfile);
       setUploadedDocumentText(processedText);
-      setActiveHighlight(extractedProfile.contact.email || '');
+      setActiveHighlight(extractedProfile.contact.email || extractedProfile.contact.fullName || '');
       setActiveFieldLabel('ایمیل');
     } catch (err) {
       console.error('File parsing error:', err);
-      alert('خطا در خواندن فایل. لطفاً از فایل‌های PDF، DOCX یا متنی استاندارد استفاده فرمایید.');
+      alert('خطا در خواندن و تحلیل فایل. لطفاً از فایل‌های استاندارد PDF، DOCX یا متنی استفاده فرمایید.');
     } finally {
       setIsProcessing(false);
     }
@@ -201,6 +189,7 @@ export const ProfileView: React.FC = () => {
     setProfile(null);
     setUploadedFileName('');
     setUploadedDocumentText('');
+    setDocumentMeta(null);
     setActiveHighlight('');
     setActiveFieldLabel('');
     if (fileInputRef.current) {
@@ -580,9 +569,15 @@ export const ProfileView: React.FC = () => {
               <span className="text-xs font-semibold text-slate-200 flex items-center gap-1.5">
                 <FileText className="w-3.5 h-3.5 text-sky-400" />
                 <span>سند اصلی رزومه: <strong>{uploadedFileName || 'سند بارگذاری‌شده'}</strong></span>
+                {documentMeta && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 font-mono">
+                    {documentMeta.pageCount} صفحه • فرمت {documentMeta.fileType.toUpperCase()}
+                  </span>
+                )}
               </span>
-              <span className="text-[10px] text-emerald-400 font-mono">
-                ردگیری دقیق منبع (Provenance)
+              <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3" />
+                <span>متن ساختاریافته (Clean Text)</span>
               </span>
             </div>
 
