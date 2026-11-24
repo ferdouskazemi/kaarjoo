@@ -16,6 +16,7 @@ Cargo.lock
 
 # Tauri
 apps/desktop/src-tauri/target/
+apps/desktop/src-tauri/binaries/*.exe
 
 # Local databases and user app data
 *.db
