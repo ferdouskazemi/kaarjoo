@@ -463,7 +463,7 @@ pub async fn search_jobs_fts(
         SELECT j.id, j.source_id, j.canonical_url, j.apply_url, j.title, j.company, j.location,
                j.remote_type, j.employment_type, j.salary_json, j.description_markdown,
                j.requirements_json, j.ats_type, j.content_hash, j.sim_hash, j.first_seen,
-               coalesce(m.overall_score, 0) as match_score
+               CAST(coalesce(m.overall_score, 0.0) AS REAL) as match_score
         FROM jobs_fts
         JOIN jobs j ON j.rowid = jobs_fts.rowid
         LEFT JOIN matches m ON j.id = m.job_id
@@ -744,7 +744,7 @@ pub async fn get_all_applications(pool: &DbPool) -> Result<Vec<ApplicationRecord
         SELECT a.id, a.job_id, a.profile_id, a.status, a.mode, a.submitted_at,
                a.confirmation_text, a.screenshot_path, a.created_at, a.updated_at,
                j.title as job_title, j.company, j.location, j.apply_url, j.ats_type,
-               coalesce(m.overall_score, 0) as match_score
+               CAST(coalesce(m.overall_score, 0.0) AS REAL) as match_score
         FROM applications a
         JOIN jobs j ON a.job_id = j.id
         LEFT JOIN matches m ON a.job_id = m.job_id
@@ -774,7 +774,7 @@ pub async fn get_all_applications(pool: &DbPool) -> Result<Vec<ApplicationRecord
             if sc_path.is_some() {
                 screenshot_before_submit = sc_path;
             }
-            let cl_json: String = sr.get("checklist_json");
+            let cl_json: String = sr.try_get("checklist_json").unwrap_or_default();
             if let Ok(items) = serde_json::from_str::<Vec<ReviewChecklistItemDto>>(&cl_json) {
                 review_checklist = items;
             }
@@ -811,7 +811,7 @@ pub async fn get_all_applications(pool: &DbPool) -> Result<Vec<ApplicationRecord
             ats_type: r.get("ats_type"),
             mode: r.get("mode"),
             status,
-            match_score: r.get("match_score"),
+            match_score: r.try_get::<f64, _>("match_score").unwrap_or(0.0),
             profile_id: r.get("profile_id"),
             tailored_resume_path: None,
             cover_letter_text: None,
@@ -1018,4 +1018,45 @@ pub async fn wipe_all_data(pool: &DbPool) -> Result<(), sqlx::Error> {
     sqlx::query("DELETE FROM tasks").execute(&mut *tx).await?;
     tx.commit().await?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use sqlx::sqlite::SqlitePoolOptions;
+
+    #[tokio::test]
+    async fn test_get_all_applications_without_match_row_does_not_panic() {
+        let pool = SqlitePoolOptions::new()
+            .connect("sqlite::memory:")
+            .await
+            .unwrap();
+        sqlx::migrate!("./migrations").run(&pool).await.unwrap();
+
+        sqlx::query(
+            "INSERT INTO profiles (id, version, full_name, email, phone, location, summary, created_at, updated_at) VALUES ('p1', 1, 'Test User', 'test@example.com', '', '', '', '2026-01-01T00:00:00Z', '2026-01-01T00:00:00Z')"
+        )
+        .execute(&pool)
+        .await
+        .unwrap();
+
+        sqlx::query(
+            "INSERT INTO jobs (id, source_id, canonical_url, apply_url, title, company, remote_type, employment_type, description_markdown, requirements_json, ats_type, content_hash, sim_hash, first_seen, last_seen, status) VALUES ('j1', 'src1', 'https://example.com', 'https://example.com', 'Engineer', 'Acme', 'remote', 'full-time', 'desc', '[]', 'greenhouse', 'h1', 's1', '2026-01-01T00:00:00Z', '2026-01-01T00:00:00Z', 'active')"
+        )
+        .execute(&pool)
+        .await
+        .unwrap();
+
+        sqlx::query(
+            "INSERT INTO applications (id, job_id, profile_id, status, mode, created_at, updated_at) VALUES ('a1', 'j1', 'p1', 'saved', 'review', '2026-01-01T00:00:00Z', '2026-01-01T00:00:00Z')"
+        )
+        .execute(&pool)
+        .await
+        .unwrap();
+
+        let apps = get_all_applications(&pool).await.unwrap();
+        assert_eq!(apps.len(), 1);
+        assert_eq!(apps[0].id, "a1");
+        assert_eq!(apps[0].match_score, 0.0);
+    }
 }
