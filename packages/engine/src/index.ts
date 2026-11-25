@@ -560,6 +560,7 @@ server.register('application.execute', {
       const resumePath = params.tailoredResumePath || params.resumePath;
       if (!applicationEngine.getApplication(targetId) && params.job) {
         const queued = applicationEngine.queueApplication({
+          id: targetId,
           job: params.job as any,
           profile: params.profile as any,
           tailoredResumePath: resumePath,

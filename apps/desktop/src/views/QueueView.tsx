@@ -399,7 +399,7 @@ export const QueueView: React.FC = () => {
 
               {/* Action Buttons */}
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#242424]">
-                {activeApp.status === 'queued' ? (
+                {activeApp.status === 'queued' || activeApp.status === 'saved' ? (
                   <button
                     onClick={() => handleExecute(activeApp.id)}
                     disabled={isExecuting}

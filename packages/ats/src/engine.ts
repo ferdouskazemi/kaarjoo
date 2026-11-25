@@ -51,6 +51,7 @@ export class ApplicationEngine {
   }
 
   queueApplication(params: {
+    id?: string;
     job: JobPosting;
     profile: UserProfile;
     tailoredResumePath?: string;
@@ -58,7 +59,7 @@ export class ApplicationEngine {
     mode?: ApplicationMode;
     answers?: Record<string, string>;
   }): ApplicationRecord {
-    const id = `app_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const id = params.id || `app_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const now = new Date().toISOString();
 
     const record: ApplicationRecord = {
