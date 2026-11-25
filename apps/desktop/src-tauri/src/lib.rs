@@ -22,7 +22,8 @@ pub struct SystemStatus {
 pub fn run() {
     std::panic::set_hook(Box::new(|info| {
         let log_msg = format!("PANIC: {:?}\nLocation: {:?}\n", info.payload().downcast_ref::<&str>(), info.location());
-        let _ = std::fs::write("C:\\Work\\kaarjoo\\panic.log", log_msg);
+        let panic_path = std::env::temp_dir().join("kaarjoo-panic.log");
+        let _ = std::fs::write(panic_path, log_msg);
     }));
 
     let specta_builder = Builder::<tauri::Wry>::new().commands(collect_commands![
@@ -54,6 +55,10 @@ pub fn run() {
         commands::settings_get_all,
         commands::settings_set,
         commands::settings_wipe_all_data,
+        commands::directory_check_update,
+        commands::models_get_status,
+        commands::models_detect_hardware,
+        commands::models_download,
     ]);
 
     #[cfg(debug_assertions)]
@@ -69,6 +74,9 @@ pub fn run() {
         .plugin(tauri_plugin_process::init())
         .invoke_handler(specta_builder.invoke_handler())
         .setup(|app| {
+            #[cfg(desktop)]
+            app.handle().plugin(tauri_plugin_updater::Builder::new().build())?;
+
             let app_data_dir = app
                 .path()
                 .app_data_dir()

@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gunzipSync } from 'node:zlib';
@@ -12,10 +12,29 @@ let cachedManifest: DirectoryManifest | null = null;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+function resolveCompanyAsset(fileName: string): string {
+  const candidates = [
+    resolve(__dirname, fileName),
+    process.env.KAARJOO_RESOURCES_DIR
+      ? resolve(process.env.KAARJOO_RESOURCES_DIR, 'engine', fileName)
+      : '',
+    process.env.KAARJOO_RESOURCES_DIR
+      ? resolve(process.env.KAARJOO_RESOURCES_DIR, fileName)
+      : '',
+    resolve(__dirname, '../src/companies', fileName),
+    resolve(process.cwd(), 'packages/adapters/src/companies', fileName),
+  ].filter(Boolean);
+
+  for (const p of candidates) {
+    if (existsSync(p)) return p;
+  }
+  return resolve(__dirname, fileName);
+}
+
 export function loadBundledManifest(): DirectoryManifest {
   if (cachedManifest) return cachedManifest;
 
-  const manifestPath = resolve(__dirname, 'manifest.json');
+  const manifestPath = resolveCompanyAsset('manifest.json');
   const raw = readFileSync(manifestPath, 'utf-8');
   cachedManifest = JSON.parse(raw) as DirectoryManifest;
   return cachedManifest;
@@ -24,7 +43,7 @@ export function loadBundledManifest(): DirectoryManifest {
 export function loadBundledDirectory(): CompanyBoard[] {
   if (cachedDirectory) return cachedDirectory;
 
-  const gzPath = resolve(__dirname, 'directory.json.gz');
+  const gzPath = resolveCompanyAsset('directory.json.gz');
   const buffer = readFileSync(gzPath);
 
   // Verify SHA-256 integrity

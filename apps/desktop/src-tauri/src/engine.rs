@@ -20,6 +20,7 @@ pub struct EngineClient {
     child: Arc<Mutex<Option<CommandChild>>>,
     is_running: Arc<AtomicBool>,
     is_shutting_down: Arc<AtomicBool>,
+    app_data_dir: PathBuf,
     log_path: PathBuf,
 }
 
@@ -37,6 +38,7 @@ impl EngineClient {
             child: Arc::new(Mutex::new(None)),
             is_running: Arc::new(AtomicBool::new(false)),
             is_shutting_down: Arc::new(AtomicBool::new(false)),
+            app_data_dir: app_data_dir.to_path_buf(),
             log_path,
         })
     }
@@ -44,32 +46,30 @@ impl EngineClient {
 
 
     fn find_bundle_path(&self) -> Result<PathBuf, String> {
-        // 1. Try resource directory (production)
+        // 1. Try resource directory (production macOS .app/Contents/Resources & Windows NSIS)
         if let Ok(res_dir) = self.app_handle.path().resource_dir() {
-            let direct = res_dir.join("bundle.mjs");
-            if direct.exists() {
-                return Ok(direct);
-            }
-            let up3 = res_dir.join("_up_/_up_/_up_/packages/engine/dist/bundle.mjs");
-            if up3.exists() {
-                return Ok(up3);
-            }
-            let up2 = res_dir.join("_up_/_up_/packages/engine/dist/bundle.mjs");
-            if up2.exists() {
-                return Ok(up2);
-            }
-            let pkg = res_dir.join("packages/engine/dist/bundle.mjs");
-            if pkg.exists() {
-                return Ok(pkg);
+            let candidates = [
+                res_dir.join("engine").join("bundle.mjs"),
+                res_dir.join("resources").join("engine").join("bundle.mjs"),
+                res_dir.join("bundle.mjs"),
+                res_dir.join("_up_/_up_/_up_/packages/engine/dist/bundle.mjs"),
+                res_dir.join("_up_/_up_/packages/engine/dist/bundle.mjs"),
+                res_dir.join("packages/engine/dist/bundle.mjs"),
+            ];
+            for candidate in &candidates {
+                if candidate.exists() {
+                    return Ok(candidate.clone());
+                }
             }
         }
 
         // 2. Try relative workspace paths (development)
         let candidates = [
+            PathBuf::from("apps/desktop/src-tauri/resources/engine/bundle.mjs"),
+            PathBuf::from("resources/engine/bundle.mjs"),
             PathBuf::from("packages/engine/dist/bundle.mjs"),
             PathBuf::from("../../packages/engine/dist/bundle.mjs"),
             PathBuf::from("../../../packages/engine/dist/bundle.mjs"),
-            PathBuf::from("C:/Work/kaarjoo/packages/engine/dist/bundle.mjs"),
         ];
 
         for c in &candidates {
@@ -90,11 +90,41 @@ impl EngineClient {
         let bundle_path = self.find_bundle_path()?;
         info!("Spawning Node engine sidecar with bundle: {:?}", bundle_path);
 
+        let bundle_dir = bundle_path
+            .parent()
+            .map(|p| p.to_path_buf())
+            .unwrap_or_else(|| PathBuf::from("."));
+        let node_modules_dir = bundle_dir.join("node_modules");
+        let models_dir = self.app_data_dir.join("models");
+
+        let mut env_vars = HashMap::new();
+        env_vars.insert(
+            "KAARJOO_APP_DATA_DIR".to_string(),
+            self.app_data_dir.to_string_lossy().to_string(),
+        );
+        env_vars.insert(
+            "KAARJOO_MODELS_DIR".to_string(),
+            models_dir.to_string_lossy().to_string(),
+        );
+        if let Ok(res_dir) = self.app_handle.path().resource_dir() {
+            env_vars.insert(
+                "KAARJOO_RESOURCES_DIR".to_string(),
+                res_dir.to_string_lossy().to_string(),
+            );
+        }
+        if node_modules_dir.exists() {
+            env_vars.insert(
+                "NODE_PATH".to_string(),
+                node_modules_dir.to_string_lossy().to_string(),
+            );
+        }
+
         let sidecar_cmd = self
             .app_handle
             .shell()
             .sidecar("node")
             .map_err(|e| format!("Failed to configure node sidecar: {}", e))?
+            .envs(env_vars)
             .args([bundle_path.to_string_lossy().to_string()]);
 
         let (mut rx, child) = sidecar_cmd

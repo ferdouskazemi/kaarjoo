@@ -1,0 +1,104 @@
+name: Kaarjoo Release (Universal macOS DMG + Windows NSIS)
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g. v1.0.0)"
+        required: true
+        default: "v1.0.0"
+
+permissions:
+  contents: write
+
+jobs:
+  publish-tauri:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            rust_targets: aarch64-apple-darwin,x86_64-apple-darwin
+            sidecar_flag: --all-mac
+            tauri_args: --target universal-apple-darwin
+          - os: windows-latest
+            rust_targets: x86_64-pc-windows-msvc
+            sidecar_flag: --triple x86_64-pc-windows-msvc
+            tauri_args: --bundles nsis
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust_targets }}
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop/src-tauri
+
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify test suite before release
+        run: pnpm test
+
+      - name: Build packages and stage standalone engine resources
+        run: pnpm build
+
+      - name: Prepare Node.js sidecar binaries
+        run: node scripts/prepare-sidecar.mjs ${{ matrix.sidecar_flag }}
+
+      - name: Import Apple Signing Certificate (if configured)
+        if: matrix.os == 'macos-14' && env.APPLE_CERTIFICATE != ''
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        run: |
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          echo "$APPLE_CERTIFICATE" | base64 --decode > $RUNNER_TEMP/certificate.p12
+          security create-keychain -p "temp_pw" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "temp_pw" "$KEYCHAIN_PATH"
+          security import $RUNNER_TEMP/certificate.p12 -P "$APPLE_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security list-keychain -d user -s "$KEYCHAIN_PATH"
+
+      - name: Build & Publish Tauri Release with Updater Manifest
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        with:
+          projectPath: apps/desktop
+          tagName: ${{ github.event.inputs.tag || github.ref_name }}
+          releaseName: "Kaarjoo __VERSION__"
+          releaseBody: |
+            ### Kaarjoo Desktop Release
+            - **macOS (Apple Silicon + Intel Universal):** Download the `.dmg` installer. (If unsigned, right-click → Open on first launch; see `docs/RELEASE_AND_SIGNING.md`).
+            - **Windows 10/11 (x64 Per-User):** Download the `*-setup.exe` NSIS installer (bundles WebView2 Bootstrapper).
+            - **Auto-Updates:** Signed `latest.json` updater manifest included.
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.tauri_args }}

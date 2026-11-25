@@ -347,3 +347,57 @@ pub struct CompanyBoardDto {
     #[serde(rename = "isFollowed")]
     pub is_followed: bool,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+pub struct DirectoryUpdateCheckDto {
+    #[serde(rename = "hasUpdate")]
+    pub has_update: bool,
+    #[serde(rename = "currentVersion")]
+    pub current_version: String,
+    #[serde(rename = "latestVersion")]
+    pub latest_version: Option<String>,
+    pub sha256: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+pub struct ModelStatusDto {
+    pub id: String,
+    pub name: String,
+    pub role: String,
+    pub tier: String,
+    pub license: String,
+    pub sha256: String,
+    #[serde(rename = "fileName")]
+    pub file_name: String,
+    #[serde(rename = "modelsDir")]
+    pub models_dir: String,
+    #[serde(rename = "localPath")]
+    pub local_path: String,
+    pub installed: bool,
+    #[serde(rename = "partialBytes")]
+    pub partial_bytes: f64,
+    #[serde(rename = "bundledInApp")]
+    pub bundled_in_app: bool,
+    #[serde(rename = "sizeBytes")]
+    pub size_bytes: f64,
+    #[serde(rename = "downloadUrl")]
+    pub download_url: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+pub struct AiHardwareReportDto {
+    pub platform: String,
+    pub arch: String,
+    #[serde(rename = "totalRamGb")]
+    pub total_ram_gb: f64,
+    #[serde(rename = "cpuCores")]
+    pub cpu_cores: i32,
+    #[serde(rename = "gpuBackend")]
+    pub gpu_backend: String,
+    #[serde(rename = "vramTotalBytes")]
+    pub vram_total_bytes: f64,
+    #[serde(rename = "vramFreeBytes")]
+    pub vram_free_bytes: f64,
+    #[serde(rename = "recommendedTier")]
+    pub recommended_tier: String,
+}

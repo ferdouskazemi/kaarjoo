@@ -647,6 +647,72 @@ pub async fn settings_wipe_all_data(state: State<'_, AppState>) -> Result<(), St
         .map_err(|e| format!("Database error wiping data: {}", e))
 }
 
+#[tauri::command]
+#[specta::specta]
+pub async fn directory_check_update(
+    state: State<'_, AppState>,
+    current_version: String,
+) -> Result<DirectoryUpdateCheckDto, String> {
+    let res = state
+        .engine
+        .request("directory.checkUpdate", json!({ "currentVersion": current_version }))
+        .await?;
+
+    let has_update = res.get("hasUpdate").and_then(|v| v.as_bool()).unwrap_or(false);
+    let new_manifest = res.get("newManifest");
+    let latest_version = new_manifest
+        .and_then(|m| m.get("version"))
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string());
+    let sha256 = new_manifest
+        .and_then(|m| m.get("sha256"))
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string());
+
+    Ok(DirectoryUpdateCheckDto {
+        has_update,
+        current_version,
+        latest_version,
+        sha256,
+    })
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn models_get_status(state: State<'_, AppState>) -> Result<Vec<ModelStatusDto>, String> {
+    let res = state
+        .engine
+        .request("models.getStatus", json!({}))
+        .await?;
+
+    serde_json::from_value(res).map_err(|e| format!("Failed to parse model status: {}", e))
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn models_detect_hardware(state: State<'_, AppState>) -> Result<AiHardwareReportDto, String> {
+    let res = state
+        .engine
+        .request("models.detectHardware", json!({}))
+        .await?;
+
+    serde_json::from_value(res).map_err(|e| format!("Failed to parse hardware report: {}", e))
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn models_download(
+    state: State<'_, AppState>,
+    model_id: String,
+) -> Result<ModelStatusDto, String> {
+    let res = state
+        .engine
+        .request("models.download", json!({ "modelId": model_id }))
+        .await?;
+
+    serde_json::from_value(res).map_err(|e| format!("Failed to parse model download response: {}", e))
+}
+
 fn chrono_lite_iso() -> String {
     let now = std::time::SystemTime::now();
     let since = now.duration_since(std::time::UNIX_EPOCH).unwrap_or_default();

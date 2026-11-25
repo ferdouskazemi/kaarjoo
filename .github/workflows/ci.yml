@@ -1,0 +1,92 @@
+name: Kaarjoo CI (macOS + Windows)
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            rust_targets: aarch64-apple-darwin,x86_64-apple-darwin
+            sidecar_flag: --all-mac
+            tauri_args: --target universal-apple-darwin
+          - os: windows-latest
+            rust_targets: x86_64-pc-windows-msvc
+            sidecar_flag: --triple x86_64-pc-windows-msvc
+            tauri_args: --bundles nsis
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust_targets }}
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop/src-tauri
+
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run unit, i18n guard, and adapter tests
+        run: pnpm test
+
+      - name: Run SQLite FTS5 100k-job benchmark
+        run: pnpm benchmark:fts
+
+      - name: Run AI, OCR, matching, and truthfulness evaluation gate
+        run: pnpm eval:ci
+
+      - name: Build packages and stage standalone engine resources
+        run: pnpm build
+
+      - name: Prepare Node.js sidecar binaries
+        run: node scripts/prepare-sidecar.mjs ${{ matrix.sidecar_flag }}
+
+      - name: Verify Rust core compilation and migrations
+        working-directory: apps/desktop/src-tauri
+        run: cargo check
+
+      - name: Install Chromium for Playwright smoke test (CI)
+        run: pnpm --filter engine exec playwright-core install chromium || true
+
+      - name: Run end-to-end smoke test (including Unicode & space paths)
+        run: pnpm smoke:test
+
+      - name: Build installable desktop bundle
+        run: pnpm --filter desktop tauri build ${{ matrix.tauri_args }} --config '{"bundle":{"createUpdaterArtifacts":false}}'
+
+      - name: Upload CI bundles and smoke screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: kaarjoo-${{ matrix.os }}-artifacts
+          path: |
+            apps/desktop/src-tauri/target/**/release/bundle/dmg/*.dmg
+            apps/desktop/src-tauri/target/**/release/bundle/nsis/*-setup.exe
+            eval/smoke-artifacts/**/*
+          if-no-files-found: warn
