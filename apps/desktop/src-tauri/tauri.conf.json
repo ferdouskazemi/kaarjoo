@@ -43,14 +43,15 @@
       "binaries/node"
     ],
     "resources": {
-      "resources/engine/**/*": "engine/"
+      "resources/engine": "engine"
     },
     "windows": {
       "webviewInstallMode": {
         "type": "embedBootstrapper"
       },
       "nsis": {
-        "installMode": "currentUser"
+        "installMode": "currentUser",
+        "installerHooks": "nsis/hooks.nsh"
       }
     },
     "macOS": {
