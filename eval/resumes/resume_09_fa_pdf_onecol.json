@@ -1,0 +1,71 @@
+{
+  "id": "golden_resume_09_fa_pdf_onecol",
+  "format": "pdf",
+  "layout": "one-col",
+  "language": "fa",
+  "contact": {
+    "fullName": "بهرام توسلی",
+    "email": "bahram.tavasoli@example.ir",
+    "phone": "+98 912 440 8821",
+    "location": "تهران، ایران"
+  },
+  "experiences": [
+    {
+      "id": "resume_09_fa_pdf_onecol_exp_1",
+      "title": "مهندس ارشد بک‌اند",
+      "company": "پردازش ابری پارس",
+      "startDate": "1400",
+      "isCurrent": true,
+      "achievements": [
+        "طراحی میکروسرویس‌های پرترافیک با Go و PostgreSQL"
+      ]
+    },
+    {
+      "id": "resume_09_fa_pdf_onecol_exp_2",
+      "title": "توسعه‌دهنده نرم‌افزار",
+      "company": "نگار سیستم",
+      "startDate": "1397",
+      "endDate": "1400",
+      "isCurrent": false,
+      "achievements": [
+        "پیاده‌سازی APIهای مالی با Node.js و Redis"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "id": "resume_09_fa_pdf_onecol_edu_1",
+      "institution": "دانشگاه صنعتی شریف",
+      "degree": "کارشناسی ارشد",
+      "fieldOfStudy": "مهندسی کامپیوتر",
+      "startDate": "1395",
+      "endDate": "1397"
+    }
+  ],
+  "skills": [
+    {
+      "id": "resume_09_fa_pdf_onecol_sk_1",
+      "name": "Go"
+    },
+    {
+      "id": "resume_09_fa_pdf_onecol_sk_2",
+      "name": "Node.js"
+    },
+    {
+      "id": "resume_09_fa_pdf_onecol_sk_3",
+      "name": "PostgreSQL"
+    },
+    {
+      "id": "resume_09_fa_pdf_onecol_sk_4",
+      "name": "Redis"
+    },
+    {
+      "id": "resume_09_fa_pdf_onecol_sk_5",
+      "name": "Docker"
+    },
+    {
+      "id": "resume_09_fa_pdf_onecol_sk_6",
+      "name": "Kubernetes"
+    }
+  ]
+}

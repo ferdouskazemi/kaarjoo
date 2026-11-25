@@ -1,0 +1,67 @@
+{
+  "id": "golden_resume_32_en_pdf_humanitarian",
+  "format": "pdf",
+  "layout": "one-col",
+  "language": "en",
+  "contact": {
+    "fullName": "Zainab Karimi",
+    "email": "zainab.karimi@example.org",
+    "phone": "+93 70 612 9088",
+    "location": "Kabul, Afghanistan"
+  },
+  "experiences": [
+    {
+      "id": "resume_32_en_pdf_humanitarian_exp_1",
+      "title": "Information Management Officer",
+      "company": "Global Relief Mission",
+      "startDate": "2021",
+      "isCurrent": true,
+      "achievements": [
+        "Built KoboToolbox data pipelines in Python and PostgreSQL for 14 provinces."
+      ]
+    },
+    {
+      "id": "resume_32_en_pdf_humanitarian_exp_2",
+      "title": "GIS & Data Analyst",
+      "company": "Pamir Aid Network",
+      "startDate": "2018",
+      "endDate": "2021",
+      "isCurrent": false,
+      "achievements": [
+        "Automated SQL reporting dashboards and field validation scripts."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "id": "resume_32_en_pdf_humanitarian_edu_1",
+      "institution": "Kabul University",
+      "degree": "Bachelor of Science",
+      "fieldOfStudy": "Information Systems",
+      "startDate": "2014",
+      "endDate": "2018"
+    }
+  ],
+  "skills": [
+    {
+      "id": "resume_32_en_pdf_humanitarian_sk_1",
+      "name": "Python"
+    },
+    {
+      "id": "resume_32_en_pdf_humanitarian_sk_2",
+      "name": "SQL"
+    },
+    {
+      "id": "resume_32_en_pdf_humanitarian_sk_3",
+      "name": "PostgreSQL"
+    },
+    {
+      "id": "resume_32_en_pdf_humanitarian_sk_4",
+      "name": "Git"
+    },
+    {
+      "id": "resume_32_en_pdf_humanitarian_sk_5",
+      "name": "REST APIs"
+    }
+  ]
+}

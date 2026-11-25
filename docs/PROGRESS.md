@@ -109,3 +109,26 @@
   - **Directory Browser UI:**
     - `apps/desktop/src/components/jobs/CompanyBoardsModal.tsx`: Upgraded with dual-tab view ("Global Directory 5,000+" and "Followed Boards"), real-time search, filters for ATS provider, country, and remote-first policies, and persistent one-click follow/unfollow capability.
   - User contact details standardized: `ferdouskazemi1000@gmail.com` and `+93 728 200 021`.
+
+### Phase 10: Cross-Platform Packaging, CI Matrix, Auto-Updater & Accessibility Audit
+- **Status:** PARTIAL (Windows NSIS built & Unicode smoke-tested locally; macOS universal `.dmg` + Apple notarization configured in CI / documented, not run locally due to Windows host)
+- **Evidence:**
+  - **Icons & Bundle:** Generated multi-platform icons (`32x32.png`, `64x64.png`, `128x128.png`, `128x128@2x.png`, `icon.icns`, `icon.ico`, `icon.png`) in `apps/desktop/src-tauri/icons/`.
+  - **GitHub Actions CI & Releases:** `.github/workflows/ci.yml` (`macos-14` universal `.dmg` + `windows-latest` NSIS `.exe` + PR eval gate) and `.github/workflows/release.yml` (`tauri-action@v0` tag release + signed `latest.json`).
+  - **Sidecar & Resource Staging:** `scripts/prepare-sidecar.mjs` (Node v22.14.0 SHA-256 verified sidecar per triple), `scripts/stage-engine-resources.mjs`, `scripts/macos-sign-nested.sh`, `apps/desktop/src-tauri/Entitlements.plist` (Hardened Runtime entitlements).
+  - **Auto-Updater & Directory Refresh:** `@tauri-apps/plugin-updater` (`2.x`) + `directory_check_updates` command wired in `SettingsView.tsx`.
+  - **Windows Release Bundle Verified:** `pnpm --filter desktop tauri build --bundles nsis` succeeded (`317.23 MiB` NSIS setup at `apps/desktop/src-tauri/target/release/bundle/nsis/Kaarjoo_1.0.0_x64-setup.exe`).
+  - **Unicode & Space Path Smoke Test (`pnpm smoke:test`):** Verified end-to-end under `Kaarjoo Smoke Test فردوس کاظمی ...` on `win32/x64` (`eval/smoke-artifacts/smoke-review-form.jpg`).
+  - **Design & Accessibility Pass:** Light + Dark CSS token system, `:focus-visible`, `prefers-reduced-motion`, ARIA dialog/nav attributes, verified across 8 screenshots (`ui-{en,fa}-{dark,light}-{home,settings}.png`) in `eval/smoke-artifacts/` with 0 errors and 0 unlabeled buttons.
+  - **Docs:** [`docs/RELEASE_AND_SIGNING.md`](RELEASE_AND_SIGNING.md) & [`docs/SMOKE_TEST_CHECKLIST.md`](SMOKE_TEST_CHECKLIST.md).
+
+### Phase 11: Real Local AI (`node-llama-cpp`), Neural Embeddings Cache, OCR (`tesseract.js`) & Eval Suite
+- **Status:** COMPLETED & VERIFIED (All deterministic, OCR, SQLite cache, grammar/evidence verification, matching, and adversarial eval gates passed; live multi-GB GGUF tokens/sec not measured locally because GGUF weights are on-demand runtime downloads not bundled on host)
+- **Evidence:**
+  - **Local AI Runtime (`packages/engine/src/ai/`):** `node-llama-cpp` (`^3.22.3`) hardware tier & Vulkan/CUDA/Metal/CPU detection, Apache-2.0/MIT open-weight model manifest (`Qwen3-4B`, `Qwen2.5-1.5B`, `Qwen3-8B`, `Qwen3-14B`, `BGE-M3`), resumable SHA-256 HTTPS downloader (`models_download` + `SettingsView.tsx` UI), JSON-schema grammar constrained prompts + verbatim `verifyEvidenceSpan` guard, 5-min idle auto-unload.
+  - **Neural Embedding SQLite Cache:** Migration `20260501_embedding_cache.sql` + `SqliteEmbeddingCache` storing float32 vectors in SQLite (`node:sqlite`), with TF-IDF fallback explicitly tagged when no embedding GGUF is downloaded.
+  - **OCR & Legacy Formats:** Bundled `eng.traineddata.gz` + `fas.traineddata.gz` with offline `tesseract.js` (`^7.0.0`), Chromium scanned-PDF fallback, plus `.doc` (UTF-16LE/ASCII), `.odt` (`content.xml` ZIP), and `.rtf` (Unicode `\uN`) parsers.
+  - **Comprehensive Eval Suite (`pnpm eval:ci` -> `docs/EVAL.md`):**
+    - 32 multi-format résumés (`.pdf`, `.docx`, `.odt`, `.rtf`, `.png` OCR, `.txt`; 5 OCR-scanned): Email F1 `0.938`, Phone F1 `0.875`, Skills F1 `0.901`, Experience F1 `0.865`, Education F1 `0.600`, Evidence Guard `5/5` blocked.
+    - 312 labeled profile–job pairs across 12 profiles: Precision@10 **`0.8819`**, NDCG@10 **`0.9336`**, `0` hard-filter violations.
+    - 56 adversarial truthfulness cases (48 EN+FA attacks + 8 valid controls): **`48/48` (100.0%) caught**, **`0/8` (0.0%) false positives**.

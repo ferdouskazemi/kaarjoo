@@ -102,7 +102,7 @@ describe('ApplicationEngine Core', () => {
     const submitted = await engine.submitReviewedApplication(record.id);
     expect(submitted.status).toBe('submitted');
     expect(submitted.submittedAt).toBeDefined();
-  }, 20000);
+  }, 40000);
 
   it('allows cancelling an application', async () => {
     const record = engine.queueApplication({

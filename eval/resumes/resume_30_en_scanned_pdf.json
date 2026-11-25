@@ -1,0 +1,56 @@
+{
+  "id": "golden_resume_30_en_scanned_pdf",
+  "format": "scanned-pdf",
+  "layout": "scanned",
+  "language": "en",
+  "contact": {
+    "fullName": "Daniel Mensah",
+    "email": "daniel.mensah@example.org",
+    "phone": "+44 7711 552209",
+    "location": "Bristol, UK"
+  },
+  "experiences": [
+    {
+      "id": "resume_30_en_scanned_pdf_exp_1",
+      "title": "Platform Engineer",
+      "company": "WestGrid Data",
+      "startDate": "2021",
+      "isCurrent": true,
+      "achievements": [
+        "Operated Spark pipelines on Kubernetes with Python and SQL."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "id": "resume_30_en_scanned_pdf_edu_1",
+      "institution": "University of Bristol",
+      "degree": "Bachelor of Science",
+      "fieldOfStudy": "Data Engineering",
+      "startDate": "2017",
+      "endDate": "2020"
+    }
+  ],
+  "skills": [
+    {
+      "id": "resume_30_en_scanned_pdf_sk_1",
+      "name": "Python"
+    },
+    {
+      "id": "resume_30_en_scanned_pdf_sk_2",
+      "name": "SQL"
+    },
+    {
+      "id": "resume_30_en_scanned_pdf_sk_3",
+      "name": "Kubernetes"
+    },
+    {
+      "id": "resume_30_en_scanned_pdf_sk_4",
+      "name": "Docker"
+    },
+    {
+      "id": "resume_30_en_scanned_pdf_sk_5",
+      "name": "AWS"
+    }
+  ]
+}

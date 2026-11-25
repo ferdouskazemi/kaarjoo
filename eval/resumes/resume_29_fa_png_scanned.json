@@ -1,0 +1,52 @@
+{
+  "id": "golden_resume_29_fa_png_scanned",
+  "format": "png",
+  "layout": "scanned",
+  "language": "fa",
+  "contact": {
+    "fullName": "رویا سلطانی",
+    "email": "roya.soltani@example.com",
+    "phone": "+98 912 710 3399",
+    "location": "تهران، ایران"
+  },
+  "experiences": [
+    {
+      "id": "resume_29_fa_png_scanned_exp_1",
+      "title": "برنامه‌نویس بک‌اند",
+      "company": "آوا سیستم",
+      "startDate": "1400",
+      "isCurrent": true,
+      "achievements": [
+        "توسعه سرویس‌های Node.js و PostgreSQL"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "id": "resume_29_fa_png_scanned_edu_1",
+      "institution": "دانشگاه علم و صنعت",
+      "degree": "کارشناسی",
+      "fieldOfStudy": "مهندسی کامپیوتر",
+      "startDate": "1395",
+      "endDate": "1399"
+    }
+  ],
+  "skills": [
+    {
+      "id": "resume_29_fa_png_scanned_sk_1",
+      "name": "Node.js"
+    },
+    {
+      "id": "resume_29_fa_png_scanned_sk_2",
+      "name": "PostgreSQL"
+    },
+    {
+      "id": "resume_29_fa_png_scanned_sk_3",
+      "name": "Docker"
+    },
+    {
+      "id": "resume_29_fa_png_scanned_sk_4",
+      "name": "Git"
+    }
+  ]
+}

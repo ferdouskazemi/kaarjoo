@@ -1,0 +1,56 @@
+{
+  "id": "golden_resume_26_mixed_rtf_onecol",
+  "format": "rtf",
+  "layout": "one-col",
+  "language": "mixed",
+  "contact": {
+    "fullName": "سهراب فقیری",
+    "email": "sohrab.faqiri@example.af",
+    "phone": "+93 79 441 8870",
+    "location": "کابل، افغانستان"
+  },
+  "experiences": [
+    {
+      "id": "resume_26_mixed_rtf_onecol_exp_1",
+      "title": "Android Developer",
+      "company": "Payam Mobile",
+      "startDate": "2020",
+      "isCurrent": true,
+      "achievements": [
+        "ساخت اپلیکیشن موبایل بانکی با Kotlin و REST APIs"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "id": "resume_26_mixed_rtf_onecol_edu_1",
+      "institution": "دانشگاه کاردان",
+      "degree": "کارشناسی",
+      "fieldOfStudy": "علوم کامپیوتر",
+      "startDate": "2015",
+      "endDate": "2019"
+    }
+  ],
+  "skills": [
+    {
+      "id": "resume_26_mixed_rtf_onecol_sk_1",
+      "name": "Kotlin"
+    },
+    {
+      "id": "resume_26_mixed_rtf_onecol_sk_2",
+      "name": "REST APIs"
+    },
+    {
+      "id": "resume_26_mixed_rtf_onecol_sk_3",
+      "name": "Git"
+    },
+    {
+      "id": "resume_26_mixed_rtf_onecol_sk_4",
+      "name": "SQLite"
+    },
+    {
+      "id": "resume_26_mixed_rtf_onecol_sk_5",
+      "name": "Java"
+    }
+  ]
+}

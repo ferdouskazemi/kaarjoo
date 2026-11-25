@@ -1,0 +1,56 @@
+{
+  "id": "golden_resume_28_en_png_twocol",
+  "format": "png",
+  "layout": "scanned",
+  "language": "en",
+  "contact": {
+    "fullName": "Nora Lindqvist",
+    "email": "nora.lindqvist@example.no",
+    "phone": "+47 901 22 440",
+    "location": "Oslo, Norway"
+  },
+  "experiences": [
+    {
+      "id": "resume_28_en_png_twocol_exp_1",
+      "title": "Senior React Developer",
+      "company": "Fjord Digital",
+      "startDate": "2020",
+      "isCurrent": true,
+      "achievements": [
+        "Shipped accessible design systems with TypeScript, React, and Playwright."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "id": "resume_28_en_png_twocol_edu_1",
+      "institution": "University of Oslo",
+      "degree": "Bachelor of Science",
+      "fieldOfStudy": "Informatics",
+      "startDate": "2016",
+      "endDate": "2019"
+    }
+  ],
+  "skills": [
+    {
+      "id": "resume_28_en_png_twocol_sk_1",
+      "name": "React"
+    },
+    {
+      "id": "resume_28_en_png_twocol_sk_2",
+      "name": "TypeScript"
+    },
+    {
+      "id": "resume_28_en_png_twocol_sk_3",
+      "name": "Playwright"
+    },
+    {
+      "id": "resume_28_en_png_twocol_sk_4",
+      "name": "Tailwind CSS"
+    },
+    {
+      "id": "resume_28_en_png_twocol_sk_5",
+      "name": "Git"
+    }
+  ]
+}

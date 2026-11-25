@@ -1,0 +1,56 @@
+{
+  "id": "golden_resume_24_en_rtf_onecol",
+  "format": "rtf",
+  "layout": "one-col",
+  "language": "en",
+  "contact": {
+    "fullName": "Clara Moreau",
+    "email": "clara.moreau@example.fr",
+    "phone": "+33 6 12 44 89 01",
+    "location": "Lyon, France"
+  },
+  "experiences": [
+    {
+      "id": "resume_24_en_rtf_onecol_exp_1",
+      "title": "Senior TypeScript Developer",
+      "company": "Rhone SaaS",
+      "startDate": "2021",
+      "isCurrent": true,
+      "achievements": [
+        "Built offline-first web applications with React, SQLite, and Node.js."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "id": "resume_24_en_rtf_onecol_edu_1",
+      "institution": "INSA Lyon",
+      "degree": "Master of Engineering",
+      "fieldOfStudy": "Informatics",
+      "startDate": "2015",
+      "endDate": "2020"
+    }
+  ],
+  "skills": [
+    {
+      "id": "resume_24_en_rtf_onecol_sk_1",
+      "name": "TypeScript"
+    },
+    {
+      "id": "resume_24_en_rtf_onecol_sk_2",
+      "name": "React"
+    },
+    {
+      "id": "resume_24_en_rtf_onecol_sk_3",
+      "name": "Node.js"
+    },
+    {
+      "id": "resume_24_en_rtf_onecol_sk_4",
+      "name": "SQLite"
+    },
+    {
+      "id": "resume_24_en_rtf_onecol_sk_5",
+      "name": "Docker"
+    }
+  ]
+}

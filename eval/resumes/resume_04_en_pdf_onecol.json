@@ -1,0 +1,71 @@
+{
+  "id": "golden_resume_04_en_pdf_onecol",
+  "format": "pdf",
+  "layout": "one-col",
+  "language": "en",
+  "contact": {
+    "fullName": "Layla Haidari",
+    "email": "layla.haidari@example.com",
+    "phone": "+93 79 221 4401",
+    "location": "Kabul, Afghanistan"
+  },
+  "experiences": [
+    {
+      "id": "resume_04_en_pdf_onecol_exp_1",
+      "title": "Senior Frontend Engineer",
+      "company": "SilkRoad Digital",
+      "startDate": "2022",
+      "isCurrent": true,
+      "achievements": [
+        "Built React and TypeScript design systems serving 400k monthly users."
+      ]
+    },
+    {
+      "id": "resume_04_en_pdf_onecol_exp_2",
+      "title": "Frontend Developer",
+      "company": "Bactria Labs",
+      "startDate": "2019",
+      "endDate": "2022",
+      "isCurrent": false,
+      "achievements": [
+        "Migrated legacy dashboards to Next.js and Tailwind CSS."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "id": "resume_04_en_pdf_onecol_edu_1",
+      "institution": "Kabul Polytechnic University",
+      "degree": "Bachelor of Science",
+      "fieldOfStudy": "Computer Engineering",
+      "startDate": "2015",
+      "endDate": "2019"
+    }
+  ],
+  "skills": [
+    {
+      "id": "resume_04_en_pdf_onecol_sk_1",
+      "name": "TypeScript"
+    },
+    {
+      "id": "resume_04_en_pdf_onecol_sk_2",
+      "name": "React"
+    },
+    {
+      "id": "resume_04_en_pdf_onecol_sk_3",
+      "name": "Next.js"
+    },
+    {
+      "id": "resume_04_en_pdf_onecol_sk_4",
+      "name": "Tailwind CSS"
+    },
+    {
+      "id": "resume_04_en_pdf_onecol_sk_5",
+      "name": "GraphQL"
+    },
+    {
+      "id": "resume_04_en_pdf_onecol_sk_6",
+      "name": "Git"
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "id": "golden_resume_06_en_pdf_linkedin",
+  "format": "pdf",
+  "layout": "linkedin",
+  "language": "en",
+  "contact": {
+    "fullName": "Nadia Safi",
+    "email": "nadia.safi@example.net",
+    "phone": "+1 415 890 3312",
+    "location": "San Jose, CA"
+  },
+  "experiences": [
+    {
+      "id": "resume_06_en_pdf_linkedin_exp_1",
+      "title": "Senior ML Engineer",
+      "company": "VectorGrid AI",
+      "startDate": "2021",
+      "isCurrent": true,
+      "achievements": [
+        "Trained multilingual embedding models in PyTorch and deployed ONNX inference."
+      ]
+    },
+    {
+      "id": "resume_06_en_pdf_linkedin_exp_2",
+      "title": "Data Scientist",
+      "company": "ClearBank Analytics",
+      "startDate": "2019",
+      "endDate": "2021",
+      "isCurrent": false,
+      "achievements": [
+        "Developed fraud detection models in Python and SQL."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "id": "resume_06_en_pdf_linkedin_edu_1",
+      "institution": "San Jose State University",
+      "degree": "Master of Science",
+      "fieldOfStudy": "Data Science",
+      "startDate": "2017",
+      "endDate": "2019"
+    }
+  ],
+  "skills": [
+    {
+      "id": "resume_06_en_pdf_linkedin_sk_1",
+      "name": "Python"
+    },
+    {
+      "id": "resume_06_en_pdf_linkedin_sk_2",
+      "name": "PyTorch"
+    },
+    {
+      "id": "resume_06_en_pdf_linkedin_sk_3",
+      "name": "SQL"
+    },
+    {
+      "id": "resume_06_en_pdf_linkedin_sk_4",
+      "name": "PostgreSQL"
+    },
+    {
+      "id": "resume_06_en_pdf_linkedin_sk_5",
+      "name": "Docker"
+    },
+    {
+      "id": "resume_06_en_pdf_linkedin_sk_6",
+      "name": "AWS"
+    }
+  ]
+}

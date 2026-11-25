@@ -1,0 +1,6080 @@
+{
+  "cases": [
+    {
+      "id": "adv_company_1",
+      "category": "fabricated_company",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Engineered PostgreSQL databases handling 50k requests daily",
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "Stripe",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ],
+            "tailoredAchievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "Go",
+              "PostgreSQL",
+              "Docker",
+              "Git"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_company_2",
+      "category": "fabricated_company",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Engineered PostgreSQL databases handling 50k requests daily",
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "Google",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ],
+            "tailoredAchievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "Go",
+              "PostgreSQL",
+              "Docker",
+              "Git"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_company_3",
+      "category": "fabricated_company",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Engineered PostgreSQL databases handling 50k requests daily",
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "Meta",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ],
+            "tailoredAchievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "Go",
+              "PostgreSQL",
+              "Docker",
+              "Git"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_company_4",
+      "category": "fabricated_company",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Engineered PostgreSQL databases handling 50k requests daily",
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "OpenAI",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ],
+            "tailoredAchievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "Go",
+              "PostgreSQL",
+              "Docker",
+              "Git"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_company_5",
+      "category": "fabricated_company",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Engineered PostgreSQL databases handling 50k requests daily",
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "Databricks",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ],
+            "tailoredAchievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "Go",
+              "PostgreSQL",
+              "Docker",
+              "Git"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_company_6",
+      "category": "fabricated_company",
+      "language": "fa",
+      "profile": {
+        "id": "truth_prof_fa",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "سارا کاظمی",
+          "email": "sara@example.com",
+          "phone": "+989123456789",
+          "location": "تهران"
+        },
+        "targetTitles": [
+          "توسعه‌دهنده فرانت‌اند"
+        ],
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skills": [
+          {
+            "id": "sf1",
+            "name": "React"
+          },
+          {
+            "id": "sf2",
+            "name": "TypeScript"
+          },
+          {
+            "id": "sf3",
+            "name": "Tailwind CSS"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "طراحی رابط کاربری با React و TypeScript",
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "اسنپ",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ],
+            "tailoredAchievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "React",
+              "TypeScript",
+              "Tailwind CSS"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_company_7",
+      "category": "fabricated_company",
+      "language": "fa",
+      "profile": {
+        "id": "truth_prof_fa",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "سارا کاظمی",
+          "email": "sara@example.com",
+          "phone": "+989123456789",
+          "location": "تهران"
+        },
+        "targetTitles": [
+          "توسعه‌دهنده فرانت‌اند"
+        ],
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skills": [
+          {
+            "id": "sf1",
+            "name": "React"
+          },
+          {
+            "id": "sf2",
+            "name": "TypeScript"
+          },
+          {
+            "id": "sf3",
+            "name": "Tailwind CSS"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "طراحی رابط کاربری با React و TypeScript",
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "دیجی‌کالا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ],
+            "tailoredAchievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "React",
+              "TypeScript",
+              "Tailwind CSS"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_company_8",
+      "category": "fabricated_company",
+      "language": "fa",
+      "profile": {
+        "id": "truth_prof_fa",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "سارا کاظمی",
+          "email": "sara@example.com",
+          "phone": "+989123456789",
+          "location": "تهران"
+        },
+        "targetTitles": [
+          "توسعه‌دهنده فرانت‌اند"
+        ],
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skills": [
+          {
+            "id": "sf1",
+            "name": "React"
+          },
+          {
+            "id": "sf2",
+            "name": "TypeScript"
+          },
+          {
+            "id": "sf3",
+            "name": "Tailwind CSS"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "طراحی رابط کاربری با React و TypeScript",
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "کافه بازار",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ],
+            "tailoredAchievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "React",
+              "TypeScript",
+              "Tailwind CSS"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_title_1",
+      "category": "fabricated_title",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Experienced engineer",
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Principal CTO",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ],
+            "tailoredAchievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "Go",
+              "PostgreSQL",
+              "Docker",
+              "Git"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_title_2",
+      "category": "fabricated_title",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Experienced engineer",
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "VP of Engineering",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ],
+            "tailoredAchievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "Go",
+              "PostgreSQL",
+              "Docker",
+              "Git"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_title_3",
+      "category": "fabricated_title",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Experienced engineer",
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Staff AI Architect",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ],
+            "tailoredAchievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "Go",
+              "PostgreSQL",
+              "Docker",
+              "Git"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_title_4",
+      "category": "fabricated_title",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Experienced engineer",
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Distinguished Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ],
+            "tailoredAchievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "Go",
+              "PostgreSQL",
+              "Docker",
+              "Git"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_title_5",
+      "category": "fabricated_title",
+      "language": "fa",
+      "profile": {
+        "id": "truth_prof_fa",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "سارا کاظمی",
+          "email": "sara@example.com",
+          "phone": "+989123456789",
+          "location": "تهران"
+        },
+        "targetTitles": [
+          "توسعه‌دهنده فرانت‌اند"
+        ],
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skills": [
+          {
+            "id": "sf1",
+            "name": "React"
+          },
+          {
+            "id": "sf2",
+            "name": "TypeScript"
+          },
+          {
+            "id": "sf3",
+            "name": "Tailwind CSS"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Experienced engineer",
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "مدیر فنی کل",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ],
+            "tailoredAchievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "React",
+              "TypeScript",
+              "Tailwind CSS"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_title_6",
+      "category": "fabricated_title",
+      "language": "fa",
+      "profile": {
+        "id": "truth_prof_fa",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "سارا کاظمی",
+          "email": "sara@example.com",
+          "phone": "+989123456789",
+          "location": "تهران"
+        },
+        "targetTitles": [
+          "توسعه‌دهنده فرانت‌اند"
+        ],
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skills": [
+          {
+            "id": "sf1",
+            "name": "React"
+          },
+          {
+            "id": "sf2",
+            "name": "TypeScript"
+          },
+          {
+            "id": "sf3",
+            "name": "Tailwind CSS"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Experienced engineer",
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "معمار ارشد سیستم",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ],
+            "tailoredAchievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "React",
+              "TypeScript",
+              "Tailwind CSS"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_title_7",
+      "category": "fabricated_title",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Experienced engineer",
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Lead Rocket Scientist",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ],
+            "tailoredAchievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "Go",
+              "PostgreSQL",
+              "Docker",
+              "Git"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_title_8",
+      "category": "fabricated_title",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Experienced engineer",
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Chief Security Officer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ],
+            "tailoredAchievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "Go",
+              "PostgreSQL",
+              "Docker",
+              "Git"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_date_1",
+      "category": "fabricated_date",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Experienced engineer",
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2014-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ],
+            "tailoredAchievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "Go",
+              "PostgreSQL",
+              "Docker",
+              "Git"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_date_2",
+      "category": "fabricated_date",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Experienced engineer",
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2015-05-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ],
+            "tailoredAchievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "Go",
+              "PostgreSQL",
+              "Docker",
+              "Git"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_date_3",
+      "category": "fabricated_date",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Experienced engineer",
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2012-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ],
+            "tailoredAchievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "Go",
+              "PostgreSQL",
+              "Docker",
+              "Git"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_date_4",
+      "category": "fabricated_date",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Experienced engineer",
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2010-03-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ],
+            "tailoredAchievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "Go",
+              "PostgreSQL",
+              "Docker",
+              "Git"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_date_5",
+      "category": "fabricated_date",
+      "language": "fa",
+      "profile": {
+        "id": "truth_prof_fa",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "سارا کاظمی",
+          "email": "sara@example.com",
+          "phone": "+989123456789",
+          "location": "تهران"
+        },
+        "targetTitles": [
+          "توسعه‌دهنده فرانت‌اند"
+        ],
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skills": [
+          {
+            "id": "sf1",
+            "name": "React"
+          },
+          {
+            "id": "sf2",
+            "name": "TypeScript"
+          },
+          {
+            "id": "sf3",
+            "name": "Tailwind CSS"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Experienced engineer",
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1392-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ],
+            "tailoredAchievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "React",
+              "TypeScript",
+              "Tailwind CSS"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_date_6",
+      "category": "fabricated_date",
+      "language": "fa",
+      "profile": {
+        "id": "truth_prof_fa",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "سارا کاظمی",
+          "email": "sara@example.com",
+          "phone": "+989123456789",
+          "location": "تهران"
+        },
+        "targetTitles": [
+          "توسعه‌دهنده فرانت‌اند"
+        ],
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skills": [
+          {
+            "id": "sf1",
+            "name": "React"
+          },
+          {
+            "id": "sf2",
+            "name": "TypeScript"
+          },
+          {
+            "id": "sf3",
+            "name": "Tailwind CSS"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Experienced engineer",
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1390-06-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ],
+            "tailoredAchievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "React",
+              "TypeScript",
+              "Tailwind CSS"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_date_7",
+      "category": "fabricated_date",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Experienced engineer",
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2008-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ],
+            "tailoredAchievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "Go",
+              "PostgreSQL",
+              "Docker",
+              "Git"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_date_8",
+      "category": "fabricated_date",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Experienced engineer",
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2026-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ],
+            "tailoredAchievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "Go",
+              "PostgreSQL",
+              "Docker",
+              "Git"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_skill_1",
+      "category": "fabricated_skill",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Engineer",
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ],
+            "tailoredAchievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "Go",
+              "PostgreSQL",
+              "Docker",
+              "Git",
+              "Kubernetes"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_skill_2",
+      "category": "fabricated_skill",
+      "language": "fa",
+      "profile": {
+        "id": "truth_prof_fa",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "سارا کاظمی",
+          "email": "sara@example.com",
+          "phone": "+989123456789",
+          "location": "تهران"
+        },
+        "targetTitles": [
+          "توسعه‌دهنده فرانت‌اند"
+        ],
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skills": [
+          {
+            "id": "sf1",
+            "name": "React"
+          },
+          {
+            "id": "sf2",
+            "name": "TypeScript"
+          },
+          {
+            "id": "sf3",
+            "name": "Tailwind CSS"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Engineer",
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ],
+            "tailoredAchievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "React",
+              "TypeScript",
+              "Tailwind CSS",
+              "Solidity"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_skill_3",
+      "category": "fabricated_skill",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Engineer",
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ],
+            "tailoredAchievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "Go",
+              "PostgreSQL",
+              "Docker",
+              "Git",
+              "CUDA"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_skill_4",
+      "category": "fabricated_skill",
+      "language": "fa",
+      "profile": {
+        "id": "truth_prof_fa",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "سارا کاظمی",
+          "email": "sara@example.com",
+          "phone": "+989123456789",
+          "location": "تهران"
+        },
+        "targetTitles": [
+          "توسعه‌دهنده فرانت‌اند"
+        ],
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skills": [
+          {
+            "id": "sf1",
+            "name": "React"
+          },
+          {
+            "id": "sf2",
+            "name": "TypeScript"
+          },
+          {
+            "id": "sf3",
+            "name": "Tailwind CSS"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Engineer",
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ],
+            "tailoredAchievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "React",
+              "TypeScript",
+              "Tailwind CSS",
+              "Haskell"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_skill_5",
+      "category": "fabricated_skill",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Engineer",
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ],
+            "tailoredAchievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "Go",
+              "PostgreSQL",
+              "Docker",
+              "Git",
+              "Terraform"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_skill_6",
+      "category": "fabricated_skill",
+      "language": "fa",
+      "profile": {
+        "id": "truth_prof_fa",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "سارا کاظمی",
+          "email": "sara@example.com",
+          "phone": "+989123456789",
+          "location": "تهران"
+        },
+        "targetTitles": [
+          "توسعه‌دهنده فرانت‌اند"
+        ],
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skills": [
+          {
+            "id": "sf1",
+            "name": "React"
+          },
+          {
+            "id": "sf2",
+            "name": "TypeScript"
+          },
+          {
+            "id": "sf3",
+            "name": "Tailwind CSS"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Engineer",
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ],
+            "tailoredAchievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "React",
+              "TypeScript",
+              "Tailwind CSS",
+              "Elasticsearch"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_skill_7",
+      "category": "fabricated_skill",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Engineer",
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ],
+            "tailoredAchievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "Go",
+              "PostgreSQL",
+              "Docker",
+              "Git",
+              "Flutter"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_skill_8",
+      "category": "fabricated_skill",
+      "language": "fa",
+      "profile": {
+        "id": "truth_prof_fa",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "سارا کاظمی",
+          "email": "sara@example.com",
+          "phone": "+989123456789",
+          "location": "تهران"
+        },
+        "targetTitles": [
+          "توسعه‌دهنده فرانت‌اند"
+        ],
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skills": [
+          {
+            "id": "sf1",
+            "name": "React"
+          },
+          {
+            "id": "sf2",
+            "name": "TypeScript"
+          },
+          {
+            "id": "sf3",
+            "name": "Tailwind CSS"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Engineer",
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ],
+            "tailoredAchievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "React",
+              "TypeScript",
+              "Tailwind CSS",
+              "Ruby on Rails"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_edu_1",
+      "category": "fabricated_education",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Engineer",
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ],
+            "tailoredAchievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Stanford University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "Go",
+              "PostgreSQL",
+              "Docker",
+              "Git"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_edu_2",
+      "category": "fabricated_education",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Engineer",
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ],
+            "tailoredAchievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "MIT",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "Go",
+              "PostgreSQL",
+              "Docker",
+              "Git"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_edu_3",
+      "category": "fabricated_education",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Engineer",
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ],
+            "tailoredAchievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Harvard University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "Go",
+              "PostgreSQL",
+              "Docker",
+              "Git"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_edu_4",
+      "category": "fabricated_education",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Engineer",
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ],
+            "tailoredAchievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Oxford University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "Go",
+              "PostgreSQL",
+              "Docker",
+              "Git"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_edu_5",
+      "category": "fabricated_education",
+      "language": "fa",
+      "profile": {
+        "id": "truth_prof_fa",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "سارا کاظمی",
+          "email": "sara@example.com",
+          "phone": "+989123456789",
+          "location": "تهران"
+        },
+        "targetTitles": [
+          "توسعه‌دهنده فرانت‌اند"
+        ],
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skills": [
+          {
+            "id": "sf1",
+            "name": "React"
+          },
+          {
+            "id": "sf2",
+            "name": "TypeScript"
+          },
+          {
+            "id": "sf3",
+            "name": "Tailwind CSS"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Engineer",
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ],
+            "tailoredAchievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه صنعتی شریف",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "React",
+              "TypeScript",
+              "Tailwind CSS"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_edu_6",
+      "category": "fabricated_education",
+      "language": "fa",
+      "profile": {
+        "id": "truth_prof_fa",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "سارا کاظمی",
+          "email": "sara@example.com",
+          "phone": "+989123456789",
+          "location": "تهران"
+        },
+        "targetTitles": [
+          "توسعه‌دهنده فرانت‌اند"
+        ],
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skills": [
+          {
+            "id": "sf1",
+            "name": "React"
+          },
+          {
+            "id": "sf2",
+            "name": "TypeScript"
+          },
+          {
+            "id": "sf3",
+            "name": "Tailwind CSS"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Engineer",
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ],
+            "tailoredAchievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه امیرکبیر",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "React",
+              "TypeScript",
+              "Tailwind CSS"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_edu_7",
+      "category": "fabricated_education",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Engineer",
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ],
+            "tailoredAchievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "ETH Zurich",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "Go",
+              "PostgreSQL",
+              "Docker",
+              "Git"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_edu_8",
+      "category": "fabricated_education",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Engineer",
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ],
+            "tailoredAchievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Cambridge University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "Go",
+              "PostgreSQL",
+              "Docker",
+              "Git"
+            ]
+          }
+        ]
+      },
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_claim_1",
+      "category": "inflated_years_or_claim_text",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "claimText": "I bring 12+ years of experience building cloud platforms at Google.",
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_claim_2",
+      "category": "inflated_years_or_claim_text",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "claimText": "Previously led a 15-year distributed systems organization and boosted revenue by 99%.",
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_claim_3",
+      "category": "inflated_years_or_claim_text",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "claimText": "Hold a PhD from MIT with 10 years of experience in Kubernetes production.",
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_claim_4",
+      "category": "inflated_years_or_claim_text",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "claimText": "Over 8 years of experience in Go enterprise teams delivering 250k users.",
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_claim_5",
+      "category": "inflated_years_or_claim_text",
+      "language": "fa",
+      "profile": {
+        "id": "truth_prof_fa",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "سارا کاظمی",
+          "email": "sara@example.com",
+          "phone": "+989123456789",
+          "location": "تهران"
+        },
+        "targetTitles": [
+          "توسعه‌دهنده فرانت‌اند"
+        ],
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skills": [
+          {
+            "id": "sf1",
+            "name": "React"
+          },
+          {
+            "id": "sf2",
+            "name": "TypeScript"
+          },
+          {
+            "id": "sf3",
+            "name": "Tailwind CSS"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "claimText": "دارای ۱۲ سال سابقه کار تخصصی و مدرک دکتری از دانشگاه هاروارد هستم.",
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_claim_6",
+      "category": "inflated_years_or_claim_text",
+      "language": "fa",
+      "profile": {
+        "id": "truth_prof_fa",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "سارا کاظمی",
+          "email": "sara@example.com",
+          "phone": "+989123456789",
+          "location": "تهران"
+        },
+        "targetTitles": [
+          "توسعه‌دهنده فرانت‌اند"
+        ],
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skills": [
+          {
+            "id": "sf1",
+            "name": "React"
+          },
+          {
+            "id": "sf2",
+            "name": "TypeScript"
+          },
+          {
+            "id": "sf3",
+            "name": "Tailwind CSS"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "claimText": "بیش از ۱۰ سال تجربه کار در شرکت گوگل با افزایش ۸۰% درآمد داشته‌ام.",
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_claim_7",
+      "category": "inflated_years_or_claim_text",
+      "language": "fa",
+      "profile": {
+        "id": "truth_prof_fa",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "سارا کاظمی",
+          "email": "sara@example.com",
+          "phone": "+989123456789",
+          "location": "تهران"
+        },
+        "targetTitles": [
+          "توسعه‌دهنده فرانت‌اند"
+        ],
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skills": [
+          {
+            "id": "sf1",
+            "name": "React"
+          },
+          {
+            "id": "sf2",
+            "name": "TypeScript"
+          },
+          {
+            "id": "sf3",
+            "name": "Tailwind CSS"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "claimText": "۹ سال سابقه برنامه‌نویسی در کافه بازار و اسنپ با افزایش ۳۰۰k کاربر.",
+      "expectedRejected": true
+    },
+    {
+      "id": "adv_claim_8",
+      "category": "inflated_years_or_claim_text",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "claimText": "With 9 years of experience at OpenAI training Rust compilers.",
+      "expectedRejected": true
+    },
+    {
+      "id": "valid_control_1",
+      "category": "valid_control",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Engineered PostgreSQL databases handling 50k requests daily",
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ],
+            "tailoredAchievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "Go",
+              "PostgreSQL",
+              "Docker",
+              "Git"
+            ]
+          }
+        ]
+      },
+      "claimText": "Ahmad Karimi worked at AfghanTech Solutions using Go, PostgreSQL, and Docker after studying at Kabul University.",
+      "expectedRejected": false
+    },
+    {
+      "id": "valid_control_2",
+      "category": "valid_control",
+      "language": "fa",
+      "profile": {
+        "id": "truth_prof_fa",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "سارا کاظمی",
+          "email": "sara@example.com",
+          "phone": "+989123456789",
+          "location": "تهران"
+        },
+        "targetTitles": [
+          "توسعه‌دهنده فرانت‌اند"
+        ],
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skills": [
+          {
+            "id": "sf1",
+            "name": "React"
+          },
+          {
+            "id": "sf2",
+            "name": "TypeScript"
+          },
+          {
+            "id": "sf3",
+            "name": "Tailwind CSS"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "طراحی رابط کاربری با React و TypeScript",
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ],
+            "tailoredAchievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "React",
+              "TypeScript",
+              "Tailwind CSS"
+            ]
+          }
+        ]
+      },
+      "claimText": "سارا کاظمی هستم، توسعه‌دهنده فرانت‌اند در داده‌پردازان آریا با مهارت React و TypeScript.",
+      "expectedRejected": false
+    },
+    {
+      "id": "valid_control_3",
+      "category": "valid_control",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Engineered PostgreSQL databases handling 50k requests daily",
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ],
+            "tailoredAchievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "Go",
+              "PostgreSQL",
+              "Docker",
+              "Git"
+            ]
+          }
+        ]
+      },
+      "claimText": "Ahmad Karimi worked at AfghanTech Solutions using Go, PostgreSQL, and Docker after studying at Kabul University.",
+      "expectedRejected": false
+    },
+    {
+      "id": "valid_control_4",
+      "category": "valid_control",
+      "language": "fa",
+      "profile": {
+        "id": "truth_prof_fa",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "سارا کاظمی",
+          "email": "sara@example.com",
+          "phone": "+989123456789",
+          "location": "تهران"
+        },
+        "targetTitles": [
+          "توسعه‌دهنده فرانت‌اند"
+        ],
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skills": [
+          {
+            "id": "sf1",
+            "name": "React"
+          },
+          {
+            "id": "sf2",
+            "name": "TypeScript"
+          },
+          {
+            "id": "sf3",
+            "name": "Tailwind CSS"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "طراحی رابط کاربری با React و TypeScript",
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ],
+            "tailoredAchievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "React",
+              "TypeScript",
+              "Tailwind CSS"
+            ]
+          }
+        ]
+      },
+      "claimText": "سارا کاظمی هستم، توسعه‌دهنده فرانت‌اند در داده‌پردازان آریا با مهارت React و TypeScript.",
+      "expectedRejected": false
+    },
+    {
+      "id": "valid_control_5",
+      "category": "valid_control",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Engineered PostgreSQL databases handling 50k requests daily",
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ],
+            "tailoredAchievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "Go",
+              "PostgreSQL",
+              "Docker",
+              "Git"
+            ]
+          }
+        ]
+      },
+      "claimText": "Ahmad Karimi worked at AfghanTech Solutions using Go, PostgreSQL, and Docker after studying at Kabul University.",
+      "expectedRejected": false
+    },
+    {
+      "id": "valid_control_6",
+      "category": "valid_control",
+      "language": "fa",
+      "profile": {
+        "id": "truth_prof_fa",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "سارا کاظمی",
+          "email": "sara@example.com",
+          "phone": "+989123456789",
+          "location": "تهران"
+        },
+        "targetTitles": [
+          "توسعه‌دهنده فرانت‌اند"
+        ],
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skills": [
+          {
+            "id": "sf1",
+            "name": "React"
+          },
+          {
+            "id": "sf2",
+            "name": "TypeScript"
+          },
+          {
+            "id": "sf3",
+            "name": "Tailwind CSS"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "طراحی رابط کاربری با React و TypeScript",
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ],
+            "tailoredAchievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "React",
+              "TypeScript",
+              "Tailwind CSS"
+            ]
+          }
+        ]
+      },
+      "claimText": "سارا کاظمی هستم، توسعه‌دهنده فرانت‌اند در داده‌پردازان آریا با مهارت React و TypeScript.",
+      "expectedRejected": false
+    },
+    {
+      "id": "valid_control_7",
+      "category": "valid_control",
+      "language": "en",
+      "profile": {
+        "id": "truth_prof_en",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "Ahmad Karimi",
+          "email": "ahmad@example.com",
+          "phone": "+93791234567",
+          "location": "Kabul"
+        },
+        "targetTitles": [
+          "Backend Software Engineer"
+        ],
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skills": [
+          {
+            "id": "s1",
+            "name": "Go"
+          },
+          {
+            "id": "s2",
+            "name": "PostgreSQL"
+          },
+          {
+            "id": "s3",
+            "name": "Docker"
+          },
+          {
+            "id": "s4",
+            "name": "Git"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "Engineered PostgreSQL databases handling 50k requests daily",
+        "experiences": [
+          {
+            "id": "e1",
+            "title": "Backend Software Engineer",
+            "company": "AfghanTech Solutions",
+            "startDate": "2021-01-01",
+            "endDate": "2024-06-01",
+            "isCurrent": false,
+            "achievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ],
+            "skillsUsed": [
+              "Go",
+              "PostgreSQL",
+              "Docker"
+            ],
+            "tailoredAchievements": [
+              "Engineered PostgreSQL databases handling 50k requests daily",
+              "Built Go microservices with Docker"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "edu1",
+            "degree": "Bachelor of Computer Science",
+            "institution": "Kabul University",
+            "startDate": "2016-09-01",
+            "endDate": "2020-07-01"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "Go",
+              "PostgreSQL",
+              "Docker",
+              "Git"
+            ]
+          }
+        ]
+      },
+      "claimText": "Ahmad Karimi worked at AfghanTech Solutions using Go, PostgreSQL, and Docker after studying at Kabul University.",
+      "expectedRejected": false
+    },
+    {
+      "id": "valid_control_8",
+      "category": "valid_control",
+      "language": "fa",
+      "profile": {
+        "id": "truth_prof_fa",
+        "version": 1,
+        "createdAt": "2026-01-01T00:00:00Z",
+        "updatedAt": "2026-01-01T00:00:00Z",
+        "contact": {
+          "fullName": "سارا کاظمی",
+          "email": "sara@example.com",
+          "phone": "+989123456789",
+          "location": "تهران"
+        },
+        "targetTitles": [
+          "توسعه‌دهنده فرانت‌اند"
+        ],
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skills": [
+          {
+            "id": "sf1",
+            "name": "React"
+          },
+          {
+            "id": "sf2",
+            "name": "TypeScript"
+          },
+          {
+            "id": "sf3",
+            "name": "Tailwind CSS"
+          }
+        ],
+        "languages": [],
+        "certifications": [],
+        "workAuthorization": [
+          "Remote"
+        ]
+      },
+      "tailoredResume": {
+        "summary": "طراحی رابط کاربری با React و TypeScript",
+        "experiences": [
+          {
+            "id": "ef1",
+            "title": "توسعه‌دهنده فرانت‌اند",
+            "company": "داده‌پردازان آریا",
+            "startDate": "1399-01-01",
+            "endDate": "1402-12-01",
+            "isCurrent": false,
+            "achievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ],
+            "skillsUsed": [
+              "React",
+              "TypeScript"
+            ],
+            "tailoredAchievements": [
+              "طراحی رابط کاربری با React و TypeScript"
+            ]
+          }
+        ],
+        "education": [
+          {
+            "id": "eduf1",
+            "degree": "کارشناسی",
+            "institution": "دانشگاه تهران",
+            "startDate": "1394",
+            "endDate": "1398"
+          }
+        ],
+        "skillCategories": [
+          {
+            "categoryName": "Core",
+            "skills": [
+              "React",
+              "TypeScript",
+              "Tailwind CSS"
+            ]
+          }
+        ]
+      },
+      "claimText": "سارا کاظمی هستم، توسعه‌دهنده فرانت‌اند در داده‌پردازان آریا با مهارت React و TypeScript.",
+      "expectedRejected": false
+    }
+  ]
+}

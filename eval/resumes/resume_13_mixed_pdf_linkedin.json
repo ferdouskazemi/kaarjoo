@@ -1,0 +1,60 @@
+{
+  "id": "golden_resume_13_mixed_pdf_linkedin",
+  "format": "pdf",
+  "layout": "linkedin",
+  "language": "mixed",
+  "contact": {
+    "fullName": "آرش خالقی",
+    "email": "arash.khaleghi@example.dev",
+    "phone": "+98 912 602 4419",
+    "location": "تهران / Remote"
+  },
+  "experiences": [
+    {
+      "id": "resume_13_mixed_pdf_linkedin_exp_1",
+      "title": "Rust Systems Engineer",
+      "company": "Tauri Core Partners",
+      "startDate": "2022",
+      "isCurrent": true,
+      "achievements": [
+        "ساخت اپلیکیشن‌های دسکتاپ با Rust، Tauri و SQLite"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "id": "resume_13_mixed_pdf_linkedin_edu_1",
+      "institution": "دانشگاه تهران",
+      "degree": "کارشناسی ارشد",
+      "fieldOfStudy": "معماری سیستم‌ها",
+      "startDate": "2018",
+      "endDate": "2021"
+    }
+  ],
+  "skills": [
+    {
+      "id": "resume_13_mixed_pdf_linkedin_sk_1",
+      "name": "Rust"
+    },
+    {
+      "id": "resume_13_mixed_pdf_linkedin_sk_2",
+      "name": "TypeScript"
+    },
+    {
+      "id": "resume_13_mixed_pdf_linkedin_sk_3",
+      "name": "SQLite"
+    },
+    {
+      "id": "resume_13_mixed_pdf_linkedin_sk_4",
+      "name": "Linux"
+    },
+    {
+      "id": "resume_13_mixed_pdf_linkedin_sk_5",
+      "name": "Docker"
+    },
+    {
+      "id": "resume_13_mixed_pdf_linkedin_sk_6",
+      "name": "Git"
+    }
+  ]
+}

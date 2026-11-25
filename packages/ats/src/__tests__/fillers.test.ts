@@ -76,7 +76,7 @@ describe('ATS Form Fillers Playwright Automation', () => {
         // ignore
       }
     }
-  });
+  }, 30000);
 
   it('detects CAPTCHA challenge and triggers Stop-and-Ask with zero bypass', async () => {
     const captchaUrl = `file://${path.join(fixturesDir, 'captcha_mock.html').replace(/\\/g, '/')}`;

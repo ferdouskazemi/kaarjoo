@@ -1,0 +1,56 @@
+{
+  "id": "golden_resume_18_mixed_docx_onecol",
+  "format": "docx",
+  "layout": "one-col",
+  "language": "mixed",
+  "contact": {
+    "fullName": "پویا رضوانی",
+    "email": "pouya.rezvani@example.com",
+    "phone": "+93 79 901 2211",
+    "location": "Herat / Remote"
+  },
+  "experiences": [
+    {
+      "id": "resume_18_mixed_docx_onecol_exp_1",
+      "title": "Senior Fullstack Engineer",
+      "company": "Pamir Tech",
+      "startDate": "2021",
+      "isCurrent": true,
+      "achievements": [
+        "طراحی و توسعه سامانه‌های مالی با Node.js، React و PostgreSQL"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "id": "resume_18_mixed_docx_onecol_edu_1",
+      "institution": "Herat University",
+      "degree": "Bachelor of Science",
+      "fieldOfStudy": "Software Engineering",
+      "startDate": "2016",
+      "endDate": "2020"
+    }
+  ],
+  "skills": [
+    {
+      "id": "resume_18_mixed_docx_onecol_sk_1",
+      "name": "Node.js"
+    },
+    {
+      "id": "resume_18_mixed_docx_onecol_sk_2",
+      "name": "React"
+    },
+    {
+      "id": "resume_18_mixed_docx_onecol_sk_3",
+      "name": "TypeScript"
+    },
+    {
+      "id": "resume_18_mixed_docx_onecol_sk_4",
+      "name": "PostgreSQL"
+    },
+    {
+      "id": "resume_18_mixed_docx_onecol_sk_5",
+      "name": "Docker"
+    }
+  ]
+}

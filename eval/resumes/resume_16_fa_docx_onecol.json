@@ -1,0 +1,56 @@
+{
+  "id": "golden_resume_16_fa_docx_onecol",
+  "format": "docx",
+  "layout": "one-col",
+  "language": "fa",
+  "contact": {
+    "fullName": "مهسا شریفی",
+    "email": "mahsa.sharifi@example.com",
+    "phone": "+98 912 318 7750",
+    "location": "تهران، ایران"
+  },
+  "experiences": [
+    {
+      "id": "resume_16_fa_docx_onecol_exp_1",
+      "title": "مدیر محصول فنی",
+      "company": "رایان هم‌افزا",
+      "startDate": "1400",
+      "isCurrent": true,
+      "achievements": [
+        "هدایت نقشه راه پلتفرم ابری و همکاری با تیم‌های React و Go"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "id": "resume_16_fa_docx_onecol_edu_1",
+      "institution": "دانشگاه صنعتی امیرکبیر",
+      "degree": "کارشناسی",
+      "fieldOfStudy": "مهندسی صنایع",
+      "startDate": "1393",
+      "endDate": "1397"
+    }
+  ],
+  "skills": [
+    {
+      "id": "resume_16_fa_docx_onecol_sk_1",
+      "name": "SQL"
+    },
+    {
+      "id": "resume_16_fa_docx_onecol_sk_2",
+      "name": "Git"
+    },
+    {
+      "id": "resume_16_fa_docx_onecol_sk_3",
+      "name": "REST APIs"
+    },
+    {
+      "id": "resume_16_fa_docx_onecol_sk_4",
+      "name": "Agile"
+    },
+    {
+      "id": "resume_16_fa_docx_onecol_sk_5",
+      "name": "Figma"
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "id": "golden_resume_11_fa_pdf_table",
+  "format": "pdf",
+  "layout": "table",
+  "language": "fa",
+  "contact": {
+    "fullName": "کیوان مجیدی",
+    "email": "keyvan.majidi@example.com",
+    "phone": "+98 935 771 3104",
+    "location": "شیراز، ایران"
+  },
+  "experiences": [
+    {
+      "id": "resume_11_fa_pdf_table_exp_1",
+      "title": "تحلیل‌گر ارشد داده",
+      "company": "داده‌کاوان جنوب",
+      "startDate": "1399",
+      "isCurrent": true,
+      "achievements": [
+        "ساخت داشبوردهای تحلیلی و پایپ‌لاین SQL با Python"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "id": "resume_11_fa_pdf_table_edu_1",
+      "institution": "دانشگاه شیراز",
+      "degree": "کارشناسی",
+      "fieldOfStudy": "آمار و علوم داده",
+      "startDate": "1394",
+      "endDate": "1398"
+    }
+  ],
+  "skills": [
+    {
+      "id": "resume_11_fa_pdf_table_sk_1",
+      "name": "Python"
+    },
+    {
+      "id": "resume_11_fa_pdf_table_sk_2",
+      "name": "SQL"
+    },
+    {
+      "id": "resume_11_fa_pdf_table_sk_3",
+      "name": "PostgreSQL"
+    },
+    {
+      "id": "resume_11_fa_pdf_table_sk_4",
+      "name": "Git"
+    },
+    {
+      "id": "resume_11_fa_pdf_table_sk_5",
+      "name": "Docker"
+    }
+  ]
+}

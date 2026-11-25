@@ -1,0 +1,56 @@
+{
+  "id": "golden_resume_20_en_docx_linkedin",
+  "format": "docx",
+  "layout": "linkedin",
+  "language": "en",
+  "contact": {
+    "fullName": "Grace Kim",
+    "email": "grace.kim@example.com",
+    "phone": "+1 206 551 7742",
+    "location": "Seattle, WA"
+  },
+  "experiences": [
+    {
+      "id": "resume_20_en_docx_linkedin_exp_1",
+      "title": "Design Systems Engineer",
+      "company": "Pacific UI Studio",
+      "startDate": "2022",
+      "isCurrent": true,
+      "achievements": [
+        "Authored accessible React components and Playwright visual regression tests."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "id": "resume_20_en_docx_linkedin_edu_1",
+      "institution": "University of Washington",
+      "degree": "Bachelor of Arts",
+      "fieldOfStudy": "Human Centered Design",
+      "startDate": "2017",
+      "endDate": "2021"
+    }
+  ],
+  "skills": [
+    {
+      "id": "resume_20_en_docx_linkedin_sk_1",
+      "name": "React"
+    },
+    {
+      "id": "resume_20_en_docx_linkedin_sk_2",
+      "name": "TypeScript"
+    },
+    {
+      "id": "resume_20_en_docx_linkedin_sk_3",
+      "name": "Tailwind CSS"
+    },
+    {
+      "id": "resume_20_en_docx_linkedin_sk_4",
+      "name": "Playwright"
+    },
+    {
+      "id": "resume_20_en_docx_linkedin_sk_5",
+      "name": "Figma"
+    }
+  ]
+}

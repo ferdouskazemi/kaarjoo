@@ -1,0 +1,75 @@
+{
+  "id": "golden_resume_05_en_pdf_twocol",
+  "format": "pdf",
+  "layout": "two-col",
+  "language": "en",
+  "contact": {
+    "fullName": "Omar Farooq",
+    "email": "omar.farooq@example.org",
+    "phone": "+49 176 4102 9981",
+    "location": "Berlin, Germany"
+  },
+  "experiences": [
+    {
+      "id": "resume_05_en_pdf_twocol_exp_1",
+      "title": "Lead DevOps Engineer",
+      "company": "NordCloud GmbH",
+      "startDate": "2021",
+      "isCurrent": true,
+      "achievements": [
+        "Managed multi-region Kubernetes clusters with Terraform and AWS."
+      ]
+    },
+    {
+      "id": "resume_05_en_pdf_twocol_exp_2",
+      "title": "Site Reliability Engineer",
+      "company": "EuroPay Systems",
+      "startDate": "2018",
+      "endDate": "2021",
+      "isCurrent": false,
+      "achievements": [
+        "Automated CI/CD pipelines and cut incident recovery time by 45%."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "id": "resume_05_en_pdf_twocol_edu_1",
+      "institution": "TU Berlin",
+      "degree": "Master of Science",
+      "fieldOfStudy": "Distributed Systems",
+      "startDate": "2016",
+      "endDate": "2018"
+    }
+  ],
+  "skills": [
+    {
+      "id": "resume_05_en_pdf_twocol_sk_1",
+      "name": "Kubernetes"
+    },
+    {
+      "id": "resume_05_en_pdf_twocol_sk_2",
+      "name": "Docker"
+    },
+    {
+      "id": "resume_05_en_pdf_twocol_sk_3",
+      "name": "AWS"
+    },
+    {
+      "id": "resume_05_en_pdf_twocol_sk_4",
+      "name": "Terraform"
+    },
+    {
+      "id": "resume_05_en_pdf_twocol_sk_5",
+      "name": "Linux"
+    },
+    {
+      "id": "resume_05_en_pdf_twocol_sk_6",
+      "name": "Go"
+    },
+    {
+      "id": "resume_05_en_pdf_twocol_sk_7",
+      "name": "CI/CD"
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "id": "golden_resume_14_en_docx_onecol",
+  "format": "docx",
+  "layout": "one-col",
+  "language": "en",
+  "contact": {
+    "fullName": "David Okafor",
+    "email": "david.okafor@example.com",
+    "phone": "+44 7700 900123",
+    "location": "London, UK"
+  },
+  "experiences": [
+    {
+      "id": "resume_14_en_docx_onecol_exp_1",
+      "title": "Staff Backend Engineer",
+      "company": "Thames Ledger",
+      "startDate": "2020",
+      "isCurrent": true,
+      "achievements": [
+        "Led payments core services in Go, Kafka, and PostgreSQL."
+      ]
+    },
+    {
+      "id": "resume_14_en_docx_onecol_exp_2",
+      "title": "Software Engineer",
+      "company": "FinBridge UK",
+      "startDate": "2017",
+      "endDate": "2020",
+      "isCurrent": false,
+      "achievements": [
+        "Built internal settlement APIs using Python and AWS."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "id": "resume_14_en_docx_onecol_edu_1",
+      "institution": "University of Manchester",
+      "degree": "Bachelor of Science",
+      "fieldOfStudy": "Computer Science",
+      "startDate": "2013",
+      "endDate": "2017"
+    }
+  ],
+  "skills": [
+    {
+      "id": "resume_14_en_docx_onecol_sk_1",
+      "name": "Go"
+    },
+    {
+      "id": "resume_14_en_docx_onecol_sk_2",
+      "name": "Python"
+    },
+    {
+      "id": "resume_14_en_docx_onecol_sk_3",
+      "name": "PostgreSQL"
+    },
+    {
+      "id": "resume_14_en_docx_onecol_sk_4",
+      "name": "Apache Kafka"
+    },
+    {
+      "id": "resume_14_en_docx_onecol_sk_5",
+      "name": "AWS"
+    },
+    {
+      "id": "resume_14_en_docx_onecol_sk_6",
+      "name": "Docker"
+    }
+  ]
+}

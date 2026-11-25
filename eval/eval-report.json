@@ -1,0 +1,443 @@
+{
+  "generatedAt": "2026-11-25T06:39:08.266Z",
+  "hardware": {
+    "platform": "win32",
+    "arch": "x64",
+    "totalRamGb": 32,
+    "cpuCores": 8,
+    "gpuBackend": "vulkan",
+    "vramTotalBytes": 21491564544,
+    "vramFreeBytes": 20055880500,
+    "recommendedTier": "pro"
+  },
+  "modelsInstalled": {
+    "instruct": false,
+    "embedding": false
+  },
+  "rssMemoryMb": 415,
+  "extraction": {
+    "totalFiles": 32,
+    "ocrScannedFiles": 5,
+    "ruleOnlyTotalMs": 10964,
+    "avgExtractionMs": 342.6,
+    "llmModeStatus": "no-local-gguf-downloaded-evidence-harness-verified",
+    "evidenceGuardBlocked": "5/5",
+    "fields": {
+      "email": {
+        "tp": 30,
+        "fp": 2,
+        "fn": 2,
+        "precision": 0.9375,
+        "recall": 0.9375,
+        "f1": 0.9375
+      },
+      "phone": {
+        "tp": 28,
+        "fp": 4,
+        "fn": 4,
+        "precision": 0.875,
+        "recall": 0.875,
+        "f1": 0.875
+      },
+      "skills": {
+        "tp": 160,
+        "fp": 14,
+        "fn": 21,
+        "precision": 0.9195402298850575,
+        "recall": 0.8839779005524862,
+        "f1": 0.9014084507042253
+      },
+      "experience": {
+        "tp": 32,
+        "fp": 0,
+        "fn": 10,
+        "precision": 1,
+        "recall": 0.7619047619047619,
+        "f1": 0.8648648648648648
+      },
+      "education": {
+        "tp": 24,
+        "fp": 24,
+        "fn": 8,
+        "precision": 0.5,
+        "recall": 0.75,
+        "f1": 0.6
+      }
+    },
+    "perFileResults": [
+      {
+        "file": "resume_01_fa_standard.txt",
+        "format": "txt",
+        "scannedOcr": false,
+        "ms": 69,
+        "emailOk": true,
+        "phoneOk": true,
+        "skillsMatched": "8/8",
+        "expMatched": "2/2",
+        "eduMatched": "1/1"
+      },
+      {
+        "file": "resume_02_en_standard.txt",
+        "format": "txt",
+        "scannedOcr": false,
+        "ms": 46,
+        "emailOk": true,
+        "phoneOk": true,
+        "skillsMatched": "10/10",
+        "expMatched": "2/2",
+        "eduMatched": "1/1"
+      },
+      {
+        "file": "resume_03_fa_en_mixed.txt",
+        "format": "txt",
+        "scannedOcr": false,
+        "ms": 4,
+        "emailOk": true,
+        "phoneOk": true,
+        "skillsMatched": "5/10",
+        "expMatched": "2/2",
+        "eduMatched": "1/1"
+      },
+      {
+        "file": "resume_04_en_pdf_onecol.pdf",
+        "format": "pdf",
+        "scannedOcr": false,
+        "ms": 615,
+        "emailOk": true,
+        "phoneOk": true,
+        "skillsMatched": "6/6",
+        "expMatched": "2/2",
+        "eduMatched": "1/1"
+      },
+      {
+        "file": "resume_05_en_pdf_twocol.pdf",
+        "format": "pdf",
+        "scannedOcr": false,
+        "ms": 12,
+        "emailOk": true,
+        "phoneOk": true,
+        "skillsMatched": "7/7",
+        "expMatched": "0/2",
+        "eduMatched": "0/1"
+      },
+      {
+        "file": "resume_06_en_pdf_linkedin.pdf",
+        "format": "pdf",
+        "scannedOcr": false,
+        "ms": 11,
+        "emailOk": true,
+        "phoneOk": true,
+        "skillsMatched": "6/6",
+        "expMatched": "2/2",
+        "eduMatched": "1/1"
+      },
+      {
+        "file": "resume_07_en_pdf_europass.pdf",
+        "format": "pdf",
+        "scannedOcr": false,
+        "ms": 9,
+        "emailOk": true,
+        "phoneOk": true,
+        "skillsMatched": "6/6",
+        "expMatched": "1/1",
+        "eduMatched": "1/1"
+      },
+      {
+        "file": "resume_08_en_pdf_table.pdf",
+        "format": "pdf",
+        "scannedOcr": false,
+        "ms": 15,
+        "emailOk": true,
+        "phoneOk": true,
+        "skillsMatched": "6/6",
+        "expMatched": "1/2",
+        "eduMatched": "1/1"
+      },
+      {
+        "file": "resume_09_fa_pdf_onecol.pdf",
+        "format": "pdf",
+        "scannedOcr": false,
+        "ms": 17,
+        "emailOk": true,
+        "phoneOk": true,
+        "skillsMatched": "0/6",
+        "expMatched": "0/2",
+        "eduMatched": "0/1"
+      },
+      {
+        "file": "resume_10_fa_pdf_twocol.pdf",
+        "format": "pdf",
+        "scannedOcr": false,
+        "ms": 8,
+        "emailOk": true,
+        "phoneOk": true,
+        "skillsMatched": "0/5",
+        "expMatched": "0/1",
+        "eduMatched": "0/1"
+      },
+      {
+        "file": "resume_11_fa_pdf_table.pdf",
+        "format": "pdf",
+        "scannedOcr": false,
+        "ms": 10,
+        "emailOk": true,
+        "phoneOk": true,
+        "skillsMatched": "0/5",
+        "expMatched": "0/1",
+        "eduMatched": "0/1"
+      },
+      {
+        "file": "resume_12_mixed_pdf_onecol.pdf",
+        "format": "pdf",
+        "scannedOcr": false,
+        "ms": 8,
+        "emailOk": true,
+        "phoneOk": true,
+        "skillsMatched": "5/5",
+        "expMatched": "1/1",
+        "eduMatched": "0/1"
+      },
+      {
+        "file": "resume_13_mixed_pdf_linkedin.pdf",
+        "format": "pdf",
+        "scannedOcr": false,
+        "ms": 8,
+        "emailOk": true,
+        "phoneOk": true,
+        "skillsMatched": "6/6",
+        "expMatched": "1/1",
+        "eduMatched": "0/1"
+      },
+      {
+        "file": "resume_14_en_docx_onecol.docx",
+        "format": "docx",
+        "scannedOcr": false,
+        "ms": 35,
+        "emailOk": true,
+        "phoneOk": false,
+        "skillsMatched": "6/6",
+        "expMatched": "2/2",
+        "eduMatched": "1/1"
+      },
+      {
+        "file": "resume_15_en_docx_table.docx",
+        "format": "docx",
+        "scannedOcr": false,
+        "ms": 10,
+        "emailOk": true,
+        "phoneOk": true,
+        "skillsMatched": "5/5",
+        "expMatched": "1/1",
+        "eduMatched": "1/1"
+      },
+      {
+        "file": "resume_16_fa_docx_onecol.docx",
+        "format": "docx",
+        "scannedOcr": false,
+        "ms": 9,
+        "emailOk": true,
+        "phoneOk": true,
+        "skillsMatched": "5/5",
+        "expMatched": "1/1",
+        "eduMatched": "1/1"
+      },
+      {
+        "file": "resume_17_fa_docx_table.docx",
+        "format": "docx",
+        "scannedOcr": false,
+        "ms": 7,
+        "emailOk": true,
+        "phoneOk": true,
+        "skillsMatched": "5/5",
+        "expMatched": "1/1",
+        "eduMatched": "1/1"
+      },
+      {
+        "file": "resume_18_mixed_docx_onecol.docx",
+        "format": "docx",
+        "scannedOcr": false,
+        "ms": 5,
+        "emailOk": true,
+        "phoneOk": true,
+        "skillsMatched": "5/5",
+        "expMatched": "1/1",
+        "eduMatched": "1/1"
+      },
+      {
+        "file": "resume_19_en_docx_europass.docx",
+        "format": "docx",
+        "scannedOcr": false,
+        "ms": 6,
+        "emailOk": true,
+        "phoneOk": true,
+        "skillsMatched": "5/5",
+        "expMatched": "1/1",
+        "eduMatched": "0/1"
+      },
+      {
+        "file": "resume_20_en_docx_linkedin.docx",
+        "format": "docx",
+        "scannedOcr": false,
+        "ms": 7,
+        "emailOk": true,
+        "phoneOk": true,
+        "skillsMatched": "5/5",
+        "expMatched": "1/1",
+        "eduMatched": "1/1"
+      },
+      {
+        "file": "resume_21_en_odt_onecol.odt",
+        "format": "odt",
+        "scannedOcr": false,
+        "ms": 6,
+        "emailOk": true,
+        "phoneOk": true,
+        "skillsMatched": "5/5",
+        "expMatched": "1/1",
+        "eduMatched": "1/1"
+      },
+      {
+        "file": "resume_22_fa_odt_onecol.odt",
+        "format": "odt",
+        "scannedOcr": false,
+        "ms": 2,
+        "emailOk": true,
+        "phoneOk": true,
+        "skillsMatched": "5/5",
+        "expMatched": "1/1",
+        "eduMatched": "1/1"
+      },
+      {
+        "file": "resume_23_mixed_odt_onecol.odt",
+        "format": "odt",
+        "scannedOcr": false,
+        "ms": 2,
+        "emailOk": true,
+        "phoneOk": true,
+        "skillsMatched": "5/5",
+        "expMatched": "1/1",
+        "eduMatched": "1/1"
+      },
+      {
+        "file": "resume_24_en_rtf_onecol.rtf",
+        "format": "rtf",
+        "scannedOcr": false,
+        "ms": 2,
+        "emailOk": true,
+        "phoneOk": false,
+        "skillsMatched": "5/5",
+        "expMatched": "1/1",
+        "eduMatched": "0/1"
+      },
+      {
+        "file": "resume_25_fa_rtf_onecol.rtf",
+        "format": "rtf",
+        "scannedOcr": false,
+        "ms": 1,
+        "emailOk": true,
+        "phoneOk": true,
+        "skillsMatched": "5/5",
+        "expMatched": "1/1",
+        "eduMatched": "1/1"
+      },
+      {
+        "file": "resume_26_mixed_rtf_onecol.rtf",
+        "format": "rtf",
+        "scannedOcr": false,
+        "ms": 1,
+        "emailOk": true,
+        "phoneOk": true,
+        "skillsMatched": "5/5",
+        "expMatched": "1/1",
+        "eduMatched": "1/1"
+      },
+      {
+        "file": "resume_27_en_png_scanned.png",
+        "format": "png",
+        "scannedOcr": true,
+        "ms": 1311,
+        "emailOk": true,
+        "phoneOk": true,
+        "skillsMatched": "5/5",
+        "expMatched": "1/1",
+        "eduMatched": "1/1"
+      },
+      {
+        "file": "resume_28_en_png_twocol.png",
+        "format": "png",
+        "scannedOcr": true,
+        "ms": 1218,
+        "emailOk": true,
+        "phoneOk": false,
+        "skillsMatched": "5/5",
+        "expMatched": "1/1",
+        "eduMatched": "1/1"
+      },
+      {
+        "file": "resume_29_fa_png_scanned.png",
+        "format": "png",
+        "scannedOcr": true,
+        "ms": 1295,
+        "emailOk": false,
+        "phoneOk": true,
+        "skillsMatched": "4/4",
+        "expMatched": "0/1",
+        "eduMatched": "1/1"
+      },
+      {
+        "file": "resume_30_en_scanned_pdf.pdf",
+        "format": "pdf",
+        "scannedOcr": true,
+        "ms": 2976,
+        "emailOk": false,
+        "phoneOk": false,
+        "skillsMatched": "5/5",
+        "expMatched": "0/1",
+        "eduMatched": "1/1"
+      },
+      {
+        "file": "resume_31_mixed_scanned_pdf.pdf",
+        "format": "pdf",
+        "scannedOcr": true,
+        "ms": 3230,
+        "emailOk": true,
+        "phoneOk": true,
+        "skillsMatched": "5/5",
+        "expMatched": "0/1",
+        "eduMatched": "1/1"
+      },
+      {
+        "file": "resume_32_en_pdf_humanitarian.pdf",
+        "format": "pdf",
+        "scannedOcr": false,
+        "ms": 8,
+        "emailOk": true,
+        "phoneOk": true,
+        "skillsMatched": "5/5",
+        "expMatched": "2/2",
+        "eduMatched": "1/1"
+      }
+    ]
+  },
+  "matching": {
+    "profilesCount": 12,
+    "totalPairs": 312,
+    "semanticMode": "tfidf-fallback+rule-fallback (no bge-m3 gguf on host)",
+    "precisionAt10": 0.8819,
+    "ndcgAt10": 0.9336,
+    "hardFilterViolations": 0,
+    "totalRankMs": 309,
+    "avgMsPerPair": 0.99
+  },
+  "truthfulness": {
+    "totalCases": 56,
+    "attacksTotal": 48,
+    "attacksCaught": 48,
+    "attackCatchRate": 1,
+    "controlsTotal": 8,
+    "falsePositives": 0,
+    "falsePositiveRate": 0,
+    "durationMs": 2,
+    "failures": []
+  }
+}

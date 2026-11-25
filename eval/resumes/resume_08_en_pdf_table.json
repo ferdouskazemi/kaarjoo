@@ -1,0 +1,71 @@
+{
+  "id": "golden_resume_08_en_pdf_table",
+  "format": "pdf",
+  "layout": "table",
+  "language": "en",
+  "contact": {
+    "fullName": "Maryam Azizi",
+    "email": "maryam.azizi@example.com",
+    "phone": "+971 50 321 7744",
+    "location": "Dubai, UAE"
+  },
+  "experiences": [
+    {
+      "id": "resume_08_en_pdf_table_exp_1",
+      "title": "QA Automation Lead",
+      "company": "Oasis FinTech",
+      "startDate": "2021",
+      "isCurrent": true,
+      "achievements": [
+        "Engineered end-to-end Playwright and Vitest test suites across 12 services."
+      ]
+    },
+    {
+      "id": "resume_08_en_pdf_table_exp_2",
+      "title": "QA Engineer",
+      "company": "GulfCommerce",
+      "startDate": "2018",
+      "endDate": "2021",
+      "isCurrent": false,
+      "achievements": [
+        "Built API contract tests and CI regression gates."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "id": "resume_08_en_pdf_table_edu_1",
+      "institution": "American University of Sharjah",
+      "degree": "Bachelor of Engineering",
+      "fieldOfStudy": "Software Engineering",
+      "startDate": "2014",
+      "endDate": "2018"
+    }
+  ],
+  "skills": [
+    {
+      "id": "resume_08_en_pdf_table_sk_1",
+      "name": "TypeScript"
+    },
+    {
+      "id": "resume_08_en_pdf_table_sk_2",
+      "name": "Playwright"
+    },
+    {
+      "id": "resume_08_en_pdf_table_sk_3",
+      "name": "Vitest"
+    },
+    {
+      "id": "resume_08_en_pdf_table_sk_4",
+      "name": "CI/CD"
+    },
+    {
+      "id": "resume_08_en_pdf_table_sk_5",
+      "name": "Docker"
+    },
+    {
+      "id": "resume_08_en_pdf_table_sk_6",
+      "name": "SQL"
+    }
+  ]
+}

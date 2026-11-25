@@ -1,0 +1,56 @@
+{
+  "id": "golden_resume_15_en_docx_table",
+  "format": "docx",
+  "layout": "table",
+  "language": "en",
+  "contact": {
+    "fullName": "Elena Popescu",
+    "email": "elena.popescu@example.ro",
+    "phone": "+40 722 331 990",
+    "location": "Bucharest, Romania"
+  },
+  "experiences": [
+    {
+      "id": "resume_15_en_docx_table_exp_1",
+      "title": "Senior Mobile Engineer",
+      "company": "Carpathian Apps",
+      "startDate": "2021",
+      "isCurrent": true,
+      "achievements": [
+        "Published cross-platform mobile banking apps using Flutter and Kotlin."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "id": "resume_15_en_docx_table_edu_1",
+      "institution": "Politehnica University of Bucharest",
+      "degree": "Bachelor of Engineering",
+      "fieldOfStudy": "Computer Science",
+      "startDate": "2016",
+      "endDate": "2020"
+    }
+  ],
+  "skills": [
+    {
+      "id": "resume_15_en_docx_table_sk_1",
+      "name": "Flutter"
+    },
+    {
+      "id": "resume_15_en_docx_table_sk_2",
+      "name": "Kotlin"
+    },
+    {
+      "id": "resume_15_en_docx_table_sk_3",
+      "name": "TypeScript"
+    },
+    {
+      "id": "resume_15_en_docx_table_sk_4",
+      "name": "REST APIs"
+    },
+    {
+      "id": "resume_15_en_docx_table_sk_5",
+      "name": "Git"
+    }
+  ]
+}

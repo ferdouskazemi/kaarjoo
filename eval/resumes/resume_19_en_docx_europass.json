@@ -1,0 +1,56 @@
+{
+  "id": "golden_resume_19_en_docx_europass",
+  "format": "docx",
+  "layout": "europass",
+  "language": "en",
+  "contact": {
+    "fullName": "Marco Bellini",
+    "email": "marco.bellini@example.it",
+    "phone": "+39 347 110 8822",
+    "location": "Milan, Italy"
+  },
+  "experiences": [
+    {
+      "id": "resume_19_en_docx_europass_exp_1",
+      "title": "Java Backend Engineer",
+      "company": "Milano Cloud Srl",
+      "startDate": "2020",
+      "isCurrent": true,
+      "achievements": [
+        "Maintained distributed billing services in Java, PostgreSQL, and Kafka."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "id": "resume_19_en_docx_europass_edu_1",
+      "institution": "Politecnico di Milano",
+      "degree": "Master of Science",
+      "fieldOfStudy": "Computer Engineering",
+      "startDate": "2018",
+      "endDate": "2020"
+    }
+  ],
+  "skills": [
+    {
+      "id": "resume_19_en_docx_europass_sk_1",
+      "name": "Java"
+    },
+    {
+      "id": "resume_19_en_docx_europass_sk_2",
+      "name": "PostgreSQL"
+    },
+    {
+      "id": "resume_19_en_docx_europass_sk_3",
+      "name": "Apache Kafka"
+    },
+    {
+      "id": "resume_19_en_docx_europass_sk_4",
+      "name": "Docker"
+    },
+    {
+      "id": "resume_19_en_docx_europass_sk_5",
+      "name": "Git"
+    }
+  ]
+}

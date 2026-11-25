@@ -1,0 +1,56 @@
+{
+  "id": "golden_resume_22_fa_odt_onecol",
+  "format": "odt",
+  "layout": "one-col",
+  "language": "fa",
+  "contact": {
+    "fullName": "زهرا محمدی",
+    "email": "zahra.mohammadi@example.ir",
+    "phone": "+98 913 501 6640",
+    "location": "اصفهان، ایران"
+  },
+  "experiences": [
+    {
+      "id": "resume_22_fa_odt_onecol_exp_1",
+      "title": "مهندس یادگیری ماشین",
+      "company": "هوش مصنوعی زاینده",
+      "startDate": "1400",
+      "isCurrent": true,
+      "achievements": [
+        "پیاده‌سازی مدل‌های پردازش زبان فارسی با Python و PyTorch"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "id": "resume_22_fa_odt_onecol_edu_1",
+      "institution": "دانشگاه صنعتی اصفهان",
+      "degree": "کارشناسی ارشد",
+      "fieldOfStudy": "هوش مصنوعی",
+      "startDate": "1397",
+      "endDate": "1399"
+    }
+  ],
+  "skills": [
+    {
+      "id": "resume_22_fa_odt_onecol_sk_1",
+      "name": "Python"
+    },
+    {
+      "id": "resume_22_fa_odt_onecol_sk_2",
+      "name": "PyTorch"
+    },
+    {
+      "id": "resume_22_fa_odt_onecol_sk_3",
+      "name": "SQL"
+    },
+    {
+      "id": "resume_22_fa_odt_onecol_sk_4",
+      "name": "Docker"
+    },
+    {
+      "id": "resume_22_fa_odt_onecol_sk_5",
+      "name": "Git"
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "id": "golden_resume_25_fa_rtf_onecol",
+  "format": "rtf",
+  "layout": "one-col",
+  "language": "fa",
+  "contact": {
+    "fullName": "امیرحسین جلالی",
+    "email": "amir.jalali@example.com",
+    "phone": "+98 912 880 5512",
+    "location": "مشهد، ایران"
+  },
+  "experiences": [
+    {
+      "id": "resume_25_fa_rtf_onecol_exp_1",
+      "title": "توسعه‌دهنده ارشد پایتون",
+      "company": "شرق نرم‌افزار",
+      "startDate": "1399",
+      "isCurrent": true,
+      "achievements": [
+        "طراحی سرویس‌های وب و ETL با Python و PostgreSQL"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "id": "resume_25_fa_rtf_onecol_edu_1",
+      "institution": "دانشگاه فردوسی مشهد",
+      "degree": "کارشناسی",
+      "fieldOfStudy": "مهندسی نرم‌افزار",
+      "startDate": "1394",
+      "endDate": "1398"
+    }
+  ],
+  "skills": [
+    {
+      "id": "resume_25_fa_rtf_onecol_sk_1",
+      "name": "Python"
+    },
+    {
+      "id": "resume_25_fa_rtf_onecol_sk_2",
+      "name": "PostgreSQL"
+    },
+    {
+      "id": "resume_25_fa_rtf_onecol_sk_3",
+      "name": "Docker"
+    },
+    {
+      "id": "resume_25_fa_rtf_onecol_sk_4",
+      "name": "Redis"
+    },
+    {
+      "id": "resume_25_fa_rtf_onecol_sk_5",
+      "name": "Git"
+    }
+  ]
+}

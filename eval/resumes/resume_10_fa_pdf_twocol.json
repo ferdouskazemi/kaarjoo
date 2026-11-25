@@ -1,0 +1,56 @@
+{
+  "id": "golden_resume_10_fa_pdf_twocol",
+  "format": "pdf",
+  "layout": "two-col",
+  "language": "fa",
+  "contact": {
+    "fullName": "شبنم نوری",
+    "email": "shabnam.noori@example.af",
+    "phone": "+93 78 511 2090",
+    "location": "هرات، افغانستان"
+  },
+  "experiences": [
+    {
+      "id": "resume_10_fa_pdf_twocol_exp_1",
+      "title": "توسعه‌دهنده ارشد React",
+      "company": "آینده‌نگار وب",
+      "startDate": "1401",
+      "isCurrent": true,
+      "achievements": [
+        "توسعه رابط‌های کاربری دوزبانه راست‌به‌چپ با React و TypeScript"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "id": "resume_10_fa_pdf_twocol_edu_1",
+      "institution": "دانشگاه هرات",
+      "degree": "کارشناسی",
+      "fieldOfStudy": "علوم کامپیوتر",
+      "startDate": "1396",
+      "endDate": "1400"
+    }
+  ],
+  "skills": [
+    {
+      "id": "resume_10_fa_pdf_twocol_sk_1",
+      "name": "React"
+    },
+    {
+      "id": "resume_10_fa_pdf_twocol_sk_2",
+      "name": "TypeScript"
+    },
+    {
+      "id": "resume_10_fa_pdf_twocol_sk_3",
+      "name": "JavaScript"
+    },
+    {
+      "id": "resume_10_fa_pdf_twocol_sk_4",
+      "name": "Tailwind CSS"
+    },
+    {
+      "id": "resume_10_fa_pdf_twocol_sk_5",
+      "name": "Git"
+    }
+  ]
+}

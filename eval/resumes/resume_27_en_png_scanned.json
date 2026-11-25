@@ -1,0 +1,56 @@
+{
+  "id": "golden_resume_27_en_png_scanned",
+  "format": "png",
+  "layout": "scanned",
+  "language": "en",
+  "contact": {
+    "fullName": "Yusuf Qasimi",
+    "email": "yusuf.qasimi@example.com",
+    "phone": "+93 70 441 9011",
+    "location": "Kabul, Afghanistan"
+  },
+  "experiences": [
+    {
+      "id": "resume_27_en_png_scanned_exp_1",
+      "title": "Backend Engineer",
+      "company": "Hindukush Systems",
+      "startDate": "2021",
+      "isCurrent": true,
+      "achievements": [
+        "Engineered resilient REST APIs using Go, Docker, and PostgreSQL."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "id": "resume_27_en_png_scanned_edu_1",
+      "institution": "Kabul University",
+      "degree": "Bachelor of Science",
+      "fieldOfStudy": "Computer Science",
+      "startDate": "2016",
+      "endDate": "2020"
+    }
+  ],
+  "skills": [
+    {
+      "id": "resume_27_en_png_scanned_sk_1",
+      "name": "Go"
+    },
+    {
+      "id": "resume_27_en_png_scanned_sk_2",
+      "name": "Docker"
+    },
+    {
+      "id": "resume_27_en_png_scanned_sk_3",
+      "name": "PostgreSQL"
+    },
+    {
+      "id": "resume_27_en_png_scanned_sk_4",
+      "name": "REST APIs"
+    },
+    {
+      "id": "resume_27_en_png_scanned_sk_5",
+      "name": "Git"
+    }
+  ]
+}

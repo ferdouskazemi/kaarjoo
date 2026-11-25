@@ -1,0 +1,56 @@
+{
+  "id": "golden_resume_31_mixed_scanned_pdf",
+  "format": "scanned-pdf",
+  "layout": "scanned",
+  "language": "mixed",
+  "contact": {
+    "fullName": "کمیل هاشمی",
+    "email": "komeil.hashemi@example.com",
+    "phone": "+93 79 301 5502",
+    "location": "کابل / Remote"
+  },
+  "experiences": [
+    {
+      "id": "resume_31_mixed_scanned_pdf_exp_1",
+      "title": "DevOps Engineer",
+      "company": "Bamiyan Cloud",
+      "startDate": "2022",
+      "isCurrent": true,
+      "achievements": [
+        "اتوماسیون CI/CD با Docker، Linux و Python"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "id": "resume_31_mixed_scanned_pdf_edu_1",
+      "institution": "Kabul Polytechnic University",
+      "degree": "Bachelor of Science",
+      "fieldOfStudy": "Computer Engineering",
+      "startDate": "2017",
+      "endDate": "2021"
+    }
+  ],
+  "skills": [
+    {
+      "id": "resume_31_mixed_scanned_pdf_sk_1",
+      "name": "Docker"
+    },
+    {
+      "id": "resume_31_mixed_scanned_pdf_sk_2",
+      "name": "Linux"
+    },
+    {
+      "id": "resume_31_mixed_scanned_pdf_sk_3",
+      "name": "Python"
+    },
+    {
+      "id": "resume_31_mixed_scanned_pdf_sk_4",
+      "name": "CI/CD"
+    },
+    {
+      "id": "resume_31_mixed_scanned_pdf_sk_5",
+      "name": "Git"
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "id": "golden_resume_21_en_odt_onecol",
+  "format": "odt",
+  "layout": "one-col",
+  "language": "en",
+  "contact": {
+    "fullName": "Henrik Lindholm",
+    "email": "henrik.lindholm@example.se",
+    "phone": "+46 70 441 9023",
+    "location": "Stockholm, Sweden"
+  },
+  "experiences": [
+    {
+      "id": "resume_21_en_odt_onecol_exp_1",
+      "title": "Systems Engineer",
+      "company": "Nordic Silicon AB",
+      "startDate": "2020",
+      "isCurrent": true,
+      "achievements": [
+        "Implemented low-latency storage drivers in Rust and C++ on Linux."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "id": "resume_21_en_odt_onecol_edu_1",
+      "institution": "KTH Royal Institute of Technology",
+      "degree": "Master of Science",
+      "fieldOfStudy": "Embedded Systems",
+      "startDate": "2015",
+      "endDate": "2019"
+    }
+  ],
+  "skills": [
+    {
+      "id": "resume_21_en_odt_onecol_sk_1",
+      "name": "Rust"
+    },
+    {
+      "id": "resume_21_en_odt_onecol_sk_2",
+      "name": "Linux"
+    },
+    {
+      "id": "resume_21_en_odt_onecol_sk_3",
+      "name": "Docker"
+    },
+    {
+      "id": "resume_21_en_odt_onecol_sk_4",
+      "name": "Git"
+    },
+    {
+      "id": "resume_21_en_odt_onecol_sk_5",
+      "name": "Python"
+    }
+  ]
+}

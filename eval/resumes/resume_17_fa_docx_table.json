@@ -1,0 +1,56 @@
+{
+  "id": "golden_resume_17_fa_docx_table",
+  "format": "docx",
+  "layout": "table",
+  "language": "fa",
+  "contact": {
+    "fullName": "حامد یوسفی",
+    "email": "hamed.yousefi@example.af",
+    "phone": "+93 70 812 3340",
+    "location": "کابل، افغانستان"
+  },
+  "experiences": [
+    {
+      "id": "resume_17_fa_docx_table_exp_1",
+      "title": "مهندس دوآپس",
+      "company": "کابل کلود",
+      "startDate": "1399",
+      "isCurrent": true,
+      "achievements": [
+        "استقرار کلاسترهای Kubernetes و مانیتورینگ سرویس‌های Linux"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "id": "resume_17_fa_docx_table_edu_1",
+      "institution": "دانشگاه کابل",
+      "degree": "کارشناسی",
+      "fieldOfStudy": "فناوری اطلاعات",
+      "startDate": "1394",
+      "endDate": "1398"
+    }
+  ],
+  "skills": [
+    {
+      "id": "resume_17_fa_docx_table_sk_1",
+      "name": "Linux"
+    },
+    {
+      "id": "resume_17_fa_docx_table_sk_2",
+      "name": "Docker"
+    },
+    {
+      "id": "resume_17_fa_docx_table_sk_3",
+      "name": "Kubernetes"
+    },
+    {
+      "id": "resume_17_fa_docx_table_sk_4",
+      "name": "CI/CD"
+    },
+    {
+      "id": "resume_17_fa_docx_table_sk_5",
+      "name": "Python"
+    }
+  ]
+}

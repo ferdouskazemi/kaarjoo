@@ -1,0 +1,56 @@
+{
+  "id": "golden_resume_12_mixed_pdf_onecol",
+  "format": "pdf",
+  "layout": "one-col",
+  "language": "mixed",
+  "contact": {
+    "fullName": "سحر امینی",
+    "email": "sahar.amini@example.com",
+    "phone": "+93 77 310 9980",
+    "location": "Mazar-e-Sharif / کابل"
+  },
+  "experiences": [
+    {
+      "id": "resume_12_mixed_pdf_onecol_exp_1",
+      "title": "Fullstack Engineer",
+      "company": "Kabul FinTech",
+      "startDate": "2021",
+      "isCurrent": true,
+      "achievements": [
+        "توسعه اپلیکیشن پرداخت با React، Node.js و TypeScript"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "id": "resume_12_mixed_pdf_onecol_edu_1",
+      "institution": "دانشگاه بلخ",
+      "degree": "کارشناسی",
+      "fieldOfStudy": "مهندسی نرم‌افزار",
+      "startDate": "2016",
+      "endDate": "2020"
+    }
+  ],
+  "skills": [
+    {
+      "id": "resume_12_mixed_pdf_onecol_sk_1",
+      "name": "React"
+    },
+    {
+      "id": "resume_12_mixed_pdf_onecol_sk_2",
+      "name": "Node.js"
+    },
+    {
+      "id": "resume_12_mixed_pdf_onecol_sk_3",
+      "name": "TypeScript"
+    },
+    {
+      "id": "resume_12_mixed_pdf_onecol_sk_4",
+      "name": "PostgreSQL"
+    },
+    {
+      "id": "resume_12_mixed_pdf_onecol_sk_5",
+      "name": "Docker"
+    }
+  ]
+}

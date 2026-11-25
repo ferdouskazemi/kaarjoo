@@ -1,0 +1,60 @@
+{
+  "id": "golden_resume_07_en_pdf_europass",
+  "format": "pdf",
+  "layout": "europass",
+  "language": "en",
+  "contact": {
+    "fullName": "Tariq Rahimi",
+    "email": "tariq.rahimi@example.eu",
+    "phone": "+31 6 4412 8820",
+    "location": "Rotterdam, Netherlands"
+  },
+  "experiences": [
+    {
+      "id": "resume_07_en_pdf_europass_exp_1",
+      "title": "Senior Security Engineer",
+      "company": "ShieldNet Europe",
+      "startDate": "2020",
+      "isCurrent": true,
+      "achievements": [
+        "Conducted penetration testing and hardened Kubernetes zero-trust policies."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "id": "resume_07_en_pdf_europass_edu_1",
+      "institution": "Delft University of Technology",
+      "degree": "Bachelor of Science",
+      "fieldOfStudy": "Computer Science",
+      "startDate": "2016",
+      "endDate": "2020"
+    }
+  ],
+  "skills": [
+    {
+      "id": "resume_07_en_pdf_europass_sk_1",
+      "name": "Cybersecurity"
+    },
+    {
+      "id": "resume_07_en_pdf_europass_sk_2",
+      "name": "Linux"
+    },
+    {
+      "id": "resume_07_en_pdf_europass_sk_3",
+      "name": "Python"
+    },
+    {
+      "id": "resume_07_en_pdf_europass_sk_4",
+      "name": "Docker"
+    },
+    {
+      "id": "resume_07_en_pdf_europass_sk_5",
+      "name": "Kubernetes"
+    },
+    {
+      "id": "resume_07_en_pdf_europass_sk_6",
+      "name": "Go"
+    }
+  ]
+}

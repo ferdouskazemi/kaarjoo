@@ -1,0 +1,56 @@
+{
+  "id": "golden_resume_23_mixed_odt_onecol",
+  "format": "odt",
+  "layout": "one-col",
+  "language": "mixed",
+  "contact": {
+    "fullName": "نوید باقری",
+    "email": "navid.bagheri@example.com",
+    "phone": "+93 78 902 1145",
+    "location": "کابل / Dubai"
+  },
+  "experiences": [
+    {
+      "id": "resume_23_mixed_odt_onecol_exp_1",
+      "title": "Cloud Infrastructure Engineer",
+      "company": "Aria Cloud Hub",
+      "startDate": "2021",
+      "isCurrent": true,
+      "achievements": [
+        "مدیریت زیرساخت ابری با AWS، Terraform و Kubernetes"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "id": "resume_23_mixed_odt_onecol_edu_1",
+      "institution": "Kabul University",
+      "degree": "Bachelor of Science",
+      "fieldOfStudy": "Network Engineering",
+      "startDate": "2016",
+      "endDate": "2020"
+    }
+  ],
+  "skills": [
+    {
+      "id": "resume_23_mixed_odt_onecol_sk_1",
+      "name": "AWS"
+    },
+    {
+      "id": "resume_23_mixed_odt_onecol_sk_2",
+      "name": "Terraform"
+    },
+    {
+      "id": "resume_23_mixed_odt_onecol_sk_3",
+      "name": "Kubernetes"
+    },
+    {
+      "id": "resume_23_mixed_odt_onecol_sk_4",
+      "name": "Docker"
+    },
+    {
+      "id": "resume_23_mixed_odt_onecol_sk_5",
+      "name": "Linux"
+    }
+  ]
+}
