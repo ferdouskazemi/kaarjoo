@@ -14,6 +14,7 @@ import { CompanyBoardsModal } from '../components/jobs/CompanyBoardsModal.js';
 import { TailoredDocumentsModal } from '../components/documents/TailoredDocumentsModal.js';
 import { useApplicationStore } from '../stores/applicationStore.js';
 import { useAppStore } from '../stores/appStore.js';
+import { useProfileStore } from '../stores/profileStore.js';
 import { useProfile, useJobs, useCreateApplication } from '../queries/index.js';
 import { commands } from '../bindings.js';
 import { formatNumber } from '../utils/formatters.js';
@@ -21,10 +22,12 @@ import type { CompanyBoard, AtsType } from '@kaarjoo/shared';
 
 export const JobsView: React.FC = () => {
   const { t, i18n } = useTranslation();
-  const { setCurrentView } = useAppStore();
+  const { setCurrentView, demoMode } = useAppStore();
   const { queueJobApplication } = useApplicationStore();
+  const { profile: demoProfile } = useProfileStore();
 
-  const { data: profile, isLoading: isProfileLoading } = useProfile();
+  const { data: dbProfile, isLoading: isProfileLoading } = useProfile();
+  const profile = dbProfile ?? (demoMode ? demoProfile : null);
   const { data: dbJobs = [], refetch: refetchJobs } = useJobs();
   const createApplication = useCreateApplication();
 
@@ -64,20 +67,53 @@ export const JobsView: React.FC = () => {
   };
 
   const displayJobs: DisplayJob[] = useMemo(() => {
-    return dbJobs.map((j) => ({
-      id: j.id,
-      title: j.title,
-      company: j.company,
-      location: j.location ?? undefined,
-      remoteType: (j.remoteType as any) ?? 'remote',
-      atsType: (j.atsType as AtsType) ?? 'generic',
-      applyUrl: j.applyUrl,
-      postedAt: j.postedAt ?? undefined,
-      descriptionMarkdown: j.descriptionMarkdown,
-      requirements: j.requirements,
-      matchScore: j.matchScore ? Math.round(j.matchScore) : undefined,
-    }));
-  }, [dbJobs]);
+    if (dbJobs.length > 0) {
+      return dbJobs.map((j) => ({
+        id: j.id,
+        title: j.title,
+        company: j.company,
+        location: j.location ?? undefined,
+        remoteType: (j.remoteType as any) ?? 'remote',
+        atsType: (j.atsType as AtsType) ?? 'generic',
+        applyUrl: j.applyUrl,
+        postedAt: j.postedAt ?? undefined,
+        descriptionMarkdown: j.descriptionMarkdown,
+        requirements: j.requirements,
+        matchScore: j.matchScore ? Math.round(j.matchScore) : undefined,
+      }));
+    }
+    if (demoMode) {
+      return [
+        {
+          id: 'demo_job_stripe',
+          title: 'Senior Frontend Engineer (React & TypeScript)',
+          company: 'Stripe',
+          location: 'Remote (Global)',
+          remoteType: 'remote',
+          atsType: 'greenhouse',
+          applyUrl: 'https://boards.greenhouse.io/stripe/jobs/demo-1',
+          postedAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+          descriptionMarkdown: 'Build accessible, high-performance financial dashboards using React, TypeScript, and modern CSS.',
+          requirements: ['React', 'TypeScript', 'Next.js', 'Tailwind CSS'],
+          matchScore: 92,
+        },
+        {
+          id: 'demo_job_gitlab',
+          title: 'Frontend Engineer, Plan',
+          company: 'GitLab',
+          location: 'Remote (EMEA / Global)',
+          remoteType: 'remote',
+          atsType: 'greenhouse',
+          applyUrl: 'https://job-boards.greenhouse.io/gitlab/jobs/demo-2',
+          postedAt: new Date(Date.now() - 86400000 * 3).toISOString(),
+          descriptionMarkdown: 'Collaborate on GitLab planning workflows with TypeScript, CI/CD pipelines, and responsive UI components.',
+          requirements: ['JavaScript', 'TypeScript', 'Git', 'CI/CD'],
+          matchScore: 86,
+        },
+      ];
+    }
+    return [];
+  }, [dbJobs, demoMode]);
 
   const filteredJobs = useMemo(() => {
     return displayJobs.filter((job) => {
@@ -131,8 +167,17 @@ export const JobsView: React.FC = () => {
     setIsTailoringModalOpen(true);
   };
 
-  // 1. If user has no profile, show clean empty state prompting résumé upload
-  if (!isProfileLoading && !profile) {
+  // 1. Wait for profile check before rendering jobs list to avoid flash
+  if (isProfileLoading && !profile) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-8">
+        <Loader2 className="w-6 h-6 text-sky-400 animate-spin" />
+      </div>
+    );
+  }
+
+  // 2. If user has no profile, show clean empty state prompting résumé upload
+  if (!profile) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-8 text-center max-w-lg mx-auto">
         <div className="w-16 h-16 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center mb-4">
@@ -360,6 +405,7 @@ export const JobsView: React.FC = () => {
         isOpen={isTailoringModalOpen}
         onClose={() => setIsTailoringModalOpen(false)}
         job={tailoringJob}
+        profile={profile as any}
         onProceedToApply={async () => {
           if (tailoringJob) {
             try {

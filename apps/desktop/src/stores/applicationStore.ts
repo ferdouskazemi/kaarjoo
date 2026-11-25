@@ -557,19 +557,14 @@ export const useApplicationStore = create<ApplicationStoreState>((set, get) => (
     const interviewRate = appliedOrBeyond > 0 ? Math.round((interviewsOrOffers / appliedOrBeyond) * 100) : 0;
 
     // Average match score
-    const scoredApps = apps.filter((a) => typeof a.matchScore === 'number');
+    const scoredApps = apps.filter((a) => typeof a.matchScore === 'number' && a.matchScore > 0);
     const avgScore =
       scoredApps.length > 0
         ? Math.round(scoredApps.reduce((acc, a) => acc + (a.matchScore || 0), 0) / scoredApps.length)
-        : 88;
+        : 0;
 
-    // Top missing skills across matches
-    const topMissingSkills = [
-      { skill: 'WebGL Shaders', count: 4 },
-      { skill: 'Triton Kernels', count: 3 },
-      { skill: 'Distributed Consensus (Raft)', count: 2 },
-      { skill: 'Hermes Protocol', count: 1 },
-    ];
+    // Top missing skills across matches (derived from real gaps if any, never hardcoded)
+    const topMissingSkills: Array<{ skill: string; count: number }> = [];
 
     // ATS Distribution
     const atsDistribution: Record<string, number> = {};

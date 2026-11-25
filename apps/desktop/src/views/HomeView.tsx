@@ -1,7 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppStore } from '../stores/appStore.js';
+import { useProfileStore } from '../stores/profileStore.js';
+import { useApplicationStore } from '../stores/applicationStore.js';
 import { useProfile, useApplications, useJobs } from '../queries/index.js';
+import { formatNumber } from '../utils/formatters.js';
 import {
   UploadCloud,
   Sparkles,
@@ -16,11 +19,16 @@ import {
 export const HomeView: React.FC = () => {
   const { t, i18n } = useTranslation();
   const isRtl = i18n.dir() === 'rtl';
-  const { setCurrentView } = useAppStore();
+  const { setCurrentView, demoMode } = useAppStore();
+  const { profile: demoProfile } = useProfileStore();
+  const { applications: storeApps } = useApplicationStore();
 
-  const { data: profile } = useProfile();
-  const { data: applications = [] } = useApplications();
+  const { data: dbProfile } = useProfile();
+  const { data: dbApplications = [] } = useApplications();
   const { data: jobs = [] } = useJobs();
+
+  const profile = dbProfile ?? (demoMode ? demoProfile : null);
+  const applications = dbApplications.length > 0 ? dbApplications : (demoMode || storeApps.length > 0 ? storeApps : []);
 
   const candidateEmail = profile?.contact?.email || t('home.noResumeYet');
   const candidateName = profile?.contact?.fullName || t('home.newUser');
@@ -38,7 +46,7 @@ export const HomeView: React.FC = () => {
     : 0;
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6 max-w-6xl mx-auto w-full bg-[#111111] text-[#f4f4f5]">
+    <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6 max-w-6xl mx-auto w-full text-[#f4f4f5]">
       {/* Welcome Banner */}
       <div className="rounded-2xl border border-[#282828] bg-gradient-to-br from-[#161d26] via-[#161616] to-[#121212] p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 shadow-sm">
         <div className="flex flex-col gap-2">
@@ -91,9 +99,9 @@ export const HomeView: React.FC = () => {
             <TrendingUp className="w-4 h-4 text-sky-400" />
           </div>
           <div className="flex items-baseline gap-2 tabular-nums">
-            <span className="text-2xl font-bold font-mono text-[#f4f4f5] whitespace-nowrap">{appliedCount}</span>
+            <span className="text-2xl font-bold font-mono text-[#f4f4f5] whitespace-nowrap">{formatNumber(appliedCount, i18n.language)}</span>
             <span className="text-[11px] text-[#a1a1aa] font-mono">
-              / {totalApps} {t('home.totalApps')}
+              / {formatNumber(totalApps, i18n.language)} {t('home.totalApps')}
             </span>
           </div>
         </div>
@@ -105,7 +113,7 @@ export const HomeView: React.FC = () => {
           </div>
           <div className="flex items-baseline gap-2 tabular-nums">
             <span className="text-2xl font-bold font-mono text-[#f4f4f5] whitespace-nowrap">
-              {avgScore > 0 ? `${avgScore}%` : '--'}
+              {avgScore > 0 ? `${formatNumber(avgScore, i18n.language)}%` : '--'}
             </span>
             <span className="text-[11px] text-emerald-400 font-mono">{t('home.avgScoreDesc')}</span>
           </div>

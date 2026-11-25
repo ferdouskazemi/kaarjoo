@@ -20,8 +20,9 @@ import {
   Compass,
   UserCheck,
 } from 'lucide-react';
-import { useApplications, useExecuteReview, useSubmitApplication, useProfile } from '../queries/index.js';
+import { useApplications, useExecuteReview, useSubmitApplication, useUpdateApplicationStatus, useProfile } from '../queries/index.js';
 import { useApplicationStore } from '../stores/applicationStore.js';
+import { useProfileStore } from '../stores/profileStore.js';
 import { useAppStore } from '../stores/appStore.js';
 import { formatNumber } from '../utils/formatters.js';
 import type { ApplicationRecord, AtsType } from '@kaarjoo/shared';
@@ -31,9 +32,12 @@ export const QueueView: React.FC = () => {
 
   const { demoMode } = useAppStore();
   const { data: dbApplications = [], refetch: refetchApps } = useApplications();
-  const { data: profile } = useProfile();
+  const { data: dbProfile } = useProfile();
+  const { profile: demoProfile } = useProfileStore();
+  const profile = dbProfile ?? (demoMode ? demoProfile : null);
   const executeReviewMutation = useExecuteReview();
   const submitAppMutation = useSubmitApplication();
+  const updateStatusMutation = useUpdateApplicationStatus();
 
   const {
     applications: storeApps,
@@ -41,9 +45,13 @@ export const QueueView: React.FC = () => {
     setActiveApplicationId,
     loadDemoApplications,
     cancelApplication,
+    executeApplication,
+    submitReviewed,
+    isExecuting: storeIsExecuting,
   } = useApplicationStore();
 
   const [previewModalImg, setPreviewModalImg] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   // Applications list: database records take precedence, falling back to store apps in demo mode
   const applications: ApplicationRecord[] = (dbApplications.length > 0
@@ -80,23 +88,51 @@ export const QueueView: React.FC = () => {
   const activeApp: ApplicationRecord | undefined =
     applications.find((a) => a.id === activeApplicationId) || applications[0];
 
-  const isExecuting = executeReviewMutation.isPending;
+  const isUsingDb = dbApplications.length > 0;
+  const isExecuting = executeReviewMutation.isPending || storeIsExecuting;
 
   const handleExecute = async (id: string) => {
+    setActionError(null);
     try {
-      await executeReviewMutation.mutateAsync(id);
-      await refetchApps();
+      if (isUsingDb) {
+        await executeReviewMutation.mutateAsync(id);
+        await refetchApps();
+      } else {
+        await executeApplication(id);
+      }
     } catch (err) {
-      console.error('Execution error:', err);
+      const msg = err instanceof Error ? err.message : String(err);
+      setActionError(msg);
     }
   };
 
   const handleSubmit = async (id: string) => {
+    setActionError(null);
     try {
-      await submitAppMutation.mutateAsync(id);
-      await refetchApps();
+      if (isUsingDb) {
+        await submitAppMutation.mutateAsync(id);
+        await refetchApps();
+      } else {
+        await submitReviewed(id);
+      }
     } catch (err) {
-      console.error('Submit error:', err);
+      const msg = err instanceof Error ? err.message : String(err);
+      setActionError(msg);
+    }
+  };
+
+  const handleRemove = async (id: string) => {
+    setActionError(null);
+    try {
+      if (isUsingDb) {
+        await updateStatusMutation.mutateAsync({ id, status: 'withdrawn' });
+        await refetchApps();
+      } else {
+        cancelApplication(id);
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setActionError(msg);
     }
   };
 
@@ -136,6 +172,16 @@ export const QueueView: React.FC = () => {
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#2b1717] text-rose-300 border border-rose-500/40 font-mono">
             <AlertTriangle className="w-3 h-3 text-rose-400" />
             {t('status.needs_user')}
+          </span>
+        );
+      case 'saved':
+      case 'interview':
+      case 'offer':
+      case 'rejected':
+      case 'withdrawn':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#1a1a1a] text-slate-300 border border-slate-700 font-mono">
+            {t(`status.${status}`)}
           </span>
         );
       default:
@@ -286,7 +332,7 @@ export const QueueView: React.FC = () => {
                     {t('queue.viewPosting')}
                   </a>
                   <button
-                    onClick={() => cancelApplication(activeApp.id)}
+                    onClick={() => handleRemove(activeApp.id)}
                     className="p-1.5 rounded-lg text-[#71717a] hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
                     title={t('queue.remove')}
                   >
@@ -294,6 +340,22 @@ export const QueueView: React.FC = () => {
                   </button>
                 </div>
               </div>
+
+              {actionError && (
+                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-between gap-2 text-xs text-rose-300">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+                    <span>{actionError}</span>
+                  </div>
+                  <button
+                    onClick={() => setActionError(null)}
+                    className="text-rose-400 hover:text-rose-200 cursor-pointer"
+                    aria-label={t('common.close')}
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
 
               {/* Execution Progress Bar */}
               {isExecuting && (
@@ -366,31 +428,31 @@ export const QueueView: React.FC = () => {
                       {t('queue.checklist')}
                     </span>
                     <span className="text-[11px] font-mono text-[#71717a]">
-                      {formatNumber(activeApp.reviewChecklist?.length || 4, i18n.language)} {t('queue.itemsCount')}
+                      {formatNumber(4, i18n.language)} {t('queue.itemsCount')}
                     </span>
                   </div>
 
                   <div className="rounded-xl border border-[#282828] bg-[#141414] p-3 flex flex-col gap-2 text-xs">
                     <div className="flex items-center justify-between py-1.5 border-b border-[#222222]">
                       <span className="text-[11px] text-[#71717a] uppercase font-mono">{t('profile.fullName')}</span>
-                      <span className="text-[11px] font-medium text-white">{profile?.contact?.fullName || 'Ferdous Kazemi'}</span>
+                      <span className="text-[11px] font-medium text-white">{profile?.contact?.fullName || '—'}</span>
                     </div>
 
                     <div className="flex items-center justify-between py-1.5 border-b border-[#222222]">
                       <span className="text-[11px] text-[#71717a] uppercase font-mono">{t('profile.email')}</span>
-                      <span className="text-[11px] font-medium text-sky-400 font-mono">{profile?.contact?.email || 'ferdouskazemi1000@gmail.com'}</span>
+                      <span className="text-[11px] font-medium text-sky-400 font-mono">{profile?.contact?.email || '—'}</span>
                     </div>
 
                     <div className="flex items-center justify-between py-1.5 border-b border-[#222222]">
                       <span className="text-[11px] text-[#71717a] uppercase font-mono">{t('profile.phone')}</span>
-                      <span className="text-[11px] font-medium text-white font-mono">{profile?.contact?.phone || '+93 728 200 021'}</span>
+                      <span dir="ltr" className="text-[11px] font-medium text-white font-mono">{profile?.contact?.phone || '—'}</span>
                     </div>
 
                     <div className="flex items-center justify-between py-1.5">
                       <span className="text-[11px] text-[#71717a] uppercase font-mono">{t('documents.tailoredResumePdf')}</span>
                       <span className="text-[11px] font-medium text-emerald-400 flex items-center gap-1">
                         <FileText className="w-3 h-3" />
-                        <span>Tailored_Resume.pdf</span>
+                        <span>{activeApp.tailoredResumePath || 'Tailored_Resume.pdf'}</span>
                       </span>
                     </div>
                   </div>

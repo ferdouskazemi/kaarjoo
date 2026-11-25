@@ -64,7 +64,7 @@ export const CommandPalette: React.FC = () => {
             />
           </div>
 
-          <Command.List className="max-h-72 overflow-y-auto p-2 flex flex-col gap-1">
+          <Command.List className="max-h-[420px] overflow-y-auto p-2 flex flex-col gap-1">
             <Command.Empty className="py-6 text-center text-xs text-slate-500">
               {t('command.noResults')}
             </Command.Empty>

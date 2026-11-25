@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   X,
@@ -15,14 +15,16 @@ import {
   LayoutTemplate,
 } from 'lucide-react';
 import type { DisplayJob } from '../jobs/JobCard.js';
-import type { TemplateId } from '@kaarjoo/shared';
+import type { TemplateId, UserProfile } from '@kaarjoo/shared';
 import { formatNumber } from '../../utils/formatters.js';
 import { LANGUAGE_NAMES } from '../../i18n/constants.js';
+import { commands } from '../../bindings.js';
 
 interface TailoredDocumentsModalProps {
   isOpen: boolean;
   onClose: () => void;
   job: DisplayJob | null;
+  profile?: UserProfile | null;
   onProceedToApply?: () => void;
 }
 
@@ -30,6 +32,7 @@ export const TailoredDocumentsModal: React.FC<TailoredDocumentsModalProps> = ({
   isOpen,
   onClose,
   job,
+  profile,
   onProceedToApply,
 }) => {
   const { t, i18n } = useTranslation();
@@ -39,20 +42,33 @@ export const TailoredDocumentsModal: React.FC<TailoredDocumentsModalProps> = ({
   const [docLanguage, setDocLanguage] = useState<'en' | 'fa'>('en');
   const [templateId, setTemplateId] = useState<TemplateId>('ats-clean');
 
-  // Editable Tailored Content
-  const [tailoredSummary, setTailoredSummary] = useState(
-    'Senior Distributed Systems Engineer with 6+ years of experience architecting resilient financial backends in Go and PostgreSQL. Proven success engineering high-throughput microservices handling 20,000+ requests/second with 99.99% uptime.'
-  );
+  // Editable Tailored Content (derived from active profile and job)
+  const [tailoredSummary, setTailoredSummary] = useState('');
+  const [tailoredBullets, setTailoredBullets] = useState<string[]>([]);
+  const [coverLetterText, setCoverLetterText] = useState('');
 
-  const [tailoredBullets, setTailoredBullets] = useState<string[]>([
-    'Architected high-throughput payment processing APIs in Go and PostgreSQL, handling 20,000 req/sec across distributed clusters.',
-    'Engineered Kafka streaming event pipelines for zero-loss financial transaction auditing and reconciliation.',
-    'Dockerized microservices deployed on Kubernetes, maintaining 99.99% service availability.',
-  ]);
+  useEffect(() => {
+    if (!job) return;
+    const candidateName = profile?.contact?.fullName || '';
+    const skillsList = (profile?.skills || []).slice(0, 6).map((s) => s.name);
+    const firstSummary = profile?.summary || (skillsList.length > 0
+      ? `Experienced professional with hands-on skills in ${skillsList.join(', ')}.`
+      : '');
+    setTailoredSummary(firstSummary);
 
-  const [coverLetterText, setCoverLetterText] = useState(
-    `Dear Hiring Team at ${job?.company || 'Stripe'},\n\nI am writing to express my strong enthusiasm for the ${job?.title || 'Senior Software Engineer'} position. Having followed your engineering leadership in global tech infrastructure, I believe my background directly aligns with your requirements.\n\nThroughout my career, I have focused on solving high-concurrency front-end and distributed engineering challenges with tangible results, including:\n• Architecting responsive modern web applications in React, TypeScript, and Go.\n• Implementing event streaming pipelines with Apache Kafka and Docker.\n\nMy technical foundation and experience with production high-availability systems provide a direct fit for this role. I look forward to the opportunity to contribute to your engineering team.\n\nSincerely,\nFerdous Kazemi`
-  );
+    const expBullets = (profile?.experiences || [])
+      .flatMap((exp) => (exp.achievements && exp.achievements.length > 0 ? exp.achievements : exp.description ? [exp.description] : []))
+      .filter(Boolean)
+      .slice(0, 4);
+    setTailoredBullets(expBullets);
+
+    const matchedSkillLine = skillsList.length > 0
+      ? `My background in ${skillsList.slice(0, 4).join(', ')} aligns closely with your requirements.`
+      : '';
+    setCoverLetterText(
+      `Dear Hiring Team at ${job.company},\n\nI am writing to express my interest in the ${job.title} position at ${job.company}. ${matchedSkillLine}\n\nThank you for your time and consideration.\n\nSincerely,\n${candidateName || 'Candidate'}`
+    );
+  }, [job, profile]);
 
   const [screeningAnswers, setScreeningAnswers] = useState<Array<{ q: string; a: string; category: string }>>([
     { q: 'What is your current notice period / earliest start date?', a: 'Available within 2 weeks of offer acceptance.', category: 'notice_period' },
@@ -98,8 +114,26 @@ export const TailoredDocumentsModal: React.FC<TailoredDocumentsModalProps> = ({
 
   const handleDownload = async (type: 'pdf' | 'docx') => {
     setDownloading(type);
-    await new Promise((r) => setTimeout(r, 1200));
-    setDownloading(null);
+    try {
+      const res = await commands.documentsTailor(job.id, templateId, docLanguage);
+      if (res.status === 'error') {
+        throw new Error(res.error);
+      }
+    } catch {
+      // Browser/demo fallback: download a plain-text tailored document bundle
+      const content = `${profile?.contact?.fullName || 'Candidate'}\n${job.company} — ${job.title}\n\nSUMMARY\n${tailoredSummary}\n\nEXPERIENCE HIGHLIGHTS\n${tailoredBullets.map((b) => `• ${b}`).join('\n')}\n\nCOVER LETTER\n${coverLetterText}`;
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${job.company.replace(/[^a-z0-9]/gi, '_')}_Tailored_${type}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } finally {
+      setDownloading(null);
+    }
   };
 
   return (
@@ -272,29 +306,41 @@ export const TailoredDocumentsModal: React.FC<TailoredDocumentsModalProps> = ({
               <div>
                 <h4 className="text-xs font-bold text-slate-300 mb-1.5">{t('profile.summary')}</h4>
                 <p className="text-xs text-slate-400 leading-relaxed bg-slate-900/50 p-3 rounded-lg border border-slate-800">
-                  Senior software engineer with track record of building high-performance distributed systems in Go and PostgreSQL. Passionate about international engineering teams and cloud infrastructure.
+                  {profile?.summary || '—'}
                 </p>
               </div>
 
               <div>
                 <h4 className="text-xs font-bold text-slate-300 mb-1.5">{t('profile.experience')}</h4>
                 <div className="space-y-3">
-                  <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800 text-xs">
-                    <span className="font-semibold text-slate-200 block mb-1">Backend Engineer</span>
-                    <ul className="list-disc list-inside space-y-1 text-slate-400 text-[11px]">
-                      <li>Architected PostgreSQL data tier managing 50k transactions/day.</li>
-                      <li>Engineered microservices in Go and Docker with 99.9% availability.</li>
-                    </ul>
-                  </div>
+                  {(profile?.experiences || []).slice(0, 3).map((exp) => (
+                    <div key={exp.id} className="bg-slate-900/50 p-3 rounded-lg border border-slate-800 text-xs">
+                      <span className="font-semibold text-slate-200 block mb-1">
+                        {exp.title} — {exp.company}
+                      </span>
+                      <ul className="list-disc list-inside space-y-1 text-slate-400 text-[11px]">
+                        {(exp.achievements && exp.achievements.length > 0
+                          ? exp.achievements
+                          : exp.description
+                          ? [exp.description]
+                          : []
+                        )
+                          .slice(0, 2)
+                          .map((item, i) => (
+                            <li key={i}>{item}</li>
+                          ))}
+                      </ul>
+                    </div>
+                  ))}
                 </div>
               </div>
 
               <div>
                 <h4 className="text-xs font-bold text-slate-300 mb-1.5">{t('profile.skills')}</h4>
                 <div className="flex flex-wrap gap-1.5">
-                  {['Go', 'PostgreSQL', 'Docker', 'Kubernetes', 'TypeScript', 'Distributed Systems'].map((s) => (
-                    <span key={s} className="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">
-                      {s}
+                  {(profile?.skills || []).slice(0, 12).map((s) => (
+                    <span key={s.id} className="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">
+                      {s.name}
                     </span>
                   ))}
                 </div>

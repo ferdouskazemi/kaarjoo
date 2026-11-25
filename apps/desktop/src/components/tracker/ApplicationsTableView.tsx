@@ -169,11 +169,15 @@ export const ApplicationsTableView: React.FC<ApplicationsTableViewProps> = ({
 
                     {/* Status Dropdown */}
                     <td className="py-3.5 px-4" onClick={(e) => e.stopPropagation()}>
-                      <div className="relative inline-block">
+                      <div className="relative inline-flex items-center">
+                        <div className="pointer-events-none">
+                          {getStatusBadge(app.status)}
+                        </div>
                         <select
                           value={app.status}
+                          aria-label={t('tracker.status')}
                           onChange={(e) => onMoveStatus(app.id, e.target.value as ApplicationStatus)}
-                          className="appearance-none bg-transparent pe-6 ps-2 py-1 rounded text-xs font-medium cursor-pointer border border-transparent hover:border-slate-700 focus:outline-none"
+                          className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
                         >
                           <option value="saved" className="bg-slate-900 text-slate-200">{t('tracker.statusSaved')}</option>
                           <option value="needs_review" className="bg-slate-900 text-slate-200">{t('tracker.statusNeedsReview')}</option>
@@ -182,9 +186,6 @@ export const ApplicationsTableView: React.FC<ApplicationsTableViewProps> = ({
                           <option value="offer" className="bg-slate-900 text-slate-200">{t('tracker.statusOffer')}</option>
                           <option value="rejected" className="bg-slate-900 text-slate-200">{t('tracker.statusRejected')}</option>
                         </select>
-                        <div className="pointer-events-none absolute start-0 top-1/2 -translate-y-1/2">
-                          {getStatusBadge(app.status)}
-                        </div>
                       </div>
                     </td>
 

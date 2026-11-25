@@ -52,9 +52,9 @@ export function formatNumber(num: number, lang: 'fa' | 'en' | string = 'en'): st
  */
 export function formatPercent(num: number, lang: 'fa' | 'en' | string = 'en'): string {
   try {
-    return new Intl.NumberFormat(lang?.startsWith('fa') ? 'fa-IR' : 'en-US').format(num);
+    return `${new Intl.NumberFormat(lang?.startsWith('fa') ? 'fa-IR' : 'en-US').format(num)}%`;
   } catch {
-    return String(num);
+    return `${num}%`;
   }
 }
 

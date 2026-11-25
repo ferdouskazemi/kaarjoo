@@ -116,6 +116,7 @@ export const ApplicationDetailDrawer: React.FC<ApplicationDetailDrawerProps> = (
             </a>
             <button
               onClick={onClose}
+              aria-label={t('common.close')}
               className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />

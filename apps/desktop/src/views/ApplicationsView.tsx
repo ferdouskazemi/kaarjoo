@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Download,
@@ -6,35 +6,142 @@ import {
   List,
   CheckCircle2,
 } from 'lucide-react';
+import { useApplications, useUpdateApplicationStatus } from '../queries/index.js';
 import { useApplicationStore } from '../stores/applicationStore.js';
+import { useAppStore } from '../stores/appStore.js';
+import { commands } from '../bindings.js';
 import { KanbanBoard } from '../components/tracker/KanbanBoard.js';
 import { ApplicationsTableView } from '../components/tracker/ApplicationsTableView.js';
 import { ApplicationDetailDrawer } from '../components/tracker/ApplicationDetailDrawer.js';
 import { DashboardKpisWidget } from '../components/tracker/DashboardKpisWidget.js';
 import { formatNumber } from '../utils/formatters.js';
-import { ApplicationRecord } from '@kaarjoo/shared';
+import type { ApplicationRecord, ApplicationStatus, AtsType } from '@kaarjoo/shared';
 
 export const ApplicationsView: React.FC = () => {
   const { t, i18n } = useTranslation();
+  const { demoMode } = useAppStore();
+  const { data: dbApplications = [], refetch: refetchApps } = useApplications();
+  const updateStatusMutation = useUpdateApplicationStatus();
 
   const {
-    applications,
+    applications: storeApps,
     updateApplicationStatus,
     updateApplicationNotes,
     scheduleInterview,
     cancelApplication,
-    exportToCsv,
-    getKpis,
   } = useApplicationStore();
+
+  const isUsingDb = dbApplications.length > 0;
+  const applications: ApplicationRecord[] = useMemo(() => {
+    if (isUsingDb) {
+      return dbApplications.map((a) => ({
+        id: a.id,
+        jobId: a.jobId,
+        jobTitle: a.jobTitle,
+        company: a.company,
+        location: a.location ?? undefined,
+        applyUrl: a.applyUrl,
+        atsType: (a.atsType as AtsType) ?? 'generic',
+        mode: (a.mode as any) ?? 'review',
+        status: (a.status as ApplicationStatus) ?? 'saved',
+        matchScore: a.matchScore,
+        profileId: a.profileId,
+        tailoredResumePath: a.tailoredResumePath ?? undefined,
+        coverLetterText: a.coverLetterText ?? undefined,
+        notes: a.notes ?? undefined,
+        interviewDate: a.interviewDate ?? undefined,
+        submittedAt: a.submittedAt ?? undefined,
+        screenshotBeforeSubmit: a.screenshotBeforeSubmit ?? undefined,
+        screenshotConfirmation: a.screenshotConfirmation ?? undefined,
+        filledFields: (a.filledFields as any) ?? [],
+        reviewChecklist: (a.reviewChecklist as any) ?? [],
+        timeline: (a.timeline as any) ?? [],
+        stopReason: 'none',
+        createdAt: a.createdAt,
+        updatedAt: a.updatedAt,
+      }));
+    }
+    return demoMode || storeApps.length > 0 ? storeApps : [];
+  }, [isUsingDb, dbApplications, demoMode, storeApps]);
 
   const [viewMode, setViewMode] = useState<'kanban' | 'table'>('kanban');
   const [selectedApp, setSelectedApp] = useState<ApplicationRecord | null>(null);
   const [isExportSuccess, setIsExportSuccess] = useState(false);
 
-  const kpis = getKpis();
+  const kpis = useMemo(() => {
+    const total = applications.length;
+    const oneWeekAgo = Date.now() - 7 * 86400000;
+    const thisWeek = applications.filter((a) => {
+      const time = a.submittedAt ? new Date(a.submittedAt).getTime() : new Date(a.createdAt).getTime();
+      return time >= oneWeekAgo;
+    }).length;
+    const appliedOrBeyond = applications.filter((a) =>
+      ['applied', 'submitted', 'interview', 'offer', 'rejected'].includes(a.status)
+    ).length;
+    const interviewsOrOffers = applications.filter((a) => ['interview', 'offer'].includes(a.status)).length;
+    const interviewRate = appliedOrBeyond > 0 ? Math.round((interviewsOrOffers / appliedOrBeyond) * 100) : 0;
+    const scoredApps = applications.filter((a) => typeof a.matchScore === 'number' && a.matchScore > 0);
+    const avgScore =
+      scoredApps.length > 0
+        ? Math.round(scoredApps.reduce((acc, a) => acc + (a.matchScore || 0), 0) / scoredApps.length)
+        : 0;
+    const atsDistribution: Record<string, number> = {};
+    for (const a of applications) {
+      atsDistribution[a.atsType] = (atsDistribution[a.atsType] || 0) + 1;
+    }
+    return {
+      total,
+      thisWeek,
+      interviewRate,
+      avgScore,
+      topMissingSkills: [] as Array<{ skill: string; count: number }>,
+      atsDistribution,
+    };
+  }, [applications]);
+
+  const handleMoveStatus = async (id: string, status: ApplicationStatus) => {
+    if (isUsingDb) {
+      await updateStatusMutation.mutateAsync({ id, status });
+      await refetchApps();
+    } else {
+      updateApplicationStatus(id, status);
+    }
+  };
+
+  const handleUpdateNotes = async (id: string, notes: string) => {
+    if (isUsingDb) {
+      await commands.applicationsUpdateNotes(id, notes);
+      await refetchApps();
+    } else {
+      updateApplicationNotes(id, notes);
+    }
+  };
+
+  const handleDeleteApp = async (id: string) => {
+    if (isUsingDb) {
+      await updateStatusMutation.mutateAsync({ id, status: 'withdrawn' });
+      await refetchApps();
+    } else {
+      cancelApplication(id);
+    }
+  };
 
   const handleDownloadCsv = () => {
-    const csvContent = exportToCsv();
+    const headers = ['ID', 'Company', 'Role', 'ATS', 'Status', 'Score', 'Salary', 'URL', 'CreatedAt', 'SubmittedAt', 'Notes'];
+    const rows = applications.map((a) => [
+      a.id,
+      `"${a.company.replace(/"/g, '""')}"`,
+      `"${a.jobTitle.replace(/"/g, '""')}"`,
+      a.atsType,
+      a.status,
+      a.matchScore ?? '',
+      `"${(a.salaryText || '').replace(/"/g, '""')}"`,
+      `"${a.applyUrl}"`,
+      a.createdAt,
+      a.submittedAt || '',
+      `"${(a.notes || '').replace(/"/g, '""')}"`,
+    ]);
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\r\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -113,14 +220,14 @@ export const ApplicationsView: React.FC = () => {
         <KanbanBoard
           applications={applications}
           onSelectApplication={setSelectedApp}
-          onMoveStatus={updateApplicationStatus}
+          onMoveStatus={handleMoveStatus}
         />
       ) : (
         <ApplicationsTableView
           applications={applications}
           onSelectApplication={setSelectedApp}
-          onMoveStatus={updateApplicationStatus}
-          onDeleteApplication={cancelApplication}
+          onMoveStatus={handleMoveStatus}
+          onDeleteApplication={handleDeleteApp}
         />
       )}
 
@@ -128,8 +235,8 @@ export const ApplicationsView: React.FC = () => {
       <ApplicationDetailDrawer
         application={selectedApp}
         onClose={() => setSelectedApp(null)}
-        onUpdateStatus={updateApplicationStatus}
-        onUpdateNotes={updateApplicationNotes}
+        onUpdateStatus={handleMoveStatus}
+        onUpdateNotes={handleUpdateNotes}
         onScheduleInterview={scheduleInterview}
       />
     </div>

@@ -249,7 +249,7 @@ export const SettingsView: React.FC = () => {
               <span>{t('settings.engineConfig')}</span>
             </h2>
             <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-medium font-mono">
-              100% Offline
+              {t('settings.offlineBadge')}
             </span>
           </div>
 

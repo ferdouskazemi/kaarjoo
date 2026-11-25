@@ -59,9 +59,9 @@ export const Sidebar: React.FC = () => {
           onClick={() => setCommandPaletteOpen(true)}
           className="flex items-center justify-between px-3 py-2 rounded-lg bg-[#1a1a1a] border border-[#282828] hover:border-[#383838] text-[#a1a1aa] hover:text-[#f4f4f5] transition-all text-xs cursor-pointer group"
         >
-          <div className="flex items-center gap-2">
-            <Search className="w-3.5 h-3.5 text-[#71717a] group-hover:text-sky-400 transition-colors" />
-            <span className="truncate">{t('command.placeholder').slice(0, 18)}...</span>
+          <div className="flex items-center gap-2 min-w-0">
+            <Search className="w-3.5 h-3.5 text-[#71717a] group-hover:text-sky-400 transition-colors shrink-0" />
+            <span className="truncate">{t('command.placeholder')}</span>
           </div>
           <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-[#222222] text-[#a1a1aa] rounded border border-[#2f2f2f]">
             Ctrl+K
@@ -139,7 +139,7 @@ export const Sidebar: React.FC = () => {
             <ShieldCheck className="w-3 h-3" />
             <span>100% LOCAL</span>
           </span>
-          <span>ATS v0.1.0</span>
+          <span>ATS v1.0.0</span>
         </div>
       </div>
     </aside>

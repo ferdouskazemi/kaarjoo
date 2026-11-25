@@ -408,6 +408,7 @@
   },
   "settings": {
     "title": "Settings & Local Configuration",
+    "offlineBadge": "100% Offline",
     "subtitle": "Manage application preferences, language, and local AI runtime",
     "appearance": "Appearance & Theme",
     "appearanceDesc": "Select your preferred visual style (Dark, Light, or System)",

@@ -197,7 +197,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                       <div className="p-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[10px] text-amber-300 flex items-center gap-1 font-mono">
                         <Calendar className="w-3 h-3 shrink-0 text-amber-400" />
                         <span className="truncate">
-                          {t('tracker.interview')}: {formatDate(app.interviewDate, i18n.language)}
+                          {t('tracker.statusInterview')}: {formatDate(app.interviewDate, i18n.language)}
                         </span>
                       </div>
                     )}

@@ -38,6 +38,7 @@ export const ProfileView: React.FC = () => {
   const clearMutation = useClearProfile();
 
   const {
+    profile: demoProfile,
     uploadedFileName,
     uploadedDocumentText,
     setUploadedDocument,
@@ -52,8 +53,8 @@ export const ProfileView: React.FC = () => {
   const [copied, setCopied] = useState(false);
   const [confirmToast, setConfirmToast] = useState(false);
 
-  // Active profile: SQLite database profile takes precedence
-  const profile = dbProfile ?? null;
+  // Active profile: SQLite database profile takes precedence, falling back to demo profile in demo mode
+  const profile = dbProfile ?? (demoMode ? demoProfile : null);
 
   const handleFieldClick = (highlightText: string, label: string) => {
     setActiveHighlight(highlightText, label);
@@ -132,7 +133,13 @@ export const ProfileView: React.FC = () => {
   }, []);
 
   const handleClearProfile = async () => {
-    await clearMutation.mutateAsync();
+    try {
+      if (dbProfile) {
+        await clearMutation.mutateAsync();
+      }
+    } catch {
+      // Ignore Tauri IPC errors in browser/demo mode
+    }
     clearProfile();
     useApplicationStore.getState().syncWithProfile(null);
     if (fileInputRef.current) {
@@ -448,7 +455,7 @@ export const ProfileView: React.FC = () => {
             {profile.summary && (
               <div className="rounded-xl border border-[#282828] bg-[#1a1a1a] p-4 flex flex-col gap-2">
                 <span className="text-[11px] font-semibold text-[#a1a1aa] uppercase tracking-wider">
-                  {t('profile.summaryTitle')}
+                  {t('profile.summary')}
                 </span>
                 <p className="text-xs text-[#d4d4d8] leading-relaxed">{profile.summary}</p>
               </div>
