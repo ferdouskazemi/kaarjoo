@@ -73,7 +73,7 @@ export const QueueView: React.FC = () => {
         createdAt: a.createdAt,
         updatedAt: a.updatedAt,
       }))
-    : demoMode
+    : (demoMode || storeApps.length > 0)
     ? storeApps
     : []) as ApplicationRecord[];
 

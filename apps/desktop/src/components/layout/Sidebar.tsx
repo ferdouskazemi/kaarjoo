@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppStore, AppView } from '../../stores/appStore';
 import { useApplicationStore } from '../../stores/applicationStore';
+import { useApplications } from '../../queries/index.js';
 import {
   LayoutDashboard,
   User,
@@ -39,6 +40,8 @@ export const Sidebar: React.FC = () => {
   const { t } = useTranslation();
   const { currentView, setCurrentView, language, setLanguage, theme, setTheme, setCommandPaletteOpen } = useAppStore();
   const { applications } = useApplicationStore();
+  const { data: dbApplications = [] } = useApplications();
+  const queueCount = dbApplications.length > 0 ? dbApplications.length : applications.length;
 
   const toggleLanguage = () => {
     setLanguage(language === 'fa' ? 'en' : 'fa');
@@ -70,7 +73,7 @@ export const Sidebar: React.FC = () => {
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentView === item.id;
-            const badgeCount = item.badgeKey === 'queue' ? applications.length : undefined;
+            const badgeCount = item.badgeKey === 'queue' ? queueCount : undefined;
 
             return (
               <button

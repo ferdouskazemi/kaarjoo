@@ -14,7 +14,7 @@ import { CompanyBoardsModal } from '../components/jobs/CompanyBoardsModal.js';
 import { TailoredDocumentsModal } from '../components/documents/TailoredDocumentsModal.js';
 import { useApplicationStore } from '../stores/applicationStore.js';
 import { useAppStore } from '../stores/appStore.js';
-import { useProfile, useJobs } from '../queries/index.js';
+import { useProfile, useJobs, useCreateApplication } from '../queries/index.js';
 import { commands } from '../bindings.js';
 import { formatNumber } from '../utils/formatters.js';
 import type { CompanyBoard, AtsType } from '@kaarjoo/shared';
@@ -26,6 +26,7 @@ export const JobsView: React.FC = () => {
 
   const { data: profile, isLoading: isProfileLoading } = useProfile();
   const { data: dbJobs = [], refetch: refetchJobs } = useJobs();
+  const createApplication = useCreateApplication();
 
   const [isSyncing, setIsSyncing] = useState(false);
   const [selectedJob, setSelectedJob] = useState<DisplayJob | null>(null);
@@ -359,17 +360,26 @@ export const JobsView: React.FC = () => {
         isOpen={isTailoringModalOpen}
         onClose={() => setIsTailoringModalOpen(false)}
         job={tailoringJob}
-        onProceedToApply={() => {
+        onProceedToApply={async () => {
           if (tailoringJob) {
-            queueJobApplication({
-              job: {
-                id: tailoringJob.id,
-                title: tailoringJob.title,
-                company: tailoringJob.company,
-                applyUrl: tailoringJob.applyUrl,
-                atsType: tailoringJob.atsType,
-              },
-            });
+            try {
+              await createApplication.mutateAsync({
+                jobId: tailoringJob.id,
+                mode: 'review',
+                resumePath: null,
+                coverLetter: null,
+              });
+            } catch {
+              queueJobApplication({
+                job: {
+                  id: tailoringJob.id,
+                  title: tailoringJob.title,
+                  company: tailoringJob.company,
+                  applyUrl: tailoringJob.applyUrl,
+                  atsType: tailoringJob.atsType,
+                },
+              });
+            }
             setIsTailoringModalOpen(false);
             setCurrentView('queue');
           }
