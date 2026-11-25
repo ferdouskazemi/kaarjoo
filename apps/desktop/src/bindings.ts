@@ -101,38 +101,6 @@ async directoryUpsert(company: CompanyBoardDto) : Promise<Result<null, string>> 
     else return { status: "error", error: e  as any };
 }
 },
-async directoryCheckUpdate(currentVersion: string) : Promise<Result<DirectoryUpdateCheckDto, string>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("directory_check_update", { currentVersion }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
-},
-async modelsGetStatus() : Promise<Result<ModelStatusDto[], string>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("models_get_status") };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
-},
-async modelsDetectHardware() : Promise<Result<AiHardwareReportDto, string>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("models_detect_hardware") };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
-},
-async modelsDownload(modelId: string) : Promise<Result<ModelStatusDto, string>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("models_download", { modelId }) };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
-},
 async matchingScoreJob(jobId: string) : Promise<Result<MatchResultDto, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("matching_score_job", { jobId }) };
@@ -260,6 +228,38 @@ async settingsWipeAllData() : Promise<Result<null, string>> {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+async directoryCheckUpdate(currentVersion: string) : Promise<Result<DirectoryUpdateCheckDto, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("directory_check_update", { currentVersion }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async modelsGetStatus() : Promise<Result<ModelStatusDto[], string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("models_get_status") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async modelsDetectHardware() : Promise<Result<AiHardwareReportDto, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("models_detect_hardware") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async modelsDownload(modelId: string) : Promise<Result<ModelStatusDto, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("models_download", { modelId }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 
@@ -273,9 +273,12 @@ async settingsWipeAllData() : Promise<Result<null, string>> {
 
 /** user-defined types **/
 
+export type AiHardwareReportDto = { platform: string; arch: string; totalRamGb: number; cpuCores: number; gpuBackend: string; vramTotalBytes: number; vramFreeBytes: number; recommendedTier: string }
 export type ApplicationRecordDto = { id: string; jobId: string; jobTitle: string; company: string; location: string | null; applyUrl: string; atsType: string; mode: string; status: string; matchScore: number; profileId: string; tailoredResumePath: string | null; coverLetterText: string | null; notes: string | null; interviewDate: string | null; submittedAt: string | null; screenshotBeforeSubmit: string | null; screenshotConfirmation: string | null; filledFields?: FilledFieldDto[]; reviewChecklist?: ReviewChecklistItemDto[]; timeline?: TimelineEventDto[]; createdAt: string; updatedAt: string }
 export type BoundingBoxDto = { x: number; y: number; width: number; height: number }
+export type CompanyBoardDto = { id: string; name: string; domain: string; atsType: string; boardSlug: string; boardUrl: string; country: string; headquarters: string | null; industry: string | null; active: boolean; lastSyncedAt: string | null; jobCount: number; logoUrl: string | null; sizeBucket: string | null; tags?: string[]; remotePolicy: string | null; isFollowed: boolean }
 export type ContactInfoDto = { fullName: string; email: string; phone: string | null; location: string | null; linkedinUrl: string | null; githubUrl: string | null; portfolioUrl: string | null; provenance: FactProvenanceDto | null }
+export type DirectoryUpdateCheckDto = { hasUpdate: boolean; currentVersion: string; latestVersion: string | null; sha256: string | null }
 export type EducationItemDto = { id: string; institution: string; degree: string; fieldOfStudy: string | null; startDate: string | null; endDate: string | null; grade: string | null; provenance: FactProvenanceDto | null }
 export type ExperienceItemDto = { id: string; title: string; company: string; location: string | null; startDate: string; endDate: string | null; isCurrent: boolean; description: string | null; achievements?: string[]; skillsUsed?: string[]; provenance: FactProvenanceDto | null }
 export type FactProvenanceDto = { sourceFileId: string; page: number; textSpan: string; bbox: BoundingBoxDto | null; confidence: number; status: string }
@@ -284,6 +287,7 @@ export type JobPostingDto = { id: string; sourceId: string; sourceName: string; 
 export type JobsSearchQueryDto = { keywords: string[] | null; locations: string[] | null; remoteOnly: boolean | null; company: string | null; atsType: string | null; limit: number | null }
 export type MatchBreakdownDto = { hardFilter: number; semantic: number; skillCoverage: number; rerank: number }
 export type MatchResultDto = { jobId: string; profileId: string; score: number; breakdown: MatchBreakdownDto; topReasons: string[]; matchedSkills: string[]; missingSkills: string[]; whyNotHigher: string | null; userFeedback: string | null }
+export type ModelStatusDto = { id: string; name: string; role: string; tier: string; license: string; sha256: string; fileName: string; modelsDir: string; localPath: string; installed: boolean; partialBytes: number; bundledInApp: boolean; sizeBytes: number; downloadUrl: string }
 export type ProfileExtractionResultDto = { profile: UserProfileDto; sourceFileId: string; sourceFileName: string; pagesCount: number; rawText: string }
 export type ReviewChecklistItemDto = { id: string; label: string; value: string; status: string; category: string }
 export type SalaryRangeDto = { min: number | null; max: number | null; currency: string; period: string }
@@ -292,57 +296,6 @@ export type SystemStatus = { app_version: string; os: string; is_ready: boolean 
 export type TailoredDocumentResultDto = { jobId: string; templateId: string; language: string; resumeHtml: string; coverLetterText: string; truthfulnessScore: number; truthfulnessPassed: boolean; warnings: string[] }
 export type TimelineEventDto = { id: string; status: string; timestamp: string; title: string; note: string | null }
 export type UserProfileDto = { id: string; version: number; contact: ContactInfoDto; summary: string | null; experiences?: ExperienceItemDto[]; education?: EducationItemDto[]; skills?: SkillItemDto[]; targetTitles?: string[]; createdAt: string; updatedAt: string }
-export type CompanyBoardDto = {
-    id: string;
-    name: string;
-    domain: string;
-    atsType: string;
-    boardSlug: string;
-    boardUrl: string;
-    country: string;
-    headquarters: string | null;
-    industry: string | null;
-    active: boolean;
-    lastSyncedAt: string | null;
-    jobCount: number;
-    logoUrl: string | null;
-    sizeBucket: string | null;
-    tags: string[];
-    remotePolicy: string | null;
-    isFollowed: boolean;
-};
-export type DirectoryUpdateCheckDto = {
-    hasUpdate: boolean;
-    currentVersion: string;
-    latestVersion: string | null;
-    sha256: string | null;
-};
-export type ModelStatusDto = {
-    id: string;
-    name: string;
-    role: string;
-    tier: string;
-    license: string;
-    sha256: string;
-    fileName: string;
-    modelsDir: string;
-    localPath: string;
-    installed: boolean;
-    partialBytes: number;
-    bundledInApp: boolean;
-    sizeBytes: number;
-    downloadUrl: string;
-};
-export type AiHardwareReportDto = {
-    platform: string;
-    arch: string;
-    totalRamGb: number;
-    cpuCores: number;
-    gpuBackend: string;
-    vramTotalBytes: number;
-    vramFreeBytes: number;
-    recommendedTier: string;
-};
 
 /** tauri-specta globals **/
 

@@ -62,9 +62,16 @@ pub fn run() {
     ]);
 
     #[cfg(debug_assertions)]
-    specta_builder
-        .export(specta_typescript::Typescript::default(), "../src/bindings.ts")
-        .expect("Failed to export typescript bindings");
+    {
+        let bindings_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../src/bindings.ts");
+        if let Err(err) = specta_builder.export(
+            specta_typescript::Typescript::default()
+                .bigint(specta_typescript::BigIntExportBehavior::Number),
+            bindings_path,
+        ) {
+            eprintln!("Warning: failed to export typescript bindings: {:?}", err);
+        }
+    }
 
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())

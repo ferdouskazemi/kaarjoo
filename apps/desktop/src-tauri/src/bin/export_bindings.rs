@@ -1,5 +1,5 @@
 use kaarjoo_lib::commands;
-use specta_typescript::Typescript;
+use specta_typescript::{BigIntExportBehavior, Typescript};
 use tauri_specta::{collect_commands, Builder};
 
 fn main() {
@@ -12,6 +12,10 @@ fn main() {
         commands::jobs_search,
         commands::jobs_get_all,
         commands::jobs_get,
+        commands::jobs_search_fts,
+        commands::directory_list,
+        commands::directory_toggle_follow,
+        commands::directory_upsert,
         commands::matching_score_job,
         commands::matching_rank_all,
         commands::matching_record_feedback,
@@ -28,11 +32,19 @@ fn main() {
         commands::settings_get_all,
         commands::settings_set,
         commands::settings_wipe_all_data,
+        commands::directory_check_update,
+        commands::models_get_status,
+        commands::models_detect_hardware,
+        commands::models_download,
     ]);
 
+    let bindings_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../src/bindings.ts");
     specta_builder
-        .export(Typescript::default(), "../src/bindings.ts")
+        .export(
+            Typescript::default().bigint(BigIntExportBehavior::Number),
+            &bindings_path,
+        )
         .expect("Failed to export typescript bindings");
 
-    println!("Successfully exported TypeScript bindings to ../src/bindings.ts");
+    println!("Successfully exported TypeScript bindings to {}", bindings_path.display());
 }
