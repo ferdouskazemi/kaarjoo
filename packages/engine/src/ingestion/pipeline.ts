@@ -70,7 +70,13 @@ export async function extractProfileFromParsedDocument(
   const eduText = sectionTexts.education.join('\n');
   const education = extractEducation(eduText);
 
-  const skillsText = [...sectionTexts.skills, ...sectionTexts.experience].join('\n');
+  const skillsText = [
+    ...sectionTexts.skills,
+    ...sectionTexts.experience,
+    ...sectionTexts.contact,
+    ...sectionTexts.summary,
+    ...sectionTexts.unknown,
+  ].join('\n');
   const skills = extractSkills(skillsText);
 
   const summary = sectionTexts.summary.join(' ') || undefined;

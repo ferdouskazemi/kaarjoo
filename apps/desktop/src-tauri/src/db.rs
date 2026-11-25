@@ -43,7 +43,7 @@ pub async fn init_db(app_data_dir: &Path) -> Result<DbPool, Box<dyn std::error::
 // -----------------------------------------------------------------------------
 
 pub async fn get_profile(pool: &DbPool) -> Result<Option<UserProfileDto>, sqlx::Error> {
-    let row_opt = sqlx::query("SELECT id, version, full_name, email, phone, location, summary, created_at, updated_at FROM profiles LIMIT 1")
+    let row_opt = sqlx::query("SELECT id, version, full_name, email, phone, location, summary, created_at, updated_at FROM profiles ORDER BY updated_at DESC LIMIT 1")
         .fetch_optional(pool)
         .await?;
 
@@ -179,6 +179,16 @@ pub async fn save_profile(pool: &DbPool, p: &UserProfileDto) -> Result<(), sqlx:
             r#"
             INSERT INTO experiences (id, profile_id, title, company, location, start_date, end_date, is_current, description, achievements_json, created_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+                profile_id = excluded.profile_id,
+                title = excluded.title,
+                company = excluded.company,
+                location = excluded.location,
+                start_date = excluded.start_date,
+                end_date = excluded.end_date,
+                is_current = excluded.is_current,
+                description = excluded.description,
+                achievements_json = excluded.achievements_json
             "#
         )
         .bind(&exp.id)
@@ -201,6 +211,14 @@ pub async fn save_profile(pool: &DbPool, p: &UserProfileDto) -> Result<(), sqlx:
             r#"
             INSERT INTO skills (id, profile_id, name, esco_id, category, years_of_experience, level, confidence, created_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+                profile_id = excluded.profile_id,
+                name = excluded.name,
+                esco_id = excluded.esco_id,
+                category = excluded.category,
+                years_of_experience = excluded.years_of_experience,
+                level = excluded.level,
+                confidence = excluded.confidence
             "#
         )
         .bind(&sk.id)

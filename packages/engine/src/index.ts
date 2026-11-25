@@ -1,4 +1,7 @@
 import os from 'node:os';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { createHash } from 'node:crypto';
 import { StdioRpcServer, RpcError } from './rpc.js';
 import { discoverSystemBrowsers } from './utils/discovery.js';
 import {
@@ -21,6 +24,7 @@ import {
   defaultAnswerBank,
   exportResumeToPdf,
   exportCoverLetterToPdf,
+  exportToPdf,
   exportResumeToDocx,
   renderResumeHtml,
 } from './documents/index.js';
@@ -127,7 +131,14 @@ server.register('profile.parseAndExtract', {
   }),
   handler: async ({ filePath }) => {
     try {
-      return await processAndExtractProfile(filePath);
+      const res = await processAndExtractProfile(filePath);
+      return {
+        ...res,
+        sourceFileId: `src_${Date.now()}`,
+        sourceFileName: res.document.fileName,
+        pagesCount: res.document.pageCount,
+        rawText: res.document.rawText,
+      };
     } catch (err: any) {
       throw new RpcError(RpcErrorCode.DocumentParseError, `Failed to parse and extract profile: ${err.message}`);
     }
@@ -174,16 +185,63 @@ server.register('jobs.checkHealth', {
   handler: async () => defaultJobSourcesManager.checkHealth(),
 });
 
+function toJobPostingDto(raw: any) {
+  const canonicalUrl = raw.canonicalUrl || raw.url || `https://kaarjoo.local/jobs/${raw.id}`;
+  return {
+    id: raw.id,
+    sourceId: raw.sourceId || 'directory',
+    sourceName: raw.sourceName || raw.company || 'Company Board',
+    canonicalUrl,
+    applyUrl: raw.applyUrl || canonicalUrl,
+    title: raw.title,
+    company: raw.company,
+    location: raw.location ?? null,
+    remoteType: raw.remoteType || 'unknown',
+    employmentType: raw.employmentType ?? null,
+    salary: raw.salary ?? null,
+    descriptionMarkdown: raw.descriptionMarkdown || raw.snippet || raw.title || '',
+    requirements: Array.isArray(raw.requirements) ? raw.requirements : [],
+    postedAt: raw.postedAt ?? null,
+    expiresAt: raw.expiresAt ?? null,
+    atsType: raw.atsType || raw.sourceId || 'generic',
+    contentHash:
+      raw.contentHash ||
+      createHash('sha256').update(`${raw.company || ''}|${raw.title || ''}|${canonicalUrl}`).digest('hex'),
+    simHash: raw.simHash ?? null,
+    matchScore: raw.matchScore ?? null,
+  };
+}
+
 server.register('jobs.search', {
   inputSchema: z
     .object({
       query: SearchQuerySchema.optional(),
       adapterId: z.string().optional(),
       companySlug: z.string().optional(),
+      keywords: z.array(z.string()).nullable().optional(),
+      locations: z.array(z.string()).nullable().optional(),
+      remoteOnly: z.boolean().nullable().optional(),
+      company: z.string().nullable().optional(),
+      atsType: z.string().nullable().optional(),
+      limit: z.number().int().positive().nullable().optional(),
     })
     .optional(),
   handler: async (params) => {
-    return defaultJobSourcesManager.searchJobs(params || {});
+    const normalized = params?.query
+      ? params
+      : {
+          adapterId: params?.adapterId || params?.atsType || undefined,
+          companySlug: params?.companySlug || params?.company || undefined,
+          query: {
+            keywords: params?.keywords || [],
+            locations: params?.locations || [],
+            remoteOnly: params?.remoteOnly ?? false,
+            company: params?.company ?? undefined,
+            limit: params?.limit ?? 50,
+          },
+        };
+    const jobs = await defaultJobSourcesManager.searchJobs(normalized as any);
+    return jobs.map(toJobPostingDto);
   },
 });
 
@@ -223,6 +281,28 @@ server.register('directory.checkUpdate', {
   },
 });
 
+function toMatchResultDto(m: any) {
+  return {
+    jobId: m.jobId,
+    profileId: m.profileId,
+    score: m.overallScore ?? m.score ?? 0,
+    overallScore: m.overallScore ?? m.score ?? 0,
+    breakdown: {
+      hardFilter: m.breakdown?.hardFilter ?? m.breakdown?.hardFilterScore ?? 0,
+      semantic: m.breakdown?.semantic ?? m.breakdown?.semanticScore ?? 0,
+      skillCoverage: m.breakdown?.skillCoverage ?? m.breakdown?.skillCoverageScore ?? 0,
+      rerank: m.breakdown?.rerank ?? m.breakdown?.llmRerankScore ?? 0,
+    },
+    topReasons: Array.isArray(m.topReasons) ? m.topReasons : [],
+    matchedSkills: Array.isArray(m.matchedSkills) ? m.matchedSkills : [],
+    missingSkills: Array.isArray(m.missingSkills) ? m.missingSkills : [],
+    whyNotHigher: m.whyNotHigher ?? null,
+    userFeedback: m.userFeedback ?? null,
+    scoringMode: m.scoringMode,
+    embeddingMode: m.embeddingMode,
+  };
+}
+
 // --- Phase 3: Matching and Ranking ---
 server.register('matching.scoreJob', {
   inputSchema: z.object({
@@ -231,7 +311,8 @@ server.register('matching.scoreJob', {
     preferences: UserPreferencesSchema.optional(),
   }),
   handler: async ({ profile, job, preferences }) => {
-    return defaultMatchingService.scoreJobAsync(profile as any, job as any, preferences as any);
+    const res = await defaultMatchingService.scoreJobAsync(profile as any, job as any, preferences as any);
+    return toMatchResultDto(res);
   },
 });
 
@@ -242,7 +323,8 @@ server.register('matching.rankAllJobs', {
     preferences: UserPreferencesSchema.optional(),
   }),
   handler: async ({ profile, jobs, preferences }) => {
-    return defaultMatchingService.rankAllJobsAsync(profile as any, jobs as any, preferences as any);
+    const ranked = await defaultMatchingService.rankAllJobsAsync(profile as any, jobs as any, preferences as any);
+    return ranked.map((item) => toMatchResultDto(item.match));
   },
 });
 
@@ -389,28 +471,48 @@ server.register('documents.exportPdf', {
   inputSchema: z.object({
     resume: z.record(z.unknown()).optional(),
     coverLetter: z.record(z.unknown()).optional(),
+    html: z.string().optional(),
+    filename: z.string().optional(),
     outputPath: z.string().optional(),
   }),
-  handler: async ({ resume, coverLetter, outputPath }) => {
-    if (resume) {
-      const buffer = await exportResumeToPdf(resume as any, { outputPath });
-      return { success: true, size: buffer.length, outputPath };
+  handler: async ({ resume, coverLetter, html, filename, outputPath }) => {
+    const exportsDir = path.join(process.env.KAARJOO_APP_DATA_DIR || os.tmpdir(), 'exports');
+    await fs.mkdir(exportsDir, { recursive: true });
+    const safeName = (filename || `export_${Date.now()}.pdf`).replace(/[<>:"/\\|?*]/g, '_');
+    const resolvedPath = outputPath || path.join(exportsDir, safeName.endsWith('.pdf') ? safeName : `${safeName}.pdf`);
+
+    if (html) {
+      const buffer = await exportToPdf(html, { outputPath: resolvedPath });
+      return { success: true, size: buffer.length, outputPath: resolvedPath, filePath: resolvedPath };
+    } else if (resume) {
+      const buffer = await exportResumeToPdf(resume as any, { outputPath: resolvedPath });
+      return { success: true, size: buffer.length, outputPath: resolvedPath, filePath: resolvedPath };
     } else if (coverLetter) {
-      const buffer = await exportCoverLetterToPdf(coverLetter as any, { outputPath });
-      return { success: true, size: buffer.length, outputPath };
+      const buffer = await exportCoverLetterToPdf(coverLetter as any, { outputPath: resolvedPath });
+      return { success: true, size: buffer.length, outputPath: resolvedPath, filePath: resolvedPath };
     }
-    throw new RpcError(RpcErrorCode.InvalidParams, 'Neither resume nor coverLetter provided for PDF export');
+    throw new RpcError(RpcErrorCode.InvalidParams, 'Neither html, resume, nor coverLetter provided for PDF export');
   },
 });
 
 server.register('documents.exportDocx', {
   inputSchema: z.object({
-    resume: z.record(z.unknown()),
+    resume: z.record(z.unknown()).optional(),
+    contentJson: z.string().optional(),
+    filename: z.string().optional(),
     outputPath: z.string().optional(),
   }),
-  handler: async ({ resume, outputPath }) => {
-    const buffer = await exportResumeToDocx(resume as any, { outputPath });
-    return { success: true, size: buffer.length, outputPath };
+  handler: async ({ resume, contentJson, filename, outputPath }) => {
+    const exportsDir = path.join(process.env.KAARJOO_APP_DATA_DIR || os.tmpdir(), 'exports');
+    await fs.mkdir(exportsDir, { recursive: true });
+    const safeName = (filename || `export_${Date.now()}.docx`).replace(/[<>:"/\\|?*]/g, '_');
+    const resolvedPath = outputPath || path.join(exportsDir, safeName.endsWith('.docx') ? safeName : `${safeName}.docx`);
+    const targetResume = resume || (contentJson ? JSON.parse(contentJson) : null);
+    if (!targetResume) {
+      throw new RpcError(RpcErrorCode.InvalidParams, 'Neither resume nor contentJson provided for DOCX export');
+    }
+    const buffer = await exportResumeToDocx(targetResume as any, { outputPath: resolvedPath });
+    return { success: true, size: buffer.length, outputPath: resolvedPath, filePath: resolvedPath };
   },
 });
 
@@ -445,13 +547,32 @@ server.register('application.execute', {
   inputSchema: z.object({
     id: z.string().min(1),
     profile: UserProfileSchema,
+    job: JobPostingSchema.optional(),
+    mode: ApplicationModeSchema.optional(),
+    resumePath: z.string().optional(),
     tailoredResumePath: z.string().optional(),
     coverLetterText: z.string().optional(),
     answers: z.record(z.string()).optional(),
   }),
   handler: async (params) => {
     try {
-      return await applicationEngine.executeApplication(params.id, params as any);
+      let targetId = params.id;
+      const resumePath = params.tailoredResumePath || params.resumePath;
+      if (!applicationEngine.getApplication(targetId) && params.job) {
+        const queued = applicationEngine.queueApplication({
+          job: params.job as any,
+          profile: params.profile as any,
+          tailoredResumePath: resumePath,
+          coverLetterText: params.coverLetterText,
+          mode: params.mode || 'review',
+          answers: params.answers,
+        });
+        targetId = queued.id;
+      }
+      return await applicationEngine.executeApplication(targetId, {
+        ...params,
+        tailoredResumePath: resumePath,
+      } as any);
     } catch (err: any) {
       throw new RpcError(RpcErrorCode.BrowserAutomationError, `Application execution failed: ${err.message}`);
     }

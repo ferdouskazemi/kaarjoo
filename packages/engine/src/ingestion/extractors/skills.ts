@@ -45,6 +45,16 @@ export const CANONICAL_SKILLS_TAXONOMY: CanonicalSkill[] = [
   { escoId: 'esco_cpp', canonicalName: 'C++', category: 'Programming Languages', aliases: ['c++'] },
   { escoId: 'esco_nlp', canonicalName: 'NLP', category: 'AI & Machine Learning', aliases: ['nlp', 'natural language processing'] },
   { escoId: 'esco_microservices', canonicalName: 'Microservices', category: 'Architecture', aliases: ['microservices', 'میکروسرویس'] },
+  { escoId: 'esco_mysql', canonicalName: 'MySQL', category: 'Databases', aliases: ['mysql'] },
+  { escoId: 'esco_redux', canonicalName: 'Redux', category: 'Frontend Frameworks', aliases: ['redux'] },
+  { escoId: 'esco_html', canonicalName: 'HTML', category: 'Frontend Frameworks', aliases: ['html', 'html5'] },
+  { escoId: 'esco_css', canonicalName: 'CSS', category: 'Frontend Frameworks', aliases: ['css', 'css3'] },
+  { escoId: 'esco_bootstrap', canonicalName: 'Bootstrap', category: 'Frontend Frameworks', aliases: ['bootstrap'] },
+  { escoId: 'esco_wordpress', canonicalName: 'WordPress', category: 'CMS', aliases: ['wordpress'] },
+  { escoId: 'esco_shopify', canonicalName: 'Shopify', category: 'CMS', aliases: ['shopify'] },
+  { escoId: 'esco_azure', canonicalName: 'Microsoft Azure', category: 'Cloud Platforms', aliases: ['microsoft azure', 'azure'] },
+  { escoId: 'esco_hubspot', canonicalName: 'HubSpot', category: 'Platforms', aliases: ['hubspot'] },
+  { escoId: 'esco_chartjs', canonicalName: 'Chart.js', category: 'Frontend Frameworks', aliases: ['chart.js', 'chartjs'] },
 ];
 
 export function extractSkills(text: string): SkillItem[] {

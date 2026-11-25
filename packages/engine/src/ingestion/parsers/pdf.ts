@@ -91,9 +91,22 @@ export async function parsePdfFile(filePath: string): Promise<ParsedDocument> {
     }
 
     const linesText = rowBuckets.map((row) => {
-      // Detect two-column split on the row (wide horizontal gap) vs single visual line
       const rowItems = [...row.items].sort((a, b) => a.bbox.x - b.bbox.x);
-      return rowItems.map((i) => i.text.trim()).join(' ').trim();
+      let line = '';
+      let prevEnd = -Infinity;
+      for (const item of rowItems) {
+        const txt = item.text.trim();
+        if (!txt) continue;
+        if (!line) {
+          line = txt;
+        } else {
+          const gap = item.bbox.x - prevEnd;
+          // Small kerning gaps (<= 1.8px) belong to the same word/year (e.g. "202"+"2", "My"+"SQL")
+          line += gap <= 2 ? txt : ` ${txt}`;
+        }
+        prevEnd = item.bbox.x + item.bbox.width;
+      }
+      return line.trim();
     }).filter(Boolean);
 
     const pageText = linesText.join('\n');

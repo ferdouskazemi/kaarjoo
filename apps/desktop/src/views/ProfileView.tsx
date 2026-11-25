@@ -48,6 +48,7 @@ export const ProfileView: React.FC = () => {
 
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [extractError, setExtractError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [confirmToast, setConfirmToast] = useState(false);
 
@@ -56,6 +57,28 @@ export const ProfileView: React.FC = () => {
 
   const handleFieldClick = (highlightText: string, label: string) => {
     setActiveHighlight(highlightText, label);
+  };
+
+  const processSelectedFile = async (selectedPath: string) => {
+    setExtractError(null);
+    setIsProcessing(true);
+    try {
+      const res = await extractMutation.mutateAsync(selectedPath);
+      const fileName = res.sourceFileName || selectedPath.split(/[\\/]/).pop() || 'Resume';
+      const lowerExt = selectedPath.split('.').pop()?.toLowerCase() || 'pdf';
+      setUploadedDocument({
+        fileName,
+        text: res.rawText,
+        meta: { pageCount: res.pagesCount || 1, fileType: lowerExt },
+      });
+      useApplicationStore.getState().syncWithProfile(res.profile as any);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error('File pick/extract error:', err);
+      setExtractError(message);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handlePickNativeFile = async () => {
@@ -70,22 +93,43 @@ export const ProfileView: React.FC = () => {
         ],
       });
       if (selected && typeof selected === 'string') {
-        setIsProcessing(true);
-        const res = await extractMutation.mutateAsync(selected);
-        const fileName = selected.split(/[\\/]/).pop() || 'Resume';
-        setUploadedDocument({
-          fileName,
-          text: res.rawText,
-          meta: { pageCount: 1, fileType: selected.endsWith('.docx') ? 'docx' : 'pdf' },
-        });
-        useApplicationStore.getState().syncWithProfile(res.profile as any);
+        await processSelectedFile(selected);
       }
     } catch (err) {
-      console.error('File pick error:', err);
-    } finally {
-      setIsProcessing(false);
+      const message = err instanceof Error ? err.message : String(err);
+      console.error('Native file dialog error:', err);
+      setExtractError(message);
     }
   };
+
+  React.useEffect(() => {
+    let unlisten: (() => void) | undefined;
+    import('@tauri-apps/api/webview')
+      .then(({ getCurrentWebview }) =>
+        getCurrentWebview().onDragDropEvent((event) => {
+          if (event.payload.type === 'over' || event.payload.type === 'enter') {
+            setIsDragging(true);
+          } else if (event.payload.type === 'leave') {
+            setIsDragging(false);
+          } else if (event.payload.type === 'drop') {
+            setIsDragging(false);
+            const droppedPath = event.payload.paths?.[0];
+            if (droppedPath) {
+              void processSelectedFile(droppedPath);
+            }
+          }
+        })
+      )
+      .then((fn) => {
+        unlisten = fn;
+      })
+      .catch(() => {
+        // Ignore in non-Tauri preview
+      });
+    return () => {
+      if (unlisten) unlisten();
+    };
+  }, []);
 
   const handleClearProfile = async () => {
     await clearMutation.mutateAsync();
@@ -143,6 +187,20 @@ export const ProfileView: React.FC = () => {
         <div className="fixed top-12 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-[#1c2e24] border border-emerald-500/40 text-emerald-300 text-xs shadow-2xl active-ring backdrop-blur transition-all">
           <CheckCircle2 className="w-4 h-4 text-emerald-400" />
           <span>{t('profile.confirmToast')}</span>
+        </div>
+      )}
+
+      {/* Extraction Error Banner */}
+      {extractError && (
+        <div role="alert" className="mx-6 mt-3 px-4 py-2.5 rounded-xl bg-rose-950/80 border border-rose-500/50 text-rose-200 text-xs flex items-center justify-between gap-3">
+          <span className="truncate font-mono">{extractError}</span>
+          <button
+            type="button"
+            onClick={() => setExtractError(null)}
+            className="px-2 py-0.5 rounded bg-rose-900/70 hover:bg-rose-800 text-[11px] shrink-0 cursor-pointer"
+          >
+            Dismiss
+          </button>
         </div>
       )}
 
