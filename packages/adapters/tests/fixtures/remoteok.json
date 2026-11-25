@@ -1,0 +1,17 @@
+[
+  {
+    "legal": "Remote OK API Terms"
+  },
+  {
+    "id": "rok-7788",
+    "position": "Lead Go Developer",
+    "company": "CloudNative Corp",
+    "location": "Worldwide Remote",
+    "tags": ["golang", "kubernetes", "backend"],
+    "url": "https://remoteok.com/remote-jobs/rok-7788",
+    "date": "2026-03-19T08:00:00Z",
+    "description": "<p>Develop distributed cloud storage controllers using Go and gRPC.</p>",
+    "salary_min": 130000,
+    "salary_max": 170000
+  }
+]

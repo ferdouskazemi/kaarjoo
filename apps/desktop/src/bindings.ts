@@ -69,6 +69,38 @@ async jobsGet(id: string) : Promise<Result<JobPostingDto | null, string>> {
     else return { status: "error", error: e  as any };
 }
 },
+async jobsSearchFts(query: string, limit: number | null) : Promise<Result<JobPostingDto[], string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("jobs_search_fts", { query, limit }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async directoryList(atsType: string | null, country: string | null, remotePolicy: string | null, search: string | null, isFollowed: boolean | null, limit: number | null) : Promise<Result<CompanyBoardDto[], string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("directory_list", { atsType, country, remotePolicy, search, isFollowed, limit }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async directoryToggleFollow(boardId: string, isFollowed: boolean) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("directory_toggle_follow", { boardId, isFollowed }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async directoryUpsert(company: CompanyBoardDto) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("directory_upsert", { company }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async matchingScoreJob(jobId: string) : Promise<Result<MatchResultDto, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("matching_score_job", { jobId }) };
@@ -228,6 +260,25 @@ export type SystemStatus = { app_version: string; os: string; is_ready: boolean 
 export type TailoredDocumentResultDto = { jobId: string; templateId: string; language: string; resumeHtml: string; coverLetterText: string; truthfulnessScore: number; truthfulnessPassed: boolean; warnings: string[] }
 export type TimelineEventDto = { id: string; status: string; timestamp: string; title: string; note: string | null }
 export type UserProfileDto = { id: string; version: number; contact: ContactInfoDto; summary: string | null; experiences?: ExperienceItemDto[]; education?: EducationItemDto[]; skills?: SkillItemDto[]; targetTitles?: string[]; createdAt: string; updatedAt: string }
+export type CompanyBoardDto = {
+    id: string;
+    name: string;
+    domain: string;
+    atsType: string;
+    boardSlug: string;
+    boardUrl: string;
+    country: string;
+    headquarters: string | null;
+    industry: string | null;
+    active: boolean;
+    lastSyncedAt: string | null;
+    jobCount: number;
+    logoUrl: string | null;
+    sizeBucket: string | null;
+    tags: string[];
+    remotePolicy: string | null;
+    isFollowed: boolean;
+};
 
 /** tauri-specta globals **/
 

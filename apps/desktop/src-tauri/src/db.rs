@@ -424,6 +424,199 @@ pub async fn get_job_by_id(pool: &DbPool, id: &str) -> Result<Option<JobPostingD
     Ok(row_opt.as_ref().map(map_job_row))
 }
 
+pub async fn search_jobs_fts(
+    pool: &DbPool,
+    query: &str,
+    limit: i64,
+) -> Result<Vec<JobPostingDto>, sqlx::Error> {
+    let clean_query = query.trim().replace('"', "").replace('\'', "");
+    if clean_query.is_empty() {
+        return get_jobs(pool, None, None, None, limit).await;
+    }
+
+    let formatted_query = clean_query
+        .split_whitespace()
+        .map(|w| format!("\"{}\"*", w))
+        .collect::<Vec<_>>()
+        .join(" ");
+
+    let rows = sqlx::query(
+        r#"
+        SELECT j.id, j.source_id, j.canonical_url, j.apply_url, j.title, j.company, j.location,
+               j.remote_type, j.employment_type, j.salary_json, j.description_markdown,
+               j.requirements_json, j.ats_type, j.content_hash, j.sim_hash, j.first_seen,
+               coalesce(m.overall_score, 0) as match_score
+        FROM jobs_fts
+        JOIN jobs j ON j.rowid = jobs_fts.rowid
+        LEFT JOIN matches m ON j.id = m.job_id
+        WHERE jobs_fts MATCH ?
+          AND j.status = 'active'
+        ORDER BY rank, coalesce(m.overall_score, 0) DESC
+        LIMIT ?
+        "#
+    )
+    .bind(&formatted_query)
+    .bind(limit)
+    .fetch_all(pool)
+    .await?;
+
+    Ok(rows.iter().map(map_job_row).collect())
+}
+
+// -----------------------------------------------------------------------------
+// Company Directory
+// -----------------------------------------------------------------------------
+
+fn map_company_board_row(r: &SqliteRow) -> CompanyBoardDto {
+    let tags_json: String = r.try_get("tags_json").unwrap_or_else(|_| "[]".to_string());
+    let tags: Vec<String> = serde_json::from_str(&tags_json).unwrap_or_default();
+
+    CompanyBoardDto {
+        id: r.get("id"),
+        name: r.get("name"),
+        domain: r.get("domain"),
+        ats_type: r.get("ats_type"),
+        board_slug: r.get("board_slug"),
+        board_url: r.get("board_url"),
+        country: r.get("country"),
+        headquarters: r.get("headquarters"),
+        industry: r.get("industry"),
+        active: r.get::<i64, _>("active") == 1,
+        last_synced_at: r.get("last_synced_at"),
+        job_count: r.get::<i64, _>("job_count"),
+        logo_url: r.get("logo_url"),
+        size_bucket: r.get("size_bucket"),
+        tags,
+        remote_policy: r.get("remote_policy"),
+        is_followed: r.get::<i64, _>("is_followed") == 1,
+    }
+}
+
+pub async fn get_company_directory(
+    pool: &DbPool,
+    ats_type: Option<&str>,
+    country: Option<&str>,
+    remote_policy: Option<&str>,
+    search: Option<&str>,
+    is_followed: Option<bool>,
+    limit: i64,
+) -> Result<Vec<CompanyBoardDto>, sqlx::Error> {
+    let mut qb = sqlx::QueryBuilder::<Sqlite>::new(
+        "SELECT id, name, domain, ats_type, board_slug, board_url, country, headquarters, industry, active, last_synced_at, job_count, logo_url, size_bucket, tags_json, remote_policy, is_followed FROM company_boards WHERE active = 1"
+    );
+
+    if let Some(ats) = ats_type {
+        if !ats.is_empty() && ats != "all" {
+            qb.push(" AND ats_type = ");
+            qb.push_bind(ats);
+        }
+    }
+
+    if let Some(c) = country {
+        if !c.is_empty() && c != "all" {
+            qb.push(" AND country = ");
+            qb.push_bind(c);
+        }
+    }
+
+    if let Some(rp) = remote_policy {
+        if !rp.is_empty() && rp != "all" {
+            qb.push(" AND remote_policy = ");
+            qb.push_bind(rp);
+        }
+    }
+
+    if let Some(f) = is_followed {
+        if f {
+            qb.push(" AND is_followed = 1");
+        }
+    }
+
+    if let Some(s) = search {
+        if !s.is_empty() {
+            let pat = format!("%{}%", s);
+            qb.push(" AND (name LIKE ");
+            qb.push_bind(pat.clone());
+            qb.push(" OR domain LIKE ");
+            qb.push_bind(pat.clone());
+            qb.push(" OR industry LIKE ");
+            qb.push_bind(pat);
+            qb.push(")");
+        }
+    }
+
+    qb.push(" ORDER BY is_followed DESC, job_count DESC, name ASC LIMIT ");
+    qb.push_bind(limit);
+
+    let rows = qb.build().fetch_all(pool).await?;
+    Ok(rows.iter().map(map_company_board_row).collect())
+}
+
+pub async fn toggle_company_follow(
+    pool: &DbPool,
+    board_id: &str,
+    is_followed: bool,
+) -> Result<(), sqlx::Error> {
+    sqlx::query("UPDATE company_boards SET is_followed = ? WHERE id = ?")
+        .bind(if is_followed { 1 } else { 0 })
+        .bind(board_id)
+        .execute(pool)
+        .await?;
+    Ok(())
+}
+
+pub async fn upsert_company_board(
+    pool: &DbPool,
+    c: &CompanyBoardDto,
+) -> Result<(), sqlx::Error> {
+    let tags_json = serde_json::to_string(&c.tags).unwrap_or_else(|_| "[]".to_string());
+    sqlx::query(
+        r#"
+        INSERT INTO company_boards (
+            id, name, domain, ats_type, board_slug, board_url, country, headquarters,
+            industry, active, last_synced_at, job_count, logo_url, size_bucket,
+            tags_json, remote_policy, is_followed, created_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+        ON CONFLICT(id) DO UPDATE SET
+            name = excluded.name,
+            domain = excluded.domain,
+            ats_type = excluded.ats_type,
+            board_slug = excluded.board_slug,
+            board_url = excluded.board_url,
+            country = excluded.country,
+            headquarters = excluded.headquarters,
+            industry = excluded.industry,
+            job_count = excluded.job_count,
+            logo_url = excluded.logo_url,
+            size_bucket = excluded.size_bucket,
+            tags_json = excluded.tags_json,
+            remote_policy = excluded.remote_policy
+        "#
+    )
+    .bind(&c.id)
+    .bind(&c.name)
+    .bind(&c.domain)
+    .bind(&c.ats_type)
+    .bind(&c.board_slug)
+    .bind(&c.board_url)
+    .bind(&c.country)
+    .bind(&c.headquarters)
+    .bind(&c.industry)
+    .bind(if c.active { 1 } else { 0 })
+    .bind(&c.last_synced_at)
+    .bind(c.job_count)
+    .bind(&c.logo_url)
+    .bind(&c.size_bucket)
+    .bind(&tags_json)
+    .bind(&c.remote_policy)
+    .bind(if c.is_followed { 1 } else { 0 })
+    .execute(pool)
+    .await?;
+
+    Ok(())
+}
+
 // -----------------------------------------------------------------------------
 // Matches
 // -----------------------------------------------------------------------------

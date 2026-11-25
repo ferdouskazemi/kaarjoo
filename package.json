@@ -12,6 +12,7 @@
     "test": "vitest run",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
+    "benchmark:fts": "tsx eval/scripts/benchmark-fts.ts",
     "eval": "tsx eval/scripts/run-eval.ts",
     "eval:matching": "tsx eval/scripts/run-matching-eval.ts"
   },

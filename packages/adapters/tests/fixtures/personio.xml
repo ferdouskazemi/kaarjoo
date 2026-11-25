@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<work-positions>
+  <position>
+    <id>101234</id>
+    <subcompany>Tech GmbH</subcompany>
+    <name><![CDATA[Lead Backend Engineer (m/f/d)]]></name>
+    <department><![CDATA[Engineering]]></department>
+    <office><![CDATA[Munich, Germany (Remote)]]></office>
+    <employmentType><![CDATA[permanent]]></employmentType>
+    <schedule><![CDATA[full-time]]></schedule>
+    <createdAt>2026-03-10</createdAt>
+    <jobDescriptions>
+      <jobDescription>
+        <name><![CDATA[Your Tasks]]></name>
+        <value><![CDATA[<p>Architect robust microservices on AWS and Kubernetes.</p>]]></value>
+      </jobDescription>
+      <jobDescription>
+        <name><![CDATA[Your Profile]]></name>
+        <value><![CDATA[<p>7+ years backend development experience with Python or Go.</p>]]></value>
+      </jobDescription>
+    </jobDescriptions>
+  </position>
+</work-positions>

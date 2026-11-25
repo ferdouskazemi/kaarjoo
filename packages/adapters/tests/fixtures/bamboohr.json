@@ -1,0 +1,16 @@
+{
+  "result": [
+    {
+      "id": "101",
+      "jobOpeningName": "Data Platform Engineer",
+      "departmentLabel": "Analytics",
+      "location": {
+        "city": "Austin",
+        "state": "TX"
+      },
+      "isRemote": true,
+      "employmentType": "Full-Time",
+      "description": "<p>Build data pipelines using dbt, Snowflake, and Apache Airflow.</p>"
+    }
+  ]
+}

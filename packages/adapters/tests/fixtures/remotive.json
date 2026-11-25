@@ -1,0 +1,16 @@
+{
+  "jobs": [
+    {
+      "id": 123456,
+      "url": "https://remotive.com/remote-jobs/software-dev/senior-rust-engineer-123456",
+      "title": "Senior Rust Engineer",
+      "company_name": "Distributed Labs",
+      "category": "Software Development",
+      "job_type": "full_time",
+      "publication_date": "2026-03-18T12:00:00Z",
+      "candidate_required_location": "Worldwide",
+      "salary": "$140,000 - $180,000",
+      "description": "<p>Build high-performance peer-to-peer networking protocols in Rust.</p>"
+    }
+  ]
+}

@@ -7,6 +7,7 @@ import type {
   ApplicationRecordDto,
   ProfileExtractionResultDto,
   TailoredDocumentResultDto,
+  CompanyBoardDto,
 } from '../bindings';
 
 // --- Profile Hooks ---
@@ -261,6 +262,59 @@ export function useWipeAllData() {
     },
     onSuccess: () => {
       qc.invalidateQueries();
+    },
+  });
+}
+
+// --- FTS Search & Company Directory Hooks ---
+
+export function useJobsSearchFts(query: string, limit = 50) {
+  return useQuery<JobPostingDto[]>({
+    queryKey: ['jobs', 'fts', query, limit],
+    queryFn: async () => {
+      const res = await commands.jobsSearchFts(query, limit);
+      if (res.status === 'error') throw new Error(res.error);
+      return res.data;
+    },
+    enabled: Boolean(query.trim()),
+  });
+}
+
+export function useDirectory(filter?: {
+  atsType?: string | null;
+  country?: string | null;
+  remotePolicy?: string | null;
+  search?: string | null;
+  isFollowed?: boolean | null;
+  limit?: number;
+}) {
+  return useQuery<CompanyBoardDto[]>({
+    queryKey: ['directory', filter],
+    queryFn: async () => {
+      const res = await commands.directoryList(
+        filter?.atsType ?? null,
+        filter?.country ?? null,
+        filter?.remotePolicy ?? null,
+        filter?.search ?? null,
+        filter?.isFollowed ?? null,
+        filter?.limit ?? 100
+      );
+      if (res.status === 'error') throw new Error(res.error);
+      return res.data;
+    },
+  });
+}
+
+export function useToggleFollowCompany() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ boardId, isFollowed }: { boardId: string; isFollowed: boolean }) => {
+      const res = await commands.directoryToggleFollow(boardId, isFollowed);
+      if (res.status === 'error') throw new Error(res.error);
+      return res.data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['directory'] });
     },
   });
 }

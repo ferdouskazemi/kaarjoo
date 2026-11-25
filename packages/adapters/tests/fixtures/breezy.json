@@ -1,0 +1,22 @@
+[
+  {
+    "id": "brz-9988",
+    "name": "Full Stack Engineer (TypeScript / Next.js)",
+    "friendly_id": "full-stack-engineer",
+    "url": "https://startup.breezy.hr/p/full-stack-engineer",
+    "type": {
+      "id": "ft",
+      "name": "Full-Time"
+    },
+    "location": {
+      "name": "San Francisco, CA",
+      "is_remote": true,
+      "country": {
+        "name": "United States"
+      }
+    },
+    "department": "Engineering",
+    "description": "<p>Ship high-impact features across the full stack with Next.js, Node, and PostgreSQL.</p>",
+    "updated_date": "2026-03-14T08:00:00Z"
+  }
+]

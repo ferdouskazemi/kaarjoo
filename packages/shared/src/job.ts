@@ -14,7 +14,33 @@ export const SalaryRangeSchema = z.object({
 });
 export type SalaryRange = z.infer<typeof SalaryRangeSchema>;
 
-export const AtsTypeSchema = z.enum(['greenhouse', 'lever', 'ashby', 'workable', 'generic']);
+export const AtsTypeSchema = z.enum([
+  'greenhouse',
+  'lever',
+  'ashby',
+  'workable',
+  'smartrecruiters',
+  'recruitee',
+  'personio',
+  'teamtailor',
+  'bamboohr',
+  'breezy',
+  'jazzhr',
+  'pinpoint',
+  'rippling',
+  'join',
+  'workday',
+  'remotive',
+  'remoteok',
+  'workingnomads',
+  'himalayas',
+  'reliefweb',
+  'unjobs',
+  'acbar',
+  'jobsaf',
+  'weworkremotely',
+  'generic',
+]);
 export type AtsType = z.infer<typeof AtsTypeSchema>;
 
 export const JobPostingSchema = z.object({
@@ -98,8 +124,28 @@ export const CompanyBoardSchema = z.object({
   active: z.boolean().default(true),
   lastSyncedAt: z.string().optional(),
   jobCount: z.number().default(0),
+  logoUrl: z.string().optional(),
+  sizeBucket: z.enum(['1-10', '11-50', '51-200', '201-500', '501-1000', '1000+']).optional(),
+  tags: z.array(z.string()).optional(),
+  remotePolicy: z.enum(['remote-first', 'hybrid', 'on-site', 'flexible']).optional(),
+  isFollowed: z.boolean().optional(),
 });
 export type CompanyBoard = z.infer<typeof CompanyBoardSchema>;
+
+export const DirectoryManifestSchema = z.object({
+  version: z.string(),
+  generatedAt: z.string(),
+  companyCount: z.number(),
+  sha256: z.string(),
+  sources: z.array(z.string()),
+  stats: z.object({
+    byAts: z.record(z.number()),
+    byCountry: z.record(z.number()),
+    byIndustry: z.record(z.number()),
+    remoteFirstCount: z.number(),
+  }),
+});
+export type DirectoryManifest = z.infer<typeof DirectoryManifestSchema>;
 
 export const SourceHealthStatusSchema = z.object({
   adapterId: z.string(),

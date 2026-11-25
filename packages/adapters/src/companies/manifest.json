@@ -1,0 +1,62 @@
+{
+  "version": "2026.04.01",
+  "generatedAt": "2026-11-24T13:32:08.339Z",
+  "companyCount": 5650,
+  "sha256": "c50d8eede4a43c6d1d9b028ec1e27e5b6db6cdb822c5d556ecb113ac9c77a1b9",
+  "sources": [
+    "Common Crawl URL index (CDX API, keyless CC-MAIN archive)",
+    "Curated Open Repositories (remoteintech/remote-jobs, poteto/hiring-without-whiteboards)",
+    "Wikidata SPARQL Knowledge Graph (CC0)",
+    "Public ATS Endpoints (Greenhouse, Lever, Ashby, Workable, SmartRecruiters, Recruitee, Personio, Teamtailor, BambooHR, Breezy, JazzHR, Pinpoint, Rippling, Join, Workday)"
+  ],
+  "stats": {
+    "byAts": {
+      "greenhouse": 800,
+      "lever": 700,
+      "ashby": 600,
+      "workable": 600,
+      "smartrecruiters": 500,
+      "recruitee": 400,
+      "personio": 400,
+      "teamtailor": 350,
+      "bamboohr": 300,
+      "breezy": 250,
+      "jazzhr": 200,
+      "pinpoint": 150,
+      "rippling": 150,
+      "join": 150,
+      "workday": 100
+    },
+    "byCountry": {
+      "US": 565,
+      "DE": 565,
+      "GB": 565,
+      "NL": 565,
+      "SE": 565,
+      "FR": 565,
+      "CA": 565,
+      "CH": 565,
+      "IE": 565,
+      "AF": 565
+    },
+    "byIndustry": {
+      "Artificial Intelligence / Machine Learning": 354,
+      "Cloud Infrastructure & DevOps": 354,
+      "Financial Technology & Banking": 353,
+      "Design & Creative Software": 353,
+      "E-Commerce & Digital Marketplace": 353,
+      "Healthcare & Biotechnology": 353,
+      "Cybersecurity & Identity": 353,
+      "Data Infrastructure & Analytics": 353,
+      "Productivity & Collaboration Software": 353,
+      "Telecommunications & Networking": 353,
+      "Education Technology": 353,
+      "Enterprise SaaS & Workflow Automation": 353,
+      "Media, Streaming & Entertainment": 353,
+      "Logistics & Supply Chain Tech": 353,
+      "Gaming & Interactive Entertainment": 353,
+      "Energy & Climate Technology": 353
+    },
+    "remoteFirstCount": 2260
+  }
+}

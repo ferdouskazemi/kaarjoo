@@ -1,0 +1,20 @@
+{
+  "offers": [
+    {
+      "id": 98765,
+      "slug": "senior-frontend-architect",
+      "title": "Senior Frontend Architect",
+      "status": "published",
+      "remote": true,
+      "location": "Amsterdam, Netherlands",
+      "city": "Amsterdam",
+      "country": "Netherlands",
+      "department": "Frontend Engineering",
+      "description": "<p>Design high-performance web applications using React and TypeScript.</p>",
+      "requirements": "<p>Deep understanding of rendering lifecycles, state management, and modern CSS.</p>",
+      "careers_url": "https://example.recruitee.com/o/senior-frontend-architect",
+      "published_at": "2026-03-15T09:00:00Z",
+      "employment_type_code": "full_time"
+    }
+  ]
+}

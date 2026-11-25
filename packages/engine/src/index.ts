@@ -16,6 +16,7 @@ import {
   renderResumeHtml,
 } from './documents/index.js';
 import { ApplicationEngine } from '@kaarjoo/ats';
+import { loadBundledDirectory, checkDirectoryUpdate, defaultPoliteClient } from '@kaarjoo/adapters';
 import {
   z,
   UserProfileSchema,
@@ -159,6 +160,23 @@ server.register('jobs.importFromHtml', {
   }),
   handler: async ({ html, url }) => {
     return defaultJobSourcesManager.importFromHtml({ html, url });
+  },
+});
+
+// --- Company Directory Ingestion & Updates ---
+server.register('directory.loadBundled', {
+  inputSchema: z.record(z.unknown()).optional(),
+  handler: () => {
+    return loadBundledDirectory();
+  },
+});
+
+server.register('directory.checkUpdate', {
+  inputSchema: z.object({
+    currentVersion: z.string(),
+  }),
+  handler: async ({ currentVersion }) => {
+    return checkDirectoryUpdate(currentVersion, defaultPoliteClient);
   },
 });
 

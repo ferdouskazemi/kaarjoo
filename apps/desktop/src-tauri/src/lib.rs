@@ -2,7 +2,6 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 use tauri_specta::{collect_commands, Builder};
 use tauri::Manager;
-use tracing::info;
 
 pub mod commands;
 pub mod db;
@@ -35,6 +34,10 @@ pub fn run() {
         commands::jobs_search,
         commands::jobs_get_all,
         commands::jobs_get,
+        commands::jobs_search_fts,
+        commands::directory_list,
+        commands::directory_toggle_follow,
+        commands::directory_upsert,
         commands::matching_score_job,
         commands::matching_rank_all,
         commands::matching_record_feedback,

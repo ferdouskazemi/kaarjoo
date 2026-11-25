@@ -316,3 +316,34 @@ pub struct TaskDto {
     #[serde(rename = "updatedAt")]
     pub updated_at: String,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+pub struct CompanyBoardDto {
+    pub id: String,
+    pub name: String,
+    pub domain: String,
+    #[serde(rename = "atsType")]
+    pub ats_type: String,
+    #[serde(rename = "boardSlug")]
+    pub board_slug: String,
+    #[serde(rename = "boardUrl")]
+    pub board_url: String,
+    pub country: String,
+    pub headquarters: Option<String>,
+    pub industry: Option<String>,
+    pub active: bool,
+    #[serde(rename = "lastSyncedAt")]
+    pub last_synced_at: Option<String>,
+    #[serde(rename = "jobCount")]
+    pub job_count: i64,
+    #[serde(rename = "logoUrl")]
+    pub logo_url: Option<String>,
+    #[serde(rename = "sizeBucket")]
+    pub size_bucket: Option<String>,
+    #[serde(default)]
+    pub tags: Vec<String>,
+    #[serde(rename = "remotePolicy")]
+    pub remote_policy: Option<String>,
+    #[serde(rename = "isFollowed")]
+    pub is_followed: bool,
+}

@@ -1,0 +1,21 @@
+[
+  {
+    "id": 8877,
+    "title": "Principal Machine Learning Engineer",
+    "description": "<p>Develop state-of-the-art NLP and generative AI models for code analysis.</p>",
+    "url": "https://company.pinpointhq.com/postings/8877",
+    "department": {
+      "name": "Applied AI"
+    },
+    "locations": [
+      {
+        "name": "London, UK",
+        "city": "London",
+        "country": "UK"
+      }
+    ],
+    "is_remote": true,
+    "employment_type": "full_time",
+    "created_at": "2026-03-18T10:00:00Z"
+  }
+]

@@ -1,0 +1,39 @@
+{
+  "content": [
+    {
+      "id": "743999912345",
+      "name": "Senior Distributed Systems Engineer",
+      "uuid": "sr-uuid-1234",
+      "releasedDate": "2026-03-20T10:00:00Z",
+      "location": {
+        "city": "Berlin",
+        "region": "Berlin",
+        "country": "de",
+        "remote": true
+      },
+      "department": {
+        "label": "Core Infrastructure"
+      },
+      "typeOfEmployment": {
+        "label": "Full-time"
+      }
+    },
+    {
+      "id": "743999912346",
+      "name": "Engineering Manager - Platform",
+      "uuid": "sr-uuid-1235",
+      "releasedDate": "2026-03-21T11:00:00Z",
+      "location": {
+        "city": "London",
+        "country": "gb",
+        "remote": false
+      },
+      "department": {
+        "label": "Platform"
+      },
+      "typeOfEmployment": {
+        "label": "Full-time"
+      }
+    }
+  ]
+}

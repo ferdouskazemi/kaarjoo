@@ -148,14 +148,14 @@ export const QueueView: React.FC = () => {
   };
 
   const getAtsBadge = (ats: AtsType) => {
-    const map: Record<AtsType, { bg: string; text: string; border: string }> = {
+    const map: Partial<Record<AtsType, { bg: string; text: string; border: string }>> = {
       greenhouse: { bg: 'bg-[#12281e]', text: 'text-emerald-400', border: 'border-emerald-600/30' },
       lever: { bg: 'bg-[#142334]', text: 'text-blue-400', border: 'border-blue-600/30' },
       ashby: { bg: 'bg-[#221634]', text: 'text-purple-400', border: 'border-purple-600/30' },
       workable: { bg: 'bg-[#122828]', text: 'text-teal-400', border: 'border-teal-600/30' },
       generic: { bg: 'bg-[#1c1c1c]', text: 'text-slate-400', border: 'border-slate-700/50' },
     };
-    const c = map[ats] || map.generic;
+    const c = map[ats] || map.generic!;
     return (
       <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono uppercase font-semibold ${c.bg} ${c.text} border ${c.border}`}>
         {ats}

@@ -1,0 +1,18 @@
+{
+  "hits": {
+    "hits": [
+      {
+        "_source": {
+          "id": 998811,
+          "title": "Senior Security Operations Engineer",
+          "company_name": "SecurePath",
+          "description": "<p>Monitor threats, automate incident response playbooks, and secure cloud endpoints.</p>",
+          "url": "https://www.workingnomads.com/jobs?job=998811",
+          "pub_date": "2026-03-20T07:30:00Z",
+          "location_base": "Anywhere",
+          "category_name": "Security"
+        }
+      }
+    ]
+  }
+}

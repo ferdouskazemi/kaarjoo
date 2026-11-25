@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Jobs.af Vacancies</title>
+    <link>https://www.jobs.af</link>
+    <item>
+      <title>Full Stack Software Developer - Roshan Telecom</title>
+      <link>https://www.jobs.af/jobs/9911-full-stack-developer</link>
+      <description><![CDATA[<p>Build enterprise customer care portals using React and Node.js.</p>]]></description>
+      <pubDate>Thu, 19 Mar 2026 16:00:00 GMT</pubDate>
+    </item>
+  </channel>
+</rss>

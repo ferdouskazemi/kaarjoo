@@ -1,0 +1,20 @@
+[
+  {
+    "id": "join-5544",
+    "title": "DevOps Engineer (Kubernetes / Terraform)",
+    "slug": "devops-engineer-kubernetes",
+    "location": "Berlin, Germany",
+    "city": "Berlin",
+    "country": "Germany",
+    "remote": true,
+    "workplaceType": "remote",
+    "employmentType": "full-time",
+    "description": "<p>Automate multi-region cloud infrastructure using Terraform, Helm, and GitOps.</p>",
+    "createdAt": "2026-03-17T11:00:00Z",
+    "salary": {
+      "min": 85000,
+      "max": 105000,
+      "currency": "EUR"
+    }
+  }
+]

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+  <channel>
+    <title>JazzHR Career Opportunities</title>
+    <link>https://company.applytojob.com</link>
+    <item>
+      <title>Site Reliability Engineer</title>
+      <link>https://company.applytojob.com/apply/sre123/Site-Reliability-Engineer</link>
+      <description><![CDATA[<p>Ensure high availability, latency, and overall system health.</p>]]></description>
+      <category>Operations</category>
+      <city>Remote</city>
+      <pubDate>Thu, 19 Mar 2026 12:00:00 GMT</pubDate>
+    </item>
+  </channel>
+</rss>

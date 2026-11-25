@@ -1,0 +1,20 @@
+[
+  {
+    "uuid": "rip-abc-123",
+    "name": "Senior Product Manager - Developer Tools",
+    "url": "https://ats.rippling.com/company/jobs/rip-abc-123",
+    "department": {
+      "name": "Product"
+    },
+    "workLocation": {
+      "locationName": "New York HQ",
+      "city": "New York",
+      "state": "NY",
+      "country": "US"
+    },
+    "workplaceType": "REMOTE",
+    "description": "<p>Drive roadmap and feature definition for enterprise developer tools.</p>",
+    "employmentType": "Full-Time",
+    "created": "2026-03-16T15:00:00Z"
+  }
+]

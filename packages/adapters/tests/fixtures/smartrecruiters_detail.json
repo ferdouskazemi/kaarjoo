@@ -1,0 +1,35 @@
+{
+  "id": "743999912345",
+  "name": "Senior Distributed Systems Engineer",
+  "releasedDate": "2026-03-20T10:00:00Z",
+  "location": {
+    "city": "Berlin",
+    "region": "Berlin",
+    "country": "de",
+    "remote": true
+  },
+  "typeOfEmployment": {
+    "label": "Full-time"
+  },
+  "jobAd": {
+    "sections": {
+      "companyDescription": {
+        "title": "Company Description",
+        "text": "<p>We build mission-critical enterprise streaming platforms.</p>"
+      },
+      "jobDescription": {
+        "title": "Job Description",
+        "text": "<p>You will scale our high-throughput event processing pipelines using Rust and Go.</p>"
+      },
+      "qualifications": {
+        "title": "Qualifications",
+        "text": "<ul><li>5+ years distributed systems experience</li><li>Deep knowledge of Raft or Paxos</li><li>Proficiency in Rust or Go</li></ul>"
+      }
+    }
+  },
+  "compensation": {
+    "min": 130000,
+    "max": 160000,
+    "currency": "EUR"
+  }
+}

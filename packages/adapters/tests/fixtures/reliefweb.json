@@ -1,0 +1,25 @@
+{
+  "data": [
+    {
+      "id": "rw-100200",
+      "fields": {
+        "title": "Humanitarian Information Management Officer",
+        "body": "<p>Support cluster data coordination, GIS mapping, and humanitarian response analytics.</p>",
+        "url": "https://reliefweb.int/job/rw-100200",
+        "source": [
+          { "name": "UNICEF" }
+        ],
+        "country": [
+          { "name": "Afghanistan" }
+        ],
+        "date": {
+          "created": "2026-03-21T06:00:00Z",
+          "closing": "2026-04-15T23:59:59Z"
+        },
+        "type": [
+          { "name": "Full-Time" }
+        ]
+      }
+    }
+  ]
+}

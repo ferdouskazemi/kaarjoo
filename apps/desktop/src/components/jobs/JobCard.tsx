@@ -42,7 +42,7 @@ interface JobCardProps {
   onFeedback?: (jobId: string, feedback: 'relevant' | 'irrelevant') => void;
 }
 
-const ATS_COLORS: Record<AtsType, { bg: string; text: string; border: string }> = {
+const ATS_COLORS: Partial<Record<AtsType, { bg: string; text: string; border: string }>> = {
   greenhouse: { bg: 'bg-emerald-950/40', text: 'text-emerald-400', border: 'border-emerald-800/50' },
   lever: { bg: 'bg-blue-950/40', text: 'text-blue-400', border: 'border-blue-800/50' },
   ashby: { bg: 'bg-purple-950/40', text: 'text-purple-400', border: 'border-purple-800/50' },
@@ -65,7 +65,7 @@ function getInitialsColor(name: string): string {
 
 export const JobCard: React.FC<JobCardProps> = ({ job, onSelect, onApply, onFeedback }) => {
   const { t, i18n } = useTranslation();
-  const atsStyle = ATS_COLORS[job.atsType] || ATS_COLORS.generic;
+  const atsStyle = ATS_COLORS[job.atsType] || ATS_COLORS.generic!;
   const score = job.matchScore ?? 85;
 
   return (

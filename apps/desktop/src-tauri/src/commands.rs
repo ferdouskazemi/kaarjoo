@@ -155,6 +155,69 @@ pub async fn jobs_get(state: State<'_, AppState>, id: String) -> Result<Option<J
         .map_err(|e| format!("Database error fetching job: {}", e))
 }
 
+#[tauri::command]
+#[specta::specta]
+pub async fn jobs_search_fts(
+    state: State<'_, AppState>,
+    query: String,
+    limit: Option<u32>,
+) -> Result<Vec<JobPostingDto>, String> {
+    db::search_jobs_fts(&state.pool, &query, limit.unwrap_or(50) as i64)
+        .await
+        .map_err(|e| format!("FTS search error: {}", e))
+}
+
+// -----------------------------------------------------------------------------
+// Company Directory
+// -----------------------------------------------------------------------------
+
+#[tauri::command]
+#[specta::specta]
+pub async fn directory_list(
+    state: State<'_, AppState>,
+    ats_type: Option<String>,
+    country: Option<String>,
+    remote_policy: Option<String>,
+    search: Option<String>,
+    is_followed: Option<bool>,
+    limit: Option<u32>,
+) -> Result<Vec<CompanyBoardDto>, String> {
+    db::get_company_directory(
+        &state.pool,
+        ats_type.as_deref(),
+        country.as_deref(),
+        remote_policy.as_deref(),
+        search.as_deref(),
+        is_followed,
+        limit.unwrap_or(100) as i64,
+    )
+    .await
+    .map_err(|e| format!("Directory listing error: {}", e))
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn directory_toggle_follow(
+    state: State<'_, AppState>,
+    board_id: String,
+    is_followed: bool,
+) -> Result<(), String> {
+    db::toggle_company_follow(&state.pool, &board_id, is_followed)
+        .await
+        .map_err(|e| format!("Error toggling company follow: {}", e))
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn directory_upsert(
+    state: State<'_, AppState>,
+    company: CompanyBoardDto,
+) -> Result<(), String> {
+    db::upsert_company_board(&state.pool, &company)
+        .await
+        .map_err(|e| format!("Error upserting company board: {}", e))
+}
+
 // -----------------------------------------------------------------------------
 // Matching
 // -----------------------------------------------------------------------------
