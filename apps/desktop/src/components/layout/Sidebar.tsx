@@ -66,7 +66,7 @@ export const Sidebar: React.FC = () => {
         </button>
 
         {/* Navigation List */}
-        <nav className="mt-2 flex flex-col gap-1">
+        <nav className="mt-2 flex flex-col gap-1" aria-label="Main navigation">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentView === item.id;
@@ -76,7 +76,8 @@ export const Sidebar: React.FC = () => {
               <button
                 key={item.id}
                 onClick={() => setCurrentView(item.id)}
-                className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all cursor-pointer relative ${
+                aria-current={isActive ? 'page' : undefined}
+                className={`group flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all cursor-pointer relative ${
                   isActive
                     ? 'bg-[#202020] text-[#f4f4f5] border border-[#333333] shadow-sm font-semibold active-ring'
                     : 'text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#1a1a1a] border border-transparent'
@@ -85,7 +86,7 @@ export const Sidebar: React.FC = () => {
                 <div className="flex items-center gap-2.5">
                   <Icon
                     className={`w-4 h-4 transition-colors ${
-                      isActive ? 'text-sky-400' : 'text-[#71717a]'
+                      isActive ? 'text-sky-400' : 'text-[#a1a1aa]'
                     }`}
                   />
                   <span>{t(item.labelKey)}</span>
@@ -93,11 +94,11 @@ export const Sidebar: React.FC = () => {
 
                 <div className="flex items-center gap-1.5">
                   {badgeCount !== undefined && badgeCount > 0 && (
-                    <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono font-semibold bg-sky-500/20 text-sky-400 border border-sky-500/30">
+                    <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono font-semibold tabular-nums bg-sky-500/20 text-sky-400 border border-sky-500/30">
                       {badgeCount}
                     </span>
                   )}
-                  <span className="text-[10px] font-mono text-[#52525b] opacity-0 hover:opacity-100 group-hover:opacity-100">
+                  <span className="text-[10px] font-mono text-[#a1a1aa] opacity-0 group-hover:opacity-100 transition-opacity">
                     {item.shortcut}
                   </span>
                 </div>
@@ -123,6 +124,7 @@ export const Sidebar: React.FC = () => {
             onClick={toggleTheme}
             className="p-1.5 rounded-md text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#202020] transition-colors cursor-pointer"
             title={t('common.theme')}
+            aria-label={t('common.theme')}
           >
             {theme === 'dark' ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
           </button>

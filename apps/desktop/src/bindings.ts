@@ -101,6 +101,38 @@ async directoryUpsert(company: CompanyBoardDto) : Promise<Result<null, string>> 
     else return { status: "error", error: e  as any };
 }
 },
+async directoryCheckUpdate(currentVersion: string) : Promise<Result<DirectoryUpdateCheckDto, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("directory_check_update", { currentVersion }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async modelsGetStatus() : Promise<Result<ModelStatusDto[], string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("models_get_status") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async modelsDetectHardware() : Promise<Result<AiHardwareReportDto, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("models_detect_hardware") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async modelsDownload(modelId: string) : Promise<Result<ModelStatusDto, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("models_download", { modelId }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async matchingScoreJob(jobId: string) : Promise<Result<MatchResultDto, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("matching_score_job", { jobId }) };
@@ -278,6 +310,38 @@ export type CompanyBoardDto = {
     tags: string[];
     remotePolicy: string | null;
     isFollowed: boolean;
+};
+export type DirectoryUpdateCheckDto = {
+    hasUpdate: boolean;
+    currentVersion: string;
+    latestVersion: string | null;
+    sha256: string | null;
+};
+export type ModelStatusDto = {
+    id: string;
+    name: string;
+    role: string;
+    tier: string;
+    license: string;
+    sha256: string;
+    fileName: string;
+    modelsDir: string;
+    localPath: string;
+    installed: boolean;
+    partialBytes: number;
+    bundledInApp: boolean;
+    sizeBytes: number;
+    downloadUrl: string;
+};
+export type AiHardwareReportDto = {
+    platform: string;
+    arch: string;
+    totalRamGb: number;
+    cpuCores: number;
+    gpuBackend: string;
+    vramTotalBytes: number;
+    vramFreeBytes: number;
+    recommendedTier: string;
 };
 
 /** tauri-specta globals **/

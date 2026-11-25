@@ -62,7 +62,12 @@ export const ProfileView: React.FC = () => {
     try {
       const selected = await open({
         multiple: false,
-        filters: [{ name: 'Resume', extensions: ['pdf', 'docx', 'doc', 'txt', 'md'] }],
+        filters: [
+          {
+            name: 'Resume & Scanned Documents',
+            extensions: ['pdf', 'docx', 'doc', 'odt', 'rtf', 'txt', 'md', 'png', 'jpg', 'jpeg', 'webp'],
+          },
+        ],
       });
       if (selected && typeof selected === 'string') {
         setIsProcessing(true);

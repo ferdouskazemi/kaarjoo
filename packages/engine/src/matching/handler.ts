@@ -4,7 +4,7 @@ import {
   type UserPreferences,
   type UserProfile,
 } from '@kaarjoo/shared';
-import { rankJob, type MatchWeights, DEFAULT_MATCH_WEIGHTS } from './rerank.js';
+import { rankJob, rankJobAsync, type MatchWeights, DEFAULT_MATCH_WEIGHTS } from './rerank.js';
 
 export interface ScoredJobItem {
   job: JobPosting;
@@ -37,6 +37,38 @@ export class MatchingService {
     }
 
     return result;
+  }
+
+  public async scoreJobAsync(
+    profile: UserProfile,
+    job: JobPosting,
+    preferences?: UserPreferences
+  ): Promise<MatchResult & { scoringMode: 'local-ai' | 'rule-fallback'; embeddingMode: 'neural' | 'tfidf-fallback' }> {
+    const weights = this.getWeights(profile.id);
+    const result = await rankJobAsync(profile, job, preferences, weights);
+
+    const key = `${job.id}_${profile.id}`;
+    if (this.feedbackHistory.has(key)) {
+      result.userFeedback = this.feedbackHistory.get(key);
+    }
+
+    return result;
+  }
+
+  public async rankAllJobsAsync(
+    profile: UserProfile,
+    jobs: JobPosting[],
+    preferences?: UserPreferences
+  ): Promise<ScoredJobItem[]> {
+    const scored: ScoredJobItem[] = [];
+    for (const job of jobs) {
+      scored.push({
+        job,
+        match: await this.scoreJobAsync(profile, job, preferences),
+      });
+    }
+    scored.sort((a, b) => b.match.overallScore - a.match.overallScore);
+    return scored;
   }
 
   public rankAllJobs(

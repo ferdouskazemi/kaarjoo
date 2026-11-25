@@ -90,9 +90,9 @@ export const HomeView: React.FC = () => {
             <span className="text-xs font-medium">{t('home.submittedApps')}</span>
             <TrendingUp className="w-4 h-4 text-sky-400" />
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-mono text-[#f4f4f5]">{appliedCount}</span>
-            <span className="text-[11px] text-[#71717a] font-mono">
+          <div className="flex items-baseline gap-2 tabular-nums">
+            <span className="text-2xl font-bold font-mono text-[#f4f4f5] whitespace-nowrap">{appliedCount}</span>
+            <span className="text-[11px] text-[#a1a1aa] font-mono">
               / {totalApps} {t('home.totalApps')}
             </span>
           </div>
@@ -103,8 +103,8 @@ export const HomeView: React.FC = () => {
             <span className="text-xs font-medium">{t('home.avgScore')}</span>
             <Sparkles className="w-4 h-4 text-emerald-400" />
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-mono text-[#f4f4f5]">
+          <div className="flex items-baseline gap-2 tabular-nums">
+            <span className="text-2xl font-bold font-mono text-[#f4f4f5] whitespace-nowrap">
               {avgScore > 0 ? `${avgScore}%` : '--'}
             </span>
             <span className="text-[11px] text-emerald-400 font-mono">{t('home.avgScoreDesc')}</span>
@@ -116,11 +116,11 @@ export const HomeView: React.FC = () => {
             <span className="text-xs font-medium">{t('home.interviewRate')}</span>
             <CheckCircle className="w-4 h-4 text-amber-400" />
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-mono text-amber-300">
+          <div className="flex items-baseline gap-2 tabular-nums">
+            <span className="text-2xl font-bold font-mono text-amber-300 whitespace-nowrap">
               {totalApps > 0 ? `${interviewRate}%` : '--'}
             </span>
-            <span className="text-[11px] text-[#71717a] font-mono">{t('home.interviewRateDesc')}</span>
+            <span className="text-[11px] text-[#a1a1aa] font-mono">{t('home.interviewRateDesc')}</span>
           </div>
         </div>
 

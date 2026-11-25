@@ -8,13 +8,15 @@
     "tauri": "pnpm --filter desktop tauri",
     "tauri:dev": "pnpm --filter desktop tauri dev",
     "desktop": "pnpm --filter desktop tauri dev",
-    "build": "pnpm --filter shared build && pnpm --filter engine build && pnpm --filter desktop build",
+    "build": "pnpm --filter shared build && pnpm --filter adapters build && pnpm --filter ats build && pnpm --filter engine build && pnpm --filter desktop build",
+    "smoke:test": "tsx eval/scripts/smoke-test.ts",
     "test": "vitest run",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
     "benchmark:fts": "tsx eval/scripts/benchmark-fts.ts",
     "eval": "tsx eval/scripts/run-eval.ts",
-    "eval:matching": "tsx eval/scripts/run-matching-eval.ts"
+    "eval:matching": "tsx eval/scripts/run-matching-eval.ts",
+    "eval:ci": "tsx eval/scripts/run-all-evals.mts"
   },
   "devDependencies": {
     "prettier": "^3.5.3",

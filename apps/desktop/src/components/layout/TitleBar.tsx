@@ -80,22 +80,25 @@ export const TitleBar: React.FC = () => {
       <div className="flex items-center gap-0.5 -me-1" data-tauri-drag-region="false">
         <button
           onClick={handleMinimize}
-          className="w-7 h-7 rounded flex items-center justify-center text-[#71717a] hover:text-[#f4f4f5] hover:bg-[#202020] transition-colors cursor-pointer"
+          className="w-7 h-7 rounded flex items-center justify-center text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#202020] transition-colors cursor-pointer"
           title="Minimize"
+          aria-label="Minimize window"
         >
           <Minus className="w-3 h-3" />
         </button>
         <button
           onClick={handleMaximize}
-          className="w-7 h-7 rounded flex items-center justify-center text-[#71717a] hover:text-[#f4f4f5] hover:bg-[#202020] transition-colors cursor-pointer"
+          className="w-7 h-7 rounded flex items-center justify-center text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#202020] transition-colors cursor-pointer"
           title="Maximize"
+          aria-label="Maximize window"
         >
           <Square className="w-2.5 h-2.5" />
         </button>
         <button
           onClick={handleClose}
-          className="w-7 h-7 rounded flex items-center justify-center text-[#71717a] hover:text-rose-100 hover:bg-rose-600/80 transition-colors cursor-pointer"
+          className="w-7 h-7 rounded flex items-center justify-center text-[#a1a1aa] hover:text-rose-100 hover:bg-rose-600/80 transition-colors cursor-pointer"
           title="Close"
+          aria-label="Close window"
         >
           <X className="w-3 h-3" />
         </button>

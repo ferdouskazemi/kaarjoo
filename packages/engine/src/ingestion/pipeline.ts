@@ -1,19 +1,34 @@
-import { UserProfile, FactProvenance } from '@kaarjoo/shared';
-import { parseDocument, ParsedDocument } from './parsers/index.js';
-import { detectSectionType, SectionType } from './sections.js';
+import type { UserProfile } from '@kaarjoo/shared';
+import { parseDocument, type ParsedDocument } from './parsers/index.js';
+import { detectSectionType, type SectionType } from './sections.js';
 import { extractContactInfo } from './extractors/contact.js';
 import { extractExperiences } from './extractors/experience.js';
 import { extractEducation } from './extractors/education.js';
 import { extractSkills } from './extractors/skills.js';
+import { extractProfileGapsWithLlm } from '../ai/prompts.js';
+import type { LocalLlamaRuntime } from '../ai/llamaRuntime.js';
 
 export interface ExtractionResult {
   document: ParsedDocument;
   profile: UserProfile;
+  extractionMode: 'rule+llm' | 'rule-only';
+  droppedUnverifiedCount: number;
+  tokensPerSec?: number;
 }
 
-export async function processAndExtractProfile(filePath: string): Promise<ExtractionResult> {
-  const document = await parseDocument(filePath);
+export interface ExtractProfileOptions {
+  useLlm?: boolean;
+  runtime?: LocalLlamaRuntime;
+}
 
+/**
+ * Extracts a structured UserProfile from raw document text using deterministic rules,
+ * optionally augmented by a local LLM gap-filler constrained by JSON-schema grammar & evidence verification.
+ */
+export async function extractProfileFromParsedDocument(
+  document: ParsedDocument,
+  options: ExtractProfileOptions = {}
+): Promise<ExtractionResult> {
   // 1. Segment raw text into sections
   const lines = document.rawText.split(/\r?\n/);
   const sectionTexts: Record<SectionType, string[]> = {
@@ -43,7 +58,7 @@ export async function processAndExtractProfile(filePath: string): Promise<Extrac
     sectionTexts[currentSection].push(trimmed);
   }
 
-  // 2. Extract facts with deterministic extractors
+  // 2. Extract facts with deterministic rule-based extractors
   const contact = extractContactInfo(document.pages.map((p) => ({ pageNumber: p.pageNumber, text: p.text }))) || {
     fullName: document.fileName.replace(/\.[^/.]+$/, ''),
     email: 'unspecified@example.com',
@@ -76,8 +91,90 @@ export async function processAndExtractProfile(filePath: string): Promise<Extrac
     workAuthorization: [],
   };
 
+  let extractionMode: 'rule+llm' | 'rule-only' = 'rule-only';
+  let droppedUnverifiedCount = 0;
+  let tokensPerSec: number | undefined;
+
+  // 3. Optional Local LLM gap-fill (only verified evidence spans survive!)
+  if (options.useLlm !== false) {
+    try {
+      const llmRes = await extractProfileGapsWithLlm(document.rawText, profile, options.runtime);
+      if (llmRes.usedLlm) {
+        extractionMode = 'rule+llm';
+        droppedUnverifiedCount = llmRes.droppedCount;
+        tokensPerSec = llmRes.tokensPerSec;
+
+        const gaps = llmRes.verifiedGaps;
+        if (gaps.fullName && (!profile.contact.fullName || profile.contact.fullName === document.fileName.replace(/\.[^/.]+$/, ''))) {
+          profile.contact.fullName = gaps.fullName.value;
+        }
+        if (gaps.email && (!profile.contact.email || profile.contact.email === 'unspecified@example.com')) {
+          profile.contact.email = gaps.email.value;
+        }
+        if (gaps.phone && !profile.contact.phone) {
+          profile.contact.phone = gaps.phone.value;
+        }
+        if (gaps.skills) {
+          const existingSkillNames = new Set(profile.skills.map((s) => s.name.toLowerCase()));
+          for (const sk of gaps.skills) {
+            if (!existingSkillNames.has(sk.name.toLowerCase())) {
+              existingSkillNames.add(sk.name.toLowerCase());
+              profile.skills.push({
+                id: `skill_llm_${profile.skills.length + 1}`,
+                name: sk.name,
+                provenance: {
+                  status: 'needs_review',
+                  confidence: 0.9,
+                  sourceFileId: document.fileName,
+                  page: 1,
+                  textSpan: sk.evidenceSpan,
+                },
+              });
+            }
+          }
+        }
+        if (gaps.experiences && profile.experiences.length === 0) {
+          for (const exp of gaps.experiences) {
+            profile.experiences.push({
+              id: `exp_llm_${profile.experiences.length + 1}`,
+              title: exp.title,
+              company: exp.company,
+              startDate: exp.startDate || '2020',
+              endDate: exp.endDate,
+              isCurrent: !exp.endDate || /present|current|اکنون/i.test(exp.endDate),
+              achievements: [],
+              skillsUsed: [],
+            });
+          }
+        }
+        if (gaps.education && profile.education.length === 0) {
+          for (const edu of gaps.education) {
+            profile.education.push({
+              id: `edu_llm_${profile.education.length + 1}`,
+              institution: edu.institution,
+              degree: edu.degree,
+            });
+          }
+        }
+      }
+    } catch {
+      // Safe fallback to rule-only extraction if LLM fails or is unloaded
+    }
+  }
+
   return {
     document,
     profile,
+    extractionMode,
+    droppedUnverifiedCount,
+    tokensPerSec,
   };
+}
+
+export async function processAndExtractProfile(
+  filePath: string,
+  options: ExtractProfileOptions = {}
+): Promise<ExtractionResult> {
+  const document = await parseDocument(filePath);
+  return extractProfileFromParsedDocument(document, options);
 }

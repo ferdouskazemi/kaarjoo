@@ -1,4 +1,6 @@
 import { z, type JobPosting, type MatchResult, type UserPreferences, type UserProfile } from '@kaarjoo/shared';
+import { rerankJobWithLlm } from '../ai/prompts.js';
+import { defaultLlamaRuntime, type LocalLlamaRuntime } from '../ai/llamaRuntime.js';
 import { evaluateHardFilters, type HardFilterResult } from './hardFilters.js';
 import { defaultSemanticEmbedder } from './embeddings.js';
 import { evaluateSkillCoverage, type SkillCoverageResult } from './skillCoverage.js';
@@ -27,7 +29,7 @@ export const DEFAULT_MATCH_WEIGHTS: MatchWeights = {
 };
 
 /**
- * Calibrated rule & heuristic LLM-equivalent re-ranker for instant, zero-latency local scoring.
+ * Deterministic rule-based fallback re-ranker used when no local GGUF instruct model is downloaded.
  */
 export function evaluateRerank(
   profile: UserProfile,
@@ -148,5 +150,68 @@ export function rankJob(
     matchedSkills: skillCoverage.matchedSkills,
     missingSkills: skillCoverage.missingSkills,
     redFlags: hardFilter.redFlags,
+  };
+}
+
+/**
+ * Full hybrid match pipeline: uses cached BGE-M3 neural embeddings + JSON-schema grammar LLM re-ranker
+ * when local models are installed, falling back transparently to TF-IDF + rules when no model is loaded.
+ */
+export async function rankJobAsync(
+  profile: UserProfile,
+  job: JobPosting,
+  preferences?: UserPreferences,
+  weights: MatchWeights = DEFAULT_MATCH_WEIGHTS,
+  runtime: LocalLlamaRuntime = defaultLlamaRuntime
+): Promise<MatchResult & { scoringMode: 'local-ai' | 'rule-fallback'; embeddingMode: 'neural' | 'tfidf-fallback' }> {
+  const hardFilter = evaluateHardFilters(profile, job, preferences);
+  const semantic = await defaultSemanticEmbedder.computeSemanticMatchAsync(profile, job, runtime);
+  const skillCoverage = evaluateSkillCoverage(profile, job);
+
+  let rerank = evaluateRerank(profile, job, hardFilter, semantic, skillCoverage);
+  let scoringMode: 'local-ai' | 'rule-fallback' = 'rule-fallback';
+
+  if (runtime.isInstructModelAvailable()) {
+    try {
+      const llmRes = await rerankJobWithLlm(profile, job, hardFilter, semantic, skillCoverage, runtime);
+      if (llmRes.usedLlm && llmRes.result) {
+        rerank = llmRes.result;
+        scoringMode = 'local-ai';
+      }
+    } catch {
+      // Fallback safely to rule-based re-ranker
+    }
+  }
+
+  let overallScore = 0;
+  if (!hardFilter.passed) {
+    overallScore = Math.min(45, Math.round(hardFilter.score * 0.4));
+  } else {
+    overallScore = Math.round(
+      hardFilter.score * weights.hardFilter +
+        semantic.overallSemanticScore * weights.semantic +
+        skillCoverage.score * weights.skillCoverage +
+        rerank.score * weights.rerank
+    );
+  }
+
+  overallScore = Math.max(0, Math.min(100, overallScore));
+
+  return {
+    jobId: job.id,
+    profileId: profile.id,
+    overallScore,
+    breakdown: {
+      hardFilterScore: hardFilter.score,
+      semanticScore: semantic.overallSemanticScore,
+      skillCoverageScore: skillCoverage.score,
+      llmRerankScore: rerank.score,
+    },
+    topReasons: rerank.topReasons,
+    matchedSkills: skillCoverage.matchedSkills,
+    missingSkills: skillCoverage.missingSkills,
+    redFlags: rerank.redFlags,
+    scoringMode,
+    embeddingMode: semantic.mode,
   };
 }

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppStore } from '../stores/appStore.js';
 import { useWipeAllData } from '../queries/index.js';
 import { LANGUAGE_NAMES } from '../i18n/constants.js';
+import { commands, type AiHardwareReportDto, type ModelStatusDto } from '../bindings.js';
 import {
   Cpu,
   Globe,
@@ -12,6 +13,8 @@ import {
   Download,
   Trash2,
   Sparkles,
+  RefreshCw,
+  ShieldCheck,
 } from 'lucide-react';
 
 export const SettingsView: React.FC = () => {
@@ -32,6 +35,112 @@ export const SettingsView: React.FC = () => {
   const [isHeadless, setIsHeadless] = useState(true);
   const [backupSuccess, setBackupSuccess] = useState(false);
   const [wipeSuccess, setWipeSuccess] = useState(false);
+  const [checkingUpdates, setCheckingUpdates] = useState(false);
+  const [appUpdateStatus, setAppUpdateStatus] = useState<string | null>(null);
+  const [availableVersion, setAvailableVersion] = useState<string | null>(null);
+  const [directoryUpdateStatus, setDirectoryUpdateStatus] = useState<string | null>(null);
+  const [models, setModels] = useState<ModelStatusDto[]>([]);
+  const [hardware, setHardware] = useState<AiHardwareReportDto | null>(null);
+  const [downloadProgress, setDownloadProgress] = useState<Record<string, number>>({});
+  const [downloadingModelId, setDownloadingModelId] = useState<string | null>(null);
+
+  useEffect(() => {
+    let unlisten: (() => void) | undefined;
+    (async () => {
+      try {
+        const [mRes, hRes] = await Promise.all([commands.modelsGetStatus(), commands.modelsDetectHardware()]);
+        if (mRes.status === 'ok') setModels(mRes.data);
+        if (hRes.status === 'ok') setHardware(hRes.data);
+      } catch {
+        // Running in Vite browser preview without Tauri sidecar
+      }
+      try {
+        const { listen } = await import('@tauri-apps/api/event');
+        unlisten = await listen<{ modelId: string; percent: number; status: string }>(
+          'engine:models:downloadProgress',
+          (ev) => {
+            setDownloadProgress((prev) => ({ ...prev, [ev.payload.modelId]: ev.payload.percent }));
+            if (ev.payload.status === 'completed') {
+              setDownloadingModelId(null);
+              void commands.modelsGetStatus().then((r) => {
+                if (r.status === 'ok') setModels(r.data);
+              });
+            }
+          }
+        );
+      } catch {
+        // Ignore in web preview
+      }
+    })();
+    return () => {
+      unlisten?.();
+    };
+  }, []);
+
+  const handleDownloadModel = async (modelId: string) => {
+    setDownloadingModelId(modelId);
+    setDownloadProgress((prev) => ({ ...prev, [modelId]: 0 }));
+    try {
+      const res = await commands.modelsDownload(modelId);
+      if (res.status === 'ok') {
+        const mRes = await commands.modelsGetStatus();
+        if (mRes.status === 'ok') setModels(mRes.data);
+      }
+    } finally {
+      setDownloadingModelId(null);
+    }
+  };
+
+  const handleCheckUpdates = async () => {
+    setCheckingUpdates(true);
+    setAppUpdateStatus(null);
+    setDirectoryUpdateStatus(null);
+    setAvailableVersion(null);
+
+    try {
+      const { check } = await import('@tauri-apps/plugin-updater');
+      const update = await check();
+      if (update) {
+        setAvailableVersion(update.version);
+        setAppUpdateStatus(t('settings.appUpdateAvailable', { version: update.version }));
+      } else {
+        setAppUpdateStatus(t('settings.appUpToDate'));
+      }
+    } catch {
+      setAppUpdateStatus(t('settings.updateCheckOffline'));
+    }
+
+    try {
+      const dirRes = await commands.directoryCheckUpdate('2026.04.01');
+      if (dirRes.status === 'ok') {
+        if (dirRes.data.hasUpdate && dirRes.data.latestVersion) {
+          setDirectoryUpdateStatus(
+            t('settings.directoryUpdateAvailable', { version: dirRes.data.latestVersion })
+          );
+        } else {
+          setDirectoryUpdateStatus(t('settings.directoryUpToDate'));
+        }
+      }
+    } catch {
+      setDirectoryUpdateStatus(t('settings.directoryUpToDate'));
+    } finally {
+      setCheckingUpdates(false);
+    }
+  };
+
+  const handleInstallUpdate = async () => {
+    try {
+      const { check } = await import('@tauri-apps/plugin-updater');
+      const { relaunch } = await import('@tauri-apps/plugin-process');
+      const update = await check();
+      if (update) {
+        await update.downloadAndInstall();
+        await relaunch();
+      }
+    } catch (err) {
+      console.error('Update install failed:', err);
+    }
+  };
 
   const handleBackupDb = () => {
     setBackupSuccess(true);
@@ -164,6 +273,107 @@ export const SettingsView: React.FC = () => {
               </button>
             ))}
           </div>
+          <p className="text-[11px] text-slate-400 leading-relaxed">
+            {t('settings.modelsDownloadHint')}
+          </p>
+
+          <div className="rounded-lg border border-slate-800 bg-slate-950/60 p-3 text-xs flex items-center justify-between gap-2 flex-wrap">
+            <span className="text-slate-300">
+              {models.some((m) => m.installed)
+                ? t('settings.modelsLocalAiActive', { backend: hardware?.gpuBackend?.toUpperCase() || 'CPU' })
+                : t('settings.modelsNoModelFallback')}
+            </span>
+            {hardware && (
+              <span className="font-mono text-[11px] text-sky-400 uppercase tabular-nums">
+                {hardware.gpuBackend} • {hardware.totalRamGb}GB RAM
+              </span>
+            )}
+          </div>
+
+          {models.length > 0 && (
+            <div className="grid grid-cols-1 gap-2">
+              {models.map((m) => {
+                const isDownloading = downloadingModelId === m.id;
+                const pct = downloadProgress[m.id] ?? 0;
+                const sizeGb = (m.sizeBytes / (1024 * 1024 * 1024)).toFixed(2);
+                return (
+                  <div
+                    key={m.id}
+                    className="flex items-center justify-between gap-3 p-3 rounded-lg border border-slate-800 bg-slate-950/40 text-xs"
+                  >
+                    <div className="min-w-0">
+                      <div className="font-semibold text-slate-200 flex items-center gap-2 flex-wrap">
+                        <span>{m.name}</span>
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-800 text-slate-300 border border-slate-700">
+                          {m.license}
+                        </span>
+                        <span className="font-mono text-[10px] text-slate-400 tabular-nums">{sizeGb} GB</span>
+                      </div>
+                      <div className="text-[10px] font-mono text-slate-400 truncate mt-0.5">
+                        SHA-256: {m.sha256.slice(0, 16)}…
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleDownloadModel(m.id)}
+                      disabled={m.installed || isDownloading}
+                      className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-60 text-[11px] font-semibold text-slate-200 border border-slate-700 cursor-pointer shrink-0"
+                    >
+                      {m.installed
+                        ? t('settings.modelInstalled')
+                        : isDownloading
+                          ? t('settings.downloadingModel', { percent: pct })
+                          : t('settings.downloadModel')}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Signed App & Company Directory Updates Card */}
+        <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-5 flex flex-col gap-3">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <h2 className="text-sm font-semibold text-slate-200 flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+              <span>{t('settings.updatesTitle')}</span>
+            </h2>
+            <span className="text-[11px] font-mono text-slate-400 tabular-nums">
+              v1.0.0 • {t('settings.directoryVersion')}: 2026.04.01
+            </span>
+          </div>
+
+          <p className="text-xs text-slate-400 leading-relaxed">
+            {t('settings.updatesDesc')}
+          </p>
+
+          {(appUpdateStatus || directoryUpdateStatus) && (
+            <div className="rounded-lg border border-slate-800 bg-slate-950/60 p-3 flex flex-col gap-1 text-xs text-slate-300">
+              {appUpdateStatus && <div>• {appUpdateStatus}</div>}
+              {directoryUpdateStatus && <div>• {directoryUpdateStatus}</div>}
+            </div>
+          )}
+
+          <div className="flex items-center gap-3 pt-1">
+            <button
+              onClick={handleCheckUpdates}
+              disabled={checkingUpdates}
+              className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-semibold text-slate-200 flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-60"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 text-sky-400 ${checkingUpdates ? 'animate-spin' : ''}`} />
+              <span>{checkingUpdates ? t('settings.checkingUpdates') : t('settings.checkUpdates')}</span>
+            </button>
+
+            {availableVersion && (
+              <button
+                onClick={handleInstallUpdate}
+                className="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-xs font-semibold text-white flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>{t('settings.installUpdate')}</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Browser Automation Settings Card */}
@@ -208,8 +418,8 @@ export const SettingsView: React.FC = () => {
               <Database className="w-4 h-4 text-indigo-400" />
               <span>{t('settings.dbPersistence')}</span>
             </h2>
-            <span className="text-[11px] font-mono text-slate-500">
-              %APPDATA%\kaarjoo\kaarjoo.db
+            <span className="text-[11px] font-mono text-slate-400">
+              {t('settings.dbPathLabel')}
             </span>
           </div>
 

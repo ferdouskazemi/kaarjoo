@@ -1,6 +1,26 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { ParsedDocument, ParsedPage, ParsedBlock } from './types.js';
+
+function resolvePdfWorkerSrc(): string | undefined {
+  const __dirname = path.dirname(fileURLToPath(import.meta.url));
+  const candidates = [
+    path.resolve(__dirname, 'pdf.worker.mjs'),
+    process.env.KAARJOO_RESOURCES_DIR
+      ? path.resolve(process.env.KAARJOO_RESOURCES_DIR, 'engine', 'pdf.worker.mjs')
+      : '',
+    path.resolve(__dirname, '../../../../node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs'),
+    path.resolve(process.cwd(), 'node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs'),
+  ].filter(Boolean);
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return pathToFileURL(candidate).href;
+    }
+  }
+  return undefined;
+}
 
 export async function parsePdfFile(filePath: string): Promise<ParsedDocument> {
   const fileName = path.basename(filePath);
@@ -9,6 +29,10 @@ export async function parsePdfFile(filePath: string): Promise<ParsedDocument> {
   // Dynamic import of pdfjs-dist legacy build for Node.js compatibility
   // @ts-ignore
   const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
+  const workerSrc = resolvePdfWorkerSrc();
+  if (workerSrc && pdfjs.GlobalWorkerOptions) {
+    pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
+  }
 
   const loadingTask = pdfjs.getDocument({
     data,
@@ -28,13 +52,10 @@ export async function parsePdfFile(filePath: string): Promise<ParsedDocument> {
     const textContent = await page.getTextContent();
 
     const blocks: ParsedBlock[] = [];
-    const textPieces: string[] = [];
 
     for (const item of textContent.items) {
       if ('str' in item && item.str.trim().length > 0) {
         const str = item.str;
-        textPieces.push(str);
-
         const tx = item.transform[4] || 0;
         const ty = item.transform[5] || 0;
         const width = item.width || (str.length * 7);
@@ -57,7 +78,25 @@ export async function parsePdfFile(filePath: string): Promise<ParsedDocument> {
       }
     }
 
-    const pageText = textPieces.join(' ');
+    // Reconstruct visual reading lines sorted top-to-bottom (grouping fragments sharing a baseline)
+    const rowBuckets: Array<{ y: number; items: ParsedBlock[] }> = [];
+    const ySorted = [...blocks].sort((a, b) => a.bbox.y - b.bbox.y || a.bbox.x - b.bbox.x);
+    for (const blk of ySorted) {
+      const existing = rowBuckets.find((row) => Math.abs(row.y - blk.bbox.y) <= 5);
+      if (existing) {
+        existing.items.push(blk);
+      } else {
+        rowBuckets.push({ y: blk.bbox.y, items: [blk] });
+      }
+    }
+
+    const linesText = rowBuckets.map((row) => {
+      // Detect two-column split on the row (wide horizontal gap) vs single visual line
+      const rowItems = [...row.items].sort((a, b) => a.bbox.x - b.bbox.x);
+      return rowItems.map((i) => i.text.trim()).join(' ').trim();
+    }).filter(Boolean);
+
+    const pageText = linesText.join('\n');
     totalCharacters += pageText.length;
 
     pages.push({
@@ -70,7 +109,20 @@ export async function parsePdfFile(filePath: string): Promise<ParsedDocument> {
   // Scanned heuristic: average characters per page < 50 implies scanned image PDF
   const isScanned = numPages > 0 && (totalCharacters / numPages) < 50;
 
-  const rawText = pages.map((p) => p.text).join('\n\n');
+  let finalPages = pages;
+  if (isScanned) {
+    try {
+      const { ocrScannedPdfPages } = await import('./ocr.js');
+      const ocrPages = await ocrScannedPdfPages(filePath);
+      if (ocrPages.length > 0 && ocrPages.some((p) => p.text.trim().length > 10)) {
+        finalPages = ocrPages;
+      }
+    } catch {
+      // Keep native extracted pages if OCR fails
+    }
+  }
+
+  const rawText = finalPages.map((p) => p.text).join('\n\n');
 
   return {
     filePath,
@@ -78,7 +130,7 @@ export async function parsePdfFile(filePath: string): Promise<ParsedDocument> {
     mimeType: 'application/pdf',
     pageCount: numPages,
     isScanned,
-    pages,
+    pages: finalPages,
     rawText,
   };
 }

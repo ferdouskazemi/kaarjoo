@@ -6,7 +6,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsc -b && esbuild src/index.ts --bundle --platform=node --target=node22 --format=esm --outfile=dist/bundle.mjs --external:playwright-core --external:node-llama-cpp --banner:js=\"import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\"",
+    "build": "tsc -b && esbuild src/index.ts --bundle --platform=node --target=node22 --format=esm --outfile=dist/bundle.mjs --external:playwright-core --external:node-llama-cpp --external:tesseract.js --banner:js=\"import { createRequire as __kaarjooCreateRequire } from 'node:module'; const require = __kaarjooCreateRequire(import.meta.url);\" && node ../../scripts/stage-engine-resources.mjs",
     "dev": "tsx src/index.ts",
     "test": "vitest run"
   },
@@ -19,10 +19,12 @@
     "docx": "^9.16.0",
     "libphonenumber-js": "^1.11.19",
     "mammoth": "^1.9.0",
+    "node-llama-cpp": "^3.22.3",
     "p-queue": "^8.1.0",
     "pdfjs-dist": "^4.10.38",
     "pino": "^9.6.0",
     "playwright-core": "^1.50.1",
+    "tesseract.js": "^7.0.0",
     "undici": "^7.3.0"
   },
   "devDependencies": {

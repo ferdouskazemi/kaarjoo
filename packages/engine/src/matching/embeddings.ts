@@ -1,4 +1,6 @@
 import type { JobPosting, UserProfile } from '@kaarjoo/shared';
+import { defaultLlamaRuntime, type LocalLlamaRuntime } from '../ai/llamaRuntime.js';
+import { defaultEmbeddingCache, type SqliteEmbeddingCache } from './embeddingCache.js';
 
 /**
  * Calculates cosine similarity between two dense or sparse vectors.
@@ -138,6 +140,83 @@ export class LocalSemanticEmbedder {
       titleSimilarity: Math.round(titleSim * 100),
       contentSimilarity: Math.round(contentSim * 100),
     };
+  }
+
+  /**
+   * Computes semantic match using real local neural embeddings (BGE-M3 via node-llama-cpp)
+   * with SQLite vector caching, transparently falling back to TF-IDF when no embedding model is installed.
+   */
+  public async computeSemanticMatchAsync(
+    profile: UserProfile,
+    job: JobPosting,
+    runtime: LocalLlamaRuntime = defaultLlamaRuntime,
+    cache: SqliteEmbeddingCache = defaultEmbeddingCache
+  ): Promise<{
+    overallSemanticScore: number;
+    titleSimilarity: number;
+    contentSimilarity: number;
+    mode: 'neural' | 'tfidf-fallback';
+  }> {
+    if (!runtime.isEmbeddingModelAvailable()) {
+      const fallback = this.computeSemanticMatch(profile, job);
+      return { ...fallback, mode: 'tfidf-fallback' };
+    }
+
+    const modelId = 'bge-m3-q8';
+    const candidateTitles = [
+      ...(profile.targetTitles || []),
+      ...(profile.experiences?.slice(0, 3).map((e) => e.title) || []),
+    ]
+      .join(' ')
+      .trim() || 'Software Engineer';
+
+    const profileContent = [
+      ...(profile.targetTitles || []),
+      profile.summary || '',
+      ...(profile.experiences?.flatMap((e) => [
+        e.title,
+        e.description || '',
+        ...e.achievements,
+        ...(e.skillsUsed || []),
+      ]) || []),
+      ...(profile.skills?.map((s) => s.name) || []),
+    ]
+      .join(' ')
+      .slice(0, 4000);
+
+    const jobContent = [job.title, ...(job.requirements || []), job.descriptionMarkdown].join(' ').slice(0, 4000);
+
+    const getCachedOrEmbed = async (text: string): Promise<Float32Array> => {
+      const cached = cache.get(modelId, text);
+      if (cached) return cached;
+      const res = await runtime.embedText(text);
+      cache.set(modelId, text, res.vector);
+      return res.vector;
+    };
+
+    try {
+      const [vecCandTitle, vecJobTitle, vecProfileContent, vecJobContent] = await Promise.all([
+        getCachedOrEmbed(candidateTitles),
+        getCachedOrEmbed(job.title),
+        getCachedOrEmbed(profileContent),
+        getCachedOrEmbed(jobContent),
+      ]);
+
+      const titleSim = Math.max(0, cosineSimilarity(vecCandTitle, vecJobTitle));
+      const contentSim = Math.max(0, cosineSimilarity(vecProfileContent, vecJobContent));
+      const rawBlend = titleSim * 0.45 + contentSim * 0.55;
+      const scaledScore = Math.min(100, Math.round(rawBlend * 115));
+
+      return {
+        overallSemanticScore: Math.max(0, scaledScore),
+        titleSimilarity: Math.round(titleSim * 100),
+        contentSimilarity: Math.round(contentSim * 100),
+        mode: 'neural',
+      };
+    } catch {
+      const fallback = this.computeSemanticMatch(profile, job);
+      return { ...fallback, mode: 'tfidf-fallback' };
+    }
   }
 }
 

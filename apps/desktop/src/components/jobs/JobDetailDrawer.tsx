@@ -46,7 +46,15 @@ export const JobDetailDrawer: React.FC<JobDetailDrawerProps> = ({ job, onClose, 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-xs transition-opacity animate-fade-in">
+    <div
+      className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-xs transition-opacity animate-fade-in"
+      role="dialog"
+      aria-modal="true"
+      aria-label={job.title}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div className="w-full max-w-2xl bg-slate-900 border-s border-slate-800 h-full flex flex-col shadow-2xl overflow-hidden animate-slide-left">
         {/* Header */}
         <div className="p-6 border-b border-slate-800 flex items-start justify-between gap-4 bg-slate-900/80 sticky top-0 z-10 backdrop-blur-md">
@@ -79,6 +87,7 @@ export const JobDetailDrawer: React.FC<JobDetailDrawerProps> = ({ job, onClose, 
 
           <button
             onClick={onClose}
+            aria-label="Close job details"
             className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />

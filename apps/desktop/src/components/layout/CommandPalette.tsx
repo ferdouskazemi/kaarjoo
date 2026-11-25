@@ -44,7 +44,15 @@ export const CommandPalette: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-start justify-center pt-24 px-4">
+    <div
+      className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-start justify-center pt-24 px-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label={t('command.placeholder')}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) setCommandPaletteOpen(false);
+      }}
+    >
       <div className="w-full max-w-lg rounded-xl border border-slate-800 bg-slate-900 shadow-2xl overflow-hidden animate-in fade-in-0 zoom-in-95 duration-150">
         <Command label="Command Menu" className="w-full flex flex-col">
           <div className="flex items-center gap-2 px-3 border-b border-slate-800">

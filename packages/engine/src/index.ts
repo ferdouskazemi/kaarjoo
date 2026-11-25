@@ -1,6 +1,15 @@
 import os from 'node:os';
 import { StdioRpcServer, RpcError } from './rpc.js';
 import { discoverSystemBrowsers } from './utils/discovery.js';
+import {
+  getModelManifestWithStatus,
+  downloadModelWithResume,
+} from './ai/modelManifest.js';
+import { defaultLlamaRuntime } from './ai/llamaRuntime.js';
+import {
+  generateCoverLetterWithLlm,
+  generateScreeningAnswerWithLlm,
+} from './ai/prompts.js';
 import { processAndExtractProfile } from './ingestion/pipeline.js';
 import { mergeProfiles } from './ingestion/merger.js';
 import { defaultJobSourcesManager } from './sources/handler.js';
@@ -46,6 +55,40 @@ server.register('system.ping', {
 server.register('system.discoverBrowsers', {
   inputSchema: z.unknown().optional(),
   handler: () => discoverSystemBrowsers(),
+});
+
+server.register('models.getStatus', {
+  inputSchema: z.unknown().optional(),
+  handler: () => getModelManifestWithStatus(),
+});
+
+server.register('models.detectHardware', {
+  inputSchema: z.unknown().optional(),
+  handler: () => defaultLlamaRuntime.getHardwareReport(),
+});
+
+server.register('models.getDiagnostics', {
+  inputSchema: z.unknown().optional(),
+  handler: () => defaultLlamaRuntime.getRuntimeDiagnostics(),
+});
+
+server.register('models.unloadAll', {
+  inputSchema: z.unknown().optional(),
+  handler: async () => {
+    await defaultLlamaRuntime.unloadAll();
+    return { unloaded: true };
+  },
+});
+
+server.register('models.download', {
+  inputSchema: z.object({
+    modelId: z.string().min(1),
+  }),
+  handler: async ({ modelId }) => {
+    return downloadModelWithResume(modelId, (ev) => {
+      server.sendNotification('models.downloadProgress', ev);
+    });
+  },
 });
 
 server.register('system.getHardwareSpecs', {
@@ -187,8 +230,8 @@ server.register('matching.scoreJob', {
     job: JobPostingSchema,
     preferences: UserPreferencesSchema.optional(),
   }),
-  handler: ({ profile, job, preferences }) => {
-    return defaultMatchingService.scoreJob(profile as any, job as any, preferences as any);
+  handler: async ({ profile, job, preferences }) => {
+    return defaultMatchingService.scoreJobAsync(profile as any, job as any, preferences as any);
   },
 });
 
@@ -198,8 +241,8 @@ server.register('matching.rankAllJobs', {
     jobs: z.array(JobPostingSchema),
     preferences: UserPreferencesSchema.optional(),
   }),
-  handler: ({ profile, jobs, preferences }) => {
-    return defaultMatchingService.rankAllJobs(profile as any, jobs as any, preferences as any);
+  handler: async ({ profile, jobs, preferences }) => {
+    return defaultMatchingService.rankAllJobsAsync(profile as any, jobs as any, preferences as any);
   },
 });
 
@@ -233,13 +276,39 @@ server.register('documents.tailor', {
     templateId: z.string().optional(),
     language: z.string().optional(),
   }),
-  handler: ({ profile, job, templateId = 'ats-clean', language = 'en' }) => {
+  handler: async ({ profile, job, templateId = 'ats-clean', language = 'en' }) => {
     const tailored = tailorResume(profile as any, job as any, {
       templateId: templateId as any,
       language: language as any,
     });
     const check = TruthfulnessGuard.verifyTailoredResume(profile as any, tailored);
-    const coverLetter = generateCoverLetter(profile as any, job as any, language as any);
+    let coverLetter = generateCoverLetter(profile as any, job as any, language as any);
+
+    if (defaultLlamaRuntime.isInstructModelAvailable()) {
+      try {
+        const llmLetter = await generateCoverLetterWithLlm(
+          profile as any,
+          job as any,
+          (language as 'en' | 'fa') || 'en'
+        );
+        if (llmLetter && llmLetter.paragraphs.length > 0) {
+          const fullText = [llmLetter.greeting, ...llmLetter.paragraphs, llmLetter.closing].join('\n\n');
+          const letterCheck = TruthfulnessGuard.verifyTextClaims(profile as any, fullText);
+          if (letterCheck.score >= 85) {
+            coverLetter = {
+              ...coverLetter,
+              opening: llmLetter.greeting,
+              bodyParagraphs: llmLetter.paragraphs,
+              closing: llmLetter.closing,
+              fullText,
+            };
+          }
+        }
+      } catch {
+        // Fallback cleanly to deterministic cover letter template
+      }
+    }
+
     const resumeHtml = renderResumeHtml(tailored);
 
     return {
@@ -249,7 +318,7 @@ server.register('documents.tailor', {
       resumeHtml,
       coverLetterText: coverLetter.fullText,
       truthfulnessScore: check.score,
-      truthfulnessPassed: check.score >= 0.85,
+      truthfulnessPassed: check.score >= 85,
       warnings: check.unsupportedClaims.map((c) => `Unsupported claim: ${c.claim}`),
     };
   },
@@ -286,7 +355,22 @@ server.register('documents.getScreeningAnswer', {
     question: z.string().min(1),
     profile: UserProfileSchema,
   }),
-  handler: ({ question, profile }) => {
+  handler: async ({ question, profile }) => {
+    if (defaultLlamaRuntime.isInstructModelAvailable()) {
+      try {
+        const llmAns = await generateScreeningAnswerWithLlm(question, profile as any);
+        if (llmAns) {
+          return {
+            answer: llmAns.answer,
+            confidence: llmAns.confidence,
+            evidenceSpan: llmAns.evidenceSpan,
+            source: 'local-ai',
+          };
+        }
+      } catch {
+        // Fallback to rule-based AnswerBank
+      }
+    }
     return defaultAnswerBank.getAnswer(question, profile as any);
   },
 });
