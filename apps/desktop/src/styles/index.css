@@ -309,3 +309,38 @@
   font-weight: 500;
   border-width: 1px;
 }
+
+.fr-studio-panel {
+  border-radius: 20px;
+  border: 1px solid var(--line-soft);
+  background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.08), transparent 45%), var(--deep);
+  box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(12px);
+}
+
+.fr-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #38bdf8;
+}
+
+@keyframes fr-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+.fr-scan-line {
+  position: relative;
+  overflow: hidden;
+}
+.fr-scan-line::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 50%;
+  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.22), transparent);
+  animation: fr-shimmer 1.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}

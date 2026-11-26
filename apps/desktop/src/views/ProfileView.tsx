@@ -1,5 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { motion, AnimatePresence } from 'motion/react';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   UploadCloud,
   CheckCircle2,
@@ -20,19 +22,23 @@ import {
   Copy,
   Check,
   Code2,
+  Play,
 } from 'lucide-react';
 import { open } from '@tauri-apps/plugin-dialog';
 import { useProfile, useExtractProfile, useClearProfile } from '../queries/index.js';
 import { useProfileStore, DEMO_CANDIDATE_PROFILE } from '../stores/profileStore.js';
 import { useApplicationStore } from '../stores/applicationStore.js';
 import { useAppStore } from '../stores/appStore.js';
+import { usePipelineStore } from '../stores/pipelineStore.js';
 
 export const ProfileView: React.FC = () => {
   const { t, i18n } = useTranslation();
   const isRtl = i18n.dir() === 'rtl';
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { demoMode } = useAppStore();
+  const { demoMode, setCurrentView } = useAppStore();
+  const queryClient = useQueryClient();
+  const { startAutoPipeline, isRunning: isPipelineRunning } = usePipelineStore();
   const { data: dbProfile } = useProfile();
   const extractMutation = useExtractProfile();
   const clearMutation = useClearProfile();
@@ -155,6 +161,21 @@ export const ProfileView: React.FC = () => {
     }
   };
 
+  const handleConfirmAndRunAuto = () => {
+    if (!profile) return;
+    useApplicationStore.getState().syncWithProfile(profile as any);
+    void startAutoPipeline({
+      profile: profile as any,
+      demoMode,
+      lang: i18n.language,
+      onInvalidate: async () => {
+        await queryClient.invalidateQueries({ queryKey: ['jobs'] });
+        await queryClient.invalidateQueries({ queryKey: ['applications'] });
+      },
+      onNavigateQueue: () => setCurrentView('queue'),
+    });
+  };
+
   const handleCopyText = () => {
     if (uploadedDocumentText) {
       navigator.clipboard.writeText(uploadedDocumentText);
@@ -253,10 +274,19 @@ export const ProfileView: React.FC = () => {
 
               <button
                 onClick={handleConfirmProfile}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-[11px] transition-all shadow-sm active:scale-95 cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-[#333333] hover:border-[#484848] bg-[#202020] hover:bg-[#262626] text-[#d4d4d8] font-medium text-[11px] transition-all cursor-pointer"
               >
-                <CheckCircle2 className="w-3 h-3" />
+                <CheckCircle2 className="w-3 h-3 text-emerald-400" />
                 <span>{t('profile.confirm')}</span>
+              </button>
+
+              <button
+                onClick={handleConfirmAndRunAuto}
+                disabled={isPipelineRunning}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md fr-button-primary disabled:opacity-50 text-[11px] cursor-pointer"
+              >
+                <Play className="w-3 h-3 fill-white" />
+                <span>{t('profile.confirmAndRunAuto')}</span>
               </button>
             </>
           ) : demoMode ? (
@@ -274,7 +304,47 @@ export const ProfileView: React.FC = () => {
         </div>
       </div>
 
-      {!profile ? (
+      {isProcessing ? (
+        /* Animated Flash-Rive Studio Extraction Scanner */
+        <div className="flex-1 overflow-y-auto p-8 flex flex-col items-center justify-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="w-full max-w-lg fr-studio-panel p-8 flex flex-col gap-5"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-2xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center">
+                <Loader2 className="w-5 h-5 text-sky-400 animate-spin" />
+              </div>
+              <div>
+                <span className="fr-eyebrow block">LOCAL PARSER</span>
+                <h3 className="text-sm font-bold text-[#f4f4f5]">{t('profile.parsing')}</h3>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2.5">
+              {[
+                t('profile.extractStepRead'),
+                t('profile.extractStepContact'),
+                t('profile.extractStepSkills'),
+                t('profile.extractStepExperience'),
+              ].map((stepLabel, idx) => (
+                <motion.div
+                  key={stepLabel}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.14, duration: 0.28 }}
+                  className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-[#141414]/80 border border-[#262626] fr-scan-line text-xs text-[#d4d4d8]"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                  <span>{stepLabel}</span>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      ) : !profile ? (
         /* Empty / Drop Zone State */
         <div className="flex-1 overflow-y-auto p-8 flex flex-col items-center justify-center">
           <div
@@ -397,8 +467,36 @@ export const ProfileView: React.FC = () => {
               </div>
             </div>
 
+            {/* Review Before Auto-Pipeline Banner */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+              className="fr-studio-panel p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+            >
+              <div className="flex flex-col gap-1">
+                <span className="fr-eyebrow">{t('profile.reviewBeforeAutoTitle')}</span>
+                <p className="text-xs text-[#a1a1aa] leading-relaxed">
+                  {t('profile.reviewBeforeAutoDesc')}
+                </p>
+              </div>
+              <button
+                onClick={handleConfirmAndRunAuto}
+                disabled={isPipelineRunning}
+                className="shrink-0 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl fr-button-primary disabled:opacity-50 text-xs cursor-pointer"
+              >
+                <Play className="w-3.5 h-3.5 fill-white" />
+                <span>{t('profile.confirmAndRunAuto')}</span>
+              </button>
+            </motion.div>
+
             {/* Top Identity Card */}
-            <div className="rounded-xl border border-[#282828] bg-[#1a1a1a] p-4 flex flex-col gap-3">
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.34, delay: 0.06, ease: [0.22, 1, 0.36, 1] }}
+              className="fr-card p-4 flex flex-col gap-3"
+            >
               <div className="flex items-start justify-between">
                 <div>
                   <h2 className="text-base font-bold text-[#f4f4f5]">{profile.contact?.fullName}</h2>
@@ -426,7 +524,7 @@ export const ProfileView: React.FC = () => {
                   className="p-2 rounded-lg bg-[#141414] border border-[#262626] hover:border-sky-500/50 flex items-center gap-2 cursor-pointer transition-colors"
                 >
                   <Phone className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                  <span className="truncate font-mono text-[11px] text-[#e4e4e7]">{profile.contact?.phone || '--'}</span>
+                  <span dir="ltr" className="truncate font-mono text-[11px] text-[#e4e4e7]">{profile.contact?.phone || '--'}</span>
                 </div>
 
                 {profile.contact?.location && (
@@ -449,21 +547,31 @@ export const ProfileView: React.FC = () => {
                   </div>
                 )}
               </div>
-            </div>
+            </motion.div>
 
             {/* Summary */}
             {profile.summary && (
-              <div className="rounded-xl border border-[#282828] bg-[#1a1a1a] p-4 flex flex-col gap-2">
+              <motion.div
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.34, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
+                className="fr-card p-4 flex flex-col gap-2"
+              >
                 <span className="text-[11px] font-semibold text-[#a1a1aa] uppercase tracking-wider">
                   {t('profile.summary')}
                 </span>
                 <p className="text-xs text-[#d4d4d8] leading-relaxed">{profile.summary}</p>
-              </div>
+              </motion.div>
             )}
 
             {/* Experiences List */}
             {profile.experiences && profile.experiences.length > 0 && (
-              <div className="rounded-xl border border-[#282828] bg-[#1a1a1a] p-4 flex flex-col gap-3">
+              <motion.div
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.34, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                className="fr-card p-4 flex flex-col gap-3"
+              >
                 <span className="text-[11px] font-semibold text-[#a1a1aa] uppercase tracking-wider flex items-center gap-1.5">
                   <Briefcase className="w-3.5 h-3.5 text-sky-400" />
                   <span>{t('profile.experience')} ({profile.experiences.length})</span>
@@ -486,27 +594,35 @@ export const ProfileView: React.FC = () => {
                     </div>
                   ))}
                 </div>
-              </div>
+              </motion.div>
             )}
 
             {/* Skills Badges */}
             {profile.skills && profile.skills.length > 0 && (
-              <div className="rounded-xl border border-[#282828] bg-[#1a1a1a] p-4 flex flex-col gap-2.5">
+              <motion.div
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.34, delay: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                className="fr-card p-4 flex flex-col gap-2.5"
+              >
                 <span className="text-[11px] font-semibold text-[#a1a1aa] uppercase tracking-wider flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                   <span>{t('profile.skills')} ({profile.skills.length})</span>
                 </span>
                 <div className="flex flex-wrap gap-1.5">
-                  {profile.skills.map((s) => (
-                    <span
+                  {profile.skills.map((s, idx) => (
+                    <motion.span
                       key={s.id}
-                      className="px-2.5 py-1 rounded-md text-[11px] font-medium bg-[#141414] border border-[#2b2b2b] text-[#e4e4e7]"
+                      initial={{ opacity: 0, scale: 0.88 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.2, delay: 0.26 + Math.min(idx, 18) * 0.025 }}
+                      className="px-2.5 py-1 rounded-md text-[11px] font-medium bg-[#141414] border border-[#2b2b2b] hover:border-sky-500/40 text-[#e4e4e7] transition-colors"
                     >
                       {s.name}
-                    </span>
+                    </motion.span>
                   ))}
                 </div>
-              </div>
+              </motion.div>
             )}
           </div>
 

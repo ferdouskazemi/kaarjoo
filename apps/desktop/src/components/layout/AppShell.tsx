@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { TitleBar } from './TitleBar';
 import { Sidebar } from './Sidebar';
 import { CommandPalette } from './CommandPalette';
+import { AutoPipelineBar } from '../pipeline/AutoPipelineBar';
 import { useAppStore } from '../../stores/appStore';
 import { commands } from '../../bindings';
 import { HomeView } from '../../views/HomeView';
@@ -59,6 +60,7 @@ export const AppShell: React.FC = () => {
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />
         <main className="flex-1 overflow-y-auto flex flex-col bg-[#111111]">
+          <AutoPipelineBar />
           {renderCurrentView()}
         </main>
       </div>
