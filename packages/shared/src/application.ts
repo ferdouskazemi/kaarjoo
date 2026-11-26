@@ -93,13 +93,32 @@ export const FilledFieldValueSchema = z.object({
 });
 export type FilledFieldValue = z.infer<typeof FilledFieldValueSchema>;
 
+export const ReviewChecklistStatusSchema = z.enum([
+  'ok',
+  'mismatch',
+  'empty_required',
+  'empty_optional',
+  'user_edited',
+  'unknown_field',
+  'failed',
+  'warning',
+  'missing',
+]);
+export type ReviewChecklistStatus = z.infer<typeof ReviewChecklistStatusSchema>;
+
 export const ReviewChecklistItemSchema = z.object({
   id: z.string(),
   label: z.string(),
   value: z.string(),
-  status: z.enum(['ok', 'warning', 'missing']),
+  status: ReviewChecklistStatusSchema,
   category: z.enum(['contact', 'documents', 'screening', 'eeo', 'custom']),
   note: z.string().optional(),
+  selector: z.string().optional(),
+  intendedValue: z.string().optional(),
+  source: z.string().optional(),
+  error: z.string().optional(),
+  required: z.boolean().optional(),
+  acceptedMismatch: z.boolean().optional(),
 });
 export type ReviewChecklistItem = z.infer<typeof ReviewChecklistItemSchema>;
 

@@ -205,6 +205,14 @@ async applicationsExecuteReview(id: string) : Promise<Result<ApplicationRecordDt
     else return { status: "error", error: e  as any };
 }
 },
+async applicationsResume(id: string) : Promise<Result<ApplicationRecordDto, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("applications_resume", { id }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async applicationsSubmitReviewed(id: string) : Promise<Result<ApplicationRecordDto, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("applications_submit_reviewed", { id }) };

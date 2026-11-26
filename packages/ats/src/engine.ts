@@ -8,6 +8,7 @@ import {
   JobPosting,
   UserProfile,
   ApplicationMode,
+  ReviewChecklistItem,
 } from '@kaarjoo/shared';
 import { AtsFiller, FormFillerContext, FillResult } from './types.js';
 import { GreenhouseFiller } from './fillers/greenhouse.js';
@@ -17,17 +18,38 @@ import { WorkableFiller } from './fillers/workable.js';
 import { GenericFormFiller } from './fillers/generic.js';
 import { discoverSystemBrowsers } from './discovery.js';
 import { seedChromiumProfile } from './utils/chromiumProfile.js';
+import { detectCaptchaInPage, detectLoginWall } from './detector.js';
+import { mapFields, type MappedFieldInfo } from './mapper.js';
+
+export interface WindowBounds {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
 
 export interface ApplicationEngineOptions {
   headless?: boolean;
   browserExecutablePath?: string;
   userDataDir?: string;
+  maxConcurrentContexts?: number;
+  windowBounds?: WindowBounds;
+  onFieldChanged?: (appId: string, reviewChecklist: ReviewChecklistItem[]) => void;
+}
+
+interface ActiveBrowserSession {
+  context: BrowserContext;
+  page: Page;
+  tempDir?: string;
+  userEditedSelectors: Set<string>;
+  mappedValues?: Map<string, MappedFieldInfo>;
+  fillContext?: FormFillerContext;
 }
 
 export class ApplicationEngine {
   private fillers: AtsFiller[];
   private applications: Map<string, ApplicationRecord> = new Map();
-  private contexts: Map<string, { context: BrowserContext; page: Page; tempDir?: string }> = new Map();
+  private contexts: Map<string, ActiveBrowserSession> = new Map();
   private submittingIds: Set<string> = new Set();
   private completedAttemptIds: Set<string> = new Set();
   private options: ApplicationEngineOptions;
@@ -42,6 +64,10 @@ export class ApplicationEngine {
       new GenericFormFiller(),
     ];
     this.cleanupStaleSessions();
+  }
+
+  setWindowBounds(bounds?: WindowBounds): void {
+    this.options.windowBounds = bounds;
   }
 
   private getBrowserSessionsRoot(): string {
@@ -159,6 +185,15 @@ export class ApplicationEngine {
       return record;
     }
 
+    const maxContexts = this.options.maxConcurrentContexts ?? 2;
+    if (this.contexts.size >= maxContexts && !this.contexts.has(id)) {
+      record.status = 'failed';
+      record.stopReason = 'unrecognized_page';
+      record.stopMessage = `Max concurrent browser contexts reached (limit: ${maxContexts}). Complete or cancel an open review first.`;
+      record.updatedAt = new Date().toISOString();
+      return record;
+    }
+
     const safeSessionId = id.replace(/[^a-zA-Z0-9_-]/g, '_');
     const tempDir = path.join(this.getBrowserSessionsRoot(), safeSessionId);
     if (!fs.existsSync(tempDir)) {
@@ -168,31 +203,53 @@ export class ApplicationEngine {
     // Protect Windows OS account from failed-logon lockouts (ported from flash-rive fix)
     seedChromiumProfile(tempDir);
 
+    const headless = this.options.headless ?? (record.mode === 'review' ? false : true);
+    const launchArgs: string[] = [];
+    if (!headless && this.options.windowBounds) {
+      const b = this.options.windowBounds;
+      launchArgs.push(`--window-position=${Math.round(b.x)},${Math.round(b.y)}`);
+      launchArgs.push(`--window-size=${Math.round(b.width)},${Math.round(b.height)}`);
+    }
+
     let browserContext: BrowserContext | null = null;
     try {
       browserContext = await chromium.launchPersistentContext(tempDir, {
         executablePath: browserExe,
-        headless: this.options.headless !== false,
+        headless,
+        args: launchArgs,
         viewport: { width: 1280, height: 900 },
       });
 
       const page = await browserContext.newPage();
-      this.contexts.set(id, { context: browserContext, page, tempDir });
-
-      // Navigate to apply URL
-      await page.goto(record.applyUrl, { waitUntil: 'load', timeout: 30000 });
-
-      // Determine ATS Filler
-      const filler = this.getFiller(record.applyUrl);
-      record.atsType = filler.atsType;
-
+      const userEditedSelectors = new Set<string>();
       const fillContext: FormFillerContext = {
         profile: contextParams.profile,
         tailoredResumePath: contextParams.tailoredResumePath || record.tailoredResumePath,
         coverLetterText: contextParams.coverLetterText || record.coverLetterText,
         answers: contextParams.answers,
         mode: record.mode,
+        userEditedSelectors,
       };
+      this.contexts.set(id, {
+        context: browserContext,
+        page,
+        tempDir,
+        userEditedSelectors,
+        fillContext,
+      });
+
+      // Navigate to apply URL
+      await page.goto(record.applyUrl, { waitUntil: 'load', timeout: 30000 });
+      await this.attachFieldWatchers(id, page);
+
+      // Determine ATS Filler
+      const filler = this.getFiller(record.applyUrl);
+      record.atsType = filler.atsType;
+
+      const detectedFields = await filler.detectFields(page);
+      const { mappedValues } = mapFields(detectedFields, fillContext);
+      const sessionObj = this.contexts.get(id);
+      if (sessionObj) sessionObj.mappedValues = mappedValues;
 
       const result: FillResult = await filler.fillForm(page, fillContext);
 
@@ -208,7 +265,9 @@ export class ApplicationEngine {
       if (result.status === 'submitted') {
         record.submittedAt = new Date().toISOString();
         await this.cleanupSession(id);
-      } else if (result.status === 'needs_user' || result.status === 'needs_review') {
+      } else if (result.status === 'needs_user') {
+        await page.bringToFront().catch(() => {});
+      } else if (result.status === 'needs_review') {
         // Keep context alive for user review or confirmation
       } else {
         await this.cleanupSession(id);
@@ -225,6 +284,119 @@ export class ApplicationEngine {
     }
   }
 
+  private async attachFieldWatchers(appId: string, page: Page): Promise<void> {
+    try {
+      await page.exposeFunction('__kaarjooFieldChanged', async (selector: string) => {
+        const session = this.contexts.get(appId);
+        const record = this.applications.get(appId);
+        if (!session || !record) return;
+        session.userEditedSelectors.add(selector);
+        const filler = this.getFiller(record.applyUrl);
+        const fields = await filler.detectFields(session.page);
+        const { reviewChecklist } = await filler.readBackChecklist(
+          session.page,
+          fields,
+          session.mappedValues,
+          undefined,
+          session.userEditedSelectors
+        );
+        record.reviewChecklist = reviewChecklist;
+        record.updatedAt = new Date().toISOString();
+        this.options.onFieldChanged?.(appId, reviewChecklist);
+      });
+    } catch {
+      // Already exposed on this page
+    }
+
+    await page
+      .evaluate(() => {
+        if ((window as any).__kaarjooWatcherAttached) return;
+        (window as any).__kaarjooWatcherAttached = true;
+        const computeSelector = (el: HTMLElement): string => {
+          if (el.id) return `#${el.id}`;
+          const name = el.getAttribute('name');
+          if (name) return `${el.tagName.toLowerCase()}[name="${name}"]`;
+          return el.tagName.toLowerCase();
+        };
+        const handler = (ev: Event) => {
+          if ((window as any).__kaarjooFilling) return;
+          const target = ev.target as HTMLElement | null;
+          if (!target) return;
+          const tag = target.tagName.toLowerCase();
+          if (tag !== 'input' && tag !== 'textarea' && tag !== 'select') return;
+          const sel = computeSelector(target);
+          (window as any).__kaarjooFieldChanged?.(sel);
+        };
+        document.addEventListener('input', handler, true);
+        document.addEventListener('change', handler, true);
+      })
+      .catch(() => {});
+  }
+
+  async resumeApplication(
+    id: string,
+    contextParams?: {
+      profile?: UserProfile;
+      tailoredResumePath?: string;
+      coverLetterText?: string;
+      answers?: Record<string, string>;
+    }
+  ): Promise<ApplicationRecord> {
+    const record = this.applications.get(id);
+    const session = this.contexts.get(id);
+    if (!record || !session) {
+      throw new Error(`No active browser session to resume for application ${id}`);
+    }
+
+    const captcha = await detectCaptchaInPage(session.page);
+    if (captcha.detected) {
+      await session.page.bringToFront().catch(() => {});
+      record.status = 'needs_user';
+      record.stopReason = 'captcha_detected';
+      record.stopMessage = 'CAPTCHA is still present. Please complete it in the browser window.';
+      record.updatedAt = new Date().toISOString();
+      return record;
+    }
+
+    const loginWall = await detectLoginWall(session.page);
+    if (loginWall.detected) {
+      await session.page.bringToFront().catch(() => {});
+      record.status = 'needs_user';
+      record.stopReason = 'login_wall';
+      record.stopMessage = `Login wall still present: ${loginWall.reason}`;
+      record.updatedAt = new Date().toISOString();
+      return record;
+    }
+
+    const filler = this.getFiller(record.applyUrl);
+    const fillContext: FormFillerContext = {
+      profile: contextParams?.profile ?? session.fillContext!.profile,
+      tailoredResumePath:
+        contextParams?.tailoredResumePath ?? session.fillContext?.tailoredResumePath ?? record.tailoredResumePath,
+      coverLetterText:
+        contextParams?.coverLetterText ?? session.fillContext?.coverLetterText ?? record.coverLetterText,
+      answers: contextParams?.answers ?? session.fillContext?.answers,
+      mode: record.mode,
+      userEditedSelectors: session.userEditedSelectors,
+    };
+    session.fillContext = fillContext;
+    await this.attachFieldWatchers(id, session.page);
+
+    const detectedFields = await filler.detectFields(session.page);
+    const { mappedValues } = mapFields(detectedFields, fillContext);
+    session.mappedValues = mappedValues;
+
+    const result = await filler.fillForm(session.page, fillContext);
+    record.status = result.status;
+    record.stopReason = result.stopReason;
+    record.stopMessage = result.stopMessage;
+    record.filledFields = result.filledFields;
+    record.reviewChecklist = result.reviewChecklist;
+    record.screenshotBeforeSubmit = result.screenshotBeforeSubmit;
+    record.updatedAt = new Date().toISOString();
+    return record;
+  }
+
   async submitReviewedApplication(
     id: string,
     rehydrate?: {
@@ -233,8 +405,9 @@ export class ApplicationEngine {
       job?: JobPosting;
       tailoredResumePath?: string;
       coverLetterText?: string;
+      acceptedMismatchIds?: string[];
     }
-  ): Promise<ApplicationRecord & { refilled?: boolean }> {
+  ): Promise<ApplicationRecord & { refilled?: boolean; submitStatus?: 'verified' | 'unverified' | 'failed' }> {
     const attemptId = rehydrate?.submitAttemptId;
     if (attemptId && this.completedAttemptIds.has(attemptId)) {
       throw new Error(`Submit attempt ${attemptId} already completed (idempotent guard)`);
@@ -272,34 +445,72 @@ export class ApplicationEngine {
       throw new Error(`Application ${id} is not in 'needs_review' state (current: ${record.status})`);
     }
 
-    record.status = 'submitting';
-    record.updatedAt = new Date().toISOString();
-
     if (!session) {
       throw new Error(`Active browser session for application ${id} expired or closed`);
     }
 
-    this.submittingIds.add(id);
-    try {
-      const filler = this.getFiller(record.applyUrl);
-      const submitResult = await filler.submitForm(session.page);
+    const filler = this.getFiller(record.applyUrl);
 
-      if (submitResult.success) {
+    // Re-read all fields from live DOM before submitting
+    const fields = await filler.detectFields(session.page);
+    const { reviewChecklist, missingRequiredFields } = await filler.readBackChecklist(
+      session.page,
+      fields,
+      session.mappedValues,
+      undefined,
+      session.userEditedSelectors
+    );
+    record.reviewChecklist = reviewChecklist;
+
+    const acceptedSet = new Set(rehydrate?.acceptedMismatchIds ?? []);
+    const blockingItems = reviewChecklist.filter(
+      (item) =>
+        item.status === 'empty_required' ||
+        item.status === 'failed' ||
+        (item.status === 'mismatch' && !item.acceptedMismatch && !acceptedSet.has(item.id))
+    );
+
+    if (blockingItems.length > 0 || missingRequiredFields.length > 0) {
+      const labels = blockingItems.map((b) => b.label).join(', ') || missingRequiredFields.join(', ');
+      throw new Error(`Cannot submit: blocking fields require review (${labels})`);
+    }
+
+    record.status = 'submitting';
+    record.updatedAt = new Date().toISOString();
+
+    this.submittingIds.add(id);
+    let keepSessionOpen = false;
+    let submitStatus: 'verified' | 'unverified' | 'failed' = 'failed';
+    try {
+      const submitResult = await filler.submitForm(session.page);
+      submitStatus = submitResult.status;
+
+      if (submitResult.submitButtonNotFound) {
+        keepSessionOpen = true;
+        await session.page.bringToFront().catch(() => {});
+        record.status = 'needs_user';
+        record.stopReason = 'unrecognized_page';
+        record.stopMessage =
+          'Submit button not found automatically. Please click Submit in the open Chrome window.';
+      } else if (submitResult.success) {
         record.status = 'submitted';
         record.submittedAt = new Date().toISOString();
         record.screenshotConfirmation = submitResult.screenshotConfirmation;
         if (attemptId) this.completedAttemptIds.add(attemptId);
       } else {
         record.status = 'failed';
+        record.screenshotConfirmation = submitResult.screenshotConfirmation;
         record.stopMessage = 'Submit button clicked but confirmation could not be verified.';
       }
     } finally {
       this.submittingIds.delete(id);
-      await this.cleanupSession(id);
+      if (!keepSessionOpen) {
+        await this.cleanupSession(id);
+      }
     }
 
     record.updatedAt = new Date().toISOString();
-    return record;
+    return { ...record, submitStatus };
   }
 
   async cancelApplication(id: string): Promise<ApplicationRecord> {

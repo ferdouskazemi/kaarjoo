@@ -48,6 +48,7 @@ pub fn specta_builder() -> Builder<tauri::Wry> {
         commands::applications_update_status,
         commands::applications_update_notes,
         commands::applications_execute_review,
+        commands::applications_resume,
         commands::applications_submit_reviewed,
         commands::pipeline_start_discovery,
         commands::applications_prepare,

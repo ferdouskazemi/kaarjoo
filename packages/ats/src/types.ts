@@ -17,6 +17,15 @@ export interface FormFillerContext {
   answers?: Record<string, string>;
   mode?: 'review' | 'auto';
   autoSubmitMinConfidence?: number;
+  userEditedSelectors?: Set<string>;
+}
+
+export interface SubmitFormResult {
+  success: boolean;
+  status: 'verified' | 'unverified' | 'failed';
+  submitButtonNotFound?: boolean;
+  confirmationText?: string;
+  screenshotConfirmation?: string;
 }
 
 export interface FillResult {
@@ -38,7 +47,14 @@ export interface AtsFiller {
   canHandle(url: string, html?: string): boolean;
   detectFields(page: Page): Promise<FormField[]>;
   fillForm(page: Page, context: FormFillerContext): Promise<FillResult>;
-  submitForm(page: Page): Promise<{ success: boolean; confirmationText?: string; screenshotConfirmation?: string }>;
+  readBackChecklist(
+    page: Page,
+    fields: FormField[],
+    mappedValues?: Map<string, any>,
+    fillErrors?: Map<string, string>,
+    userEditedSelectors?: Set<string>
+  ): Promise<{ reviewChecklist: ReviewChecklistItem[]; missingRequiredFields: string[] }>;
+  submitForm(page: Page): Promise<SubmitFormResult>;
 }
 
 export interface CaptchaCheckResult {

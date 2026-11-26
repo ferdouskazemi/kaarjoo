@@ -90,6 +90,6 @@ describe('ATS Profile and Answer Mapper', () => {
 
     expect(mapping.missingRequiredFields).toContain('Phone');
     const phoneChecklist = mapping.reviewChecklist.find((i) => i.id === 'phone');
-    expect(phoneChecklist?.status).toBe('missing');
+    expect(phoneChecklist?.status).toBe('empty_required');
   });
 });

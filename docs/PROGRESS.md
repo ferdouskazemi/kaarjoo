@@ -177,3 +177,13 @@
   - `packages/ats/src/engine.ts`: Moved Playwright `userDataDir` to `appDataDir/browser-sessions/<appId>`, purged stale sessions (> 24h) on startup, and added `closeAllSessions()`.
   - `apps/desktop/src-tauri/src/db.rs` & `commands.rs`: Implemented full `settings_wipe_all_data` closing browsers, wiping all user tables (preserving UI language), removing `sources/`, `exports/`, `screenshots/`, `browser-sessions/`, `logs/` (and optional `models/`), and returning `WipeSummaryDto`.
   - `packages/engine/src/__tests__/security.test.ts` & `docs/SECURITY.md`: Added capability allowlist, path traversal, XSS escaping, and zero-network PDF export tests plus threat model documentation.
+
+### Prompt 5: Browser Co-Pilot (Visible, Verified, Single Submit) (`feat/p5-browser-copilot`)
+- **Status:** COMPLETED & VERIFIED
+- **Changes:**
+  - `packages/shared/src/application.ts`: Extended `ReviewChecklistItemSchema` with real read-back statuses (`ok`, `mismatch`, `empty_required`, `empty_optional`, `user_edited`, `unknown_field`, `failed`) plus `selector`, `intendedValue`, `source`, `error`, `required`, and `acceptedMismatch`.
+  - `packages/ats/src/mapper.ts`: Added normalized exact + fuzzy answer bank lookup with `source`, removed guessed `work_authorization`/`visa_sponsorship`/`resume.pdf` defaults, and restricted EEO decline default to fields where a decline option actually exists.
+  - `packages/ats/src/fillers/base.ts`: Added `readBackChecklist` reading actual DOM values (`inputValue`, `isChecked`, selected option label/value, `input.files`), fill-error isolation (never marking failed fields as filled), and DOM-diff confirmation detection (`networkidle` up to 20s + text diff after click + URL change check).
+  - `packages/ats/src/engine.ts` & `packages/engine/src/index.ts`: Defaulted Review mode to headed browser (`headless: false`) with Rust-provided `windowBounds`, enforced `maxConcurrentContexts: 2`, wired live `input`/`change` watchers (`application.fieldChanged`), added `bringToFront()` on `needs_user`, added `application.resume`, and enforced fresh DOM read-back + `submitButtonNotFound` handling in `submitReviewedApplication`.
+  - `apps/desktop/src-tauri/src/commands.rs` & `lib.rs`: Passed `main` window bounds to `application.execute` and added `applications_resume` command.
+  - `packages/ats/src/__tests__/copilot_review.test.ts`: Added 7 Playwright + mapper tests covering fill errors, empty required blocking, live `user_edited` sync, footer confirmation trap, `submitAttemptId` idempotency, restart refill guard, and mapper honesty rules.

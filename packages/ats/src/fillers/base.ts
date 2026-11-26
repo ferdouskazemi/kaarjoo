@@ -1,14 +1,15 @@
 import { Page } from 'playwright-core';
 import fs from 'node:fs';
+import path from 'node:path';
 import {
   AtsType,
   FormField,
   FilledFieldValue,
   ReviewChecklistItem,
 } from '@kaarjoo/shared';
-import { FormFillerContext, FillResult } from '../types.js';
+import { FormFillerContext, FillResult, SubmitFormResult } from '../types.js';
 import { detectCaptchaInPage, detectLoginWall, detectFieldsFromPage } from '../detector.js';
-import { mapFields } from '../mapper.js';
+import { mapFields, type MappedFieldInfo } from '../mapper.js';
 
 export interface BaseFillerOptions {
   atsType: AtsType;
@@ -100,44 +101,79 @@ export abstract class BaseAtsFiller {
     }
 
     // 4. Map Candidate Profile & Answers
-    const { mappedValues, filledFields, reviewChecklist, missingRequiredFields } = mapFields(fields, context);
+    const { mappedValues, filledFields } = mapFields(fields, context);
+    const fillErrors = new Map<string, string>();
+    const failedSelectors = new Set<string>();
 
-    // 5. Fill Interactive Elements on Page
-    for (const field of fields) {
-      const mapping = mappedValues.get(field.selector);
-      if (!mapping) continue;
+    // 5. Fill Interactive Elements on Page (guarding live-edit watchers)
+    await page.evaluate(() => {
+      (window as any).__kaarjooFilling = true;
+    }).catch(() => {});
 
-      try {
-        const el = await page.$(field.selector);
-        if (!el) continue;
+    try {
+      for (const field of fields) {
+        const mapping = mappedValues.get(field.selector);
+        if (!mapping) continue;
 
-        if (field.type === 'file') {
-          const filePath = String(mapping.value);
-          if (filePath && fs.existsSync(filePath)) {
+        try {
+          const el = await page.$(field.selector);
+          if (!el) {
+            throw new Error(`Element not found for selector: ${field.selector}`);
+          }
+
+          if (field.type === 'file') {
+            const filePath = String(mapping.value);
+            if (!filePath || !fs.existsSync(filePath)) {
+              throw new Error(`Resume file not found: ${filePath}`);
+            }
             await el.setInputFiles(filePath);
-          }
-        } else if (field.type === 'select') {
-          if (mapping.option) {
-            await page.selectOption(field.selector, mapping.option.value);
+          } else if (field.type === 'select') {
+            if (mapping.option) {
+              await page.selectOption(field.selector, mapping.option.value);
+            } else {
+              await page.selectOption(field.selector, { label: String(mapping.value) });
+            }
+          } else if (field.type === 'checkbox') {
+            if (Boolean(mapping.value)) {
+              await el.check();
+            } else {
+              await el.uncheck();
+            }
+          } else if (field.type === 'radio') {
+            await el.check();
           } else {
-            await page.selectOption(field.selector, { label: String(mapping.value) }).catch(() => {
-              // fallback
-            });
+            await el.fill(String(mapping.value));
           }
-        } else if (field.type === 'checkbox') {
-          if (Boolean(mapping.value)) {
-            await el.check().catch(() => {});
-          }
-        } else if (field.type === 'radio') {
-          await el.check().catch(() => {});
-        } else {
-          // Standard text, textarea, email, tel, url
-          await el.fill(String(mapping.value));
+        } catch (err: any) {
+          const msg = err?.message || String(err);
+          fillErrors.set(field.selector, msg);
+          failedSelectors.add(field.selector);
         }
-      } catch (err) {
-        console.warn(`[${this.name}] Failed to fill field ${field.selector}:`, err);
+      }
+    } finally {
+      await page.evaluate(() => {
+        (window as any).__kaarjooFilling = false;
+      }).catch(() => {});
+    }
+
+    // Never report a field as filled if fill threw
+    const verifiedFilledFields: FilledFieldValue[] = [];
+    const selectorByFieldId = new Map(fields.map((f) => [f.id, f.selector]));
+    for (const ff of filledFields) {
+      const sel = selectorByFieldId.get(ff.fieldId);
+      if (!sel || !failedSelectors.has(sel)) {
+        verifiedFilledFields.push(ff);
       }
     }
+
+    // 5b. Read back every detected field's actual DOM value
+    const { reviewChecklist, missingRequiredFields } = await this.readBackChecklist(
+      page,
+      fields,
+      mappedValues,
+      fillErrors,
+      context.userEditedSelectors
+    );
 
     // 6. Capture High-Resolution Screenshot
     const screenshot = await this.captureScreenshot(page);
@@ -147,10 +183,10 @@ export abstract class BaseAtsFiller {
     const canAutoSubmit =
       isAutoMode &&
       missingRequiredFields.length === 0 &&
-      filledFields.every((f) => f.confidence >= (context.autoSubmitMinConfidence ?? 0.9));
+      fillErrors.size === 0 &&
+      verifiedFilledFields.every((f) => f.confidence >= (context.autoSubmitMinConfidence ?? 0.9));
 
     if (!canAutoSubmit) {
-      // Pause at final review step
       return {
         success: true,
         status: 'needs_review',
@@ -158,7 +194,7 @@ export abstract class BaseAtsFiller {
         stopMessage: missingRequiredFields.length > 0
           ? `Please provide answers for required fields: ${missingRequiredFields.join(', ')}`
           : undefined,
-        filledFields,
+        filledFields: verifiedFilledFields,
         reviewChecklist,
         screenshotBeforeSubmit: screenshot,
         missingRequiredFields,
@@ -172,7 +208,7 @@ export abstract class BaseAtsFiller {
       status: submitResult.success ? 'submitted' : 'failed',
       stopReason: submitResult.success ? 'none' : 'unrecognized_page',
       stopMessage: submitResult.success ? undefined : 'Form submission button clicked but confirmation could not be verified.',
-      filledFields,
+      filledFields: verifiedFilledFields,
       reviewChecklist,
       screenshotBeforeSubmit: screenshot,
       screenshotConfirmation: submitResult.screenshotConfirmation,
@@ -182,11 +218,136 @@ export abstract class BaseAtsFiller {
   }
 
   /**
-   * Submits the form by clicking the confirmed submit button and verifying confirmation.
+   * Reads every detected field's actual DOM value and builds `reviewChecklist`.
    */
-  async submitForm(page: Page): Promise<{ success: boolean; confirmationText?: string; screenshotConfirmation?: string }> {
-    let submitClicked = false;
+  async readBackChecklist(
+    page: Page,
+    fields: FormField[],
+    mappedValues?: Map<string, MappedFieldInfo>,
+    fillErrors?: Map<string, string>,
+    userEditedSelectors?: Set<string>
+  ): Promise<{ reviewChecklist: ReviewChecklistItem[]; missingRequiredFields: string[] }> {
+    const reviewChecklist: ReviewChecklistItem[] = [];
+    const missingRequiredFields: string[] = [];
 
+    for (const field of fields) {
+      const mapping = mappedValues?.get(field.selector);
+      const fillErr = fillErrors?.get(field.selector);
+      const isUserEdited = userEditedSelectors?.has(field.selector) ?? false;
+
+      let actualValue = '';
+      let actualSelectValue = '';
+      let readErr: string | undefined;
+
+      try {
+        const el = await page.$(field.selector);
+        if (el) {
+          if (field.type === 'file') {
+            actualValue = await el.evaluate((input: HTMLInputElement) =>
+              Array.from(input.files || []).map((f) => f.name).join(', ')
+            );
+          } else if (field.type === 'checkbox' || field.type === 'radio') {
+            const checked = await el.isChecked();
+            actualValue = checked ? 'true' : 'false';
+          } else if (field.type === 'select') {
+            const selInfo = await el.evaluate((sel: HTMLSelectElement) => {
+              const opt = sel.options[sel.selectedIndex];
+              return {
+                value: sel.value || '',
+                label: opt ? opt.text.trim() : '',
+              };
+            });
+            actualValue = selInfo.label || selInfo.value;
+            actualSelectValue = selInfo.value;
+          } else {
+            actualValue = await el.inputValue();
+          }
+        }
+      } catch (err: any) {
+        readErr = err?.message || String(err);
+      }
+
+      const category = mapping?.category ?? 'custom';
+      const source = isUserEdited ? 'user' : (mapping?.source ?? 'unknown');
+      const intendedDisplay = mapping
+        ? mapping.option
+          ? mapping.option.label
+          : field.type === 'file'
+          ? path.basename(String(mapping.value))
+          : String(mapping.value)
+        : undefined;
+
+      let status: ReviewChecklistItem['status'];
+      let note: string | undefined;
+
+      if (fillErr || readErr) {
+        status = 'failed';
+        note = fillErr || readErr;
+        if (field.required) missingRequiredFields.push(field.label);
+      } else if (isUserEdited) {
+        if (field.required && actualValue.trim() === '') {
+          status = 'empty_required';
+          missingRequiredFields.push(field.label);
+          note = 'Required by employer';
+        } else {
+          status = 'user_edited';
+        }
+      } else if (!mapping) {
+        if (field.required && actualValue.trim() === '') {
+          status = 'empty_required';
+          missingRequiredFields.push(field.label);
+          note = 'Required by employer';
+        } else {
+          status = 'unknown_field';
+          note = 'Detected on form but not mapped';
+        }
+      } else if (actualValue.trim() === '' || (field.type === 'select' && actualSelectValue === '')) {
+        status = field.required ? 'empty_required' : 'empty_optional';
+        if (field.required) {
+          missingRequiredFields.push(field.label);
+          note = 'Required by employer';
+        }
+      } else {
+        const expectedNorm = String(intendedDisplay ?? '').trim();
+        const actualNorm = actualValue.trim();
+        const matches =
+          field.type === 'select'
+            ? actualSelectValue === String(mapping.value) || actualNorm === expectedNorm
+            : field.type === 'file'
+            ? actualNorm.includes(expectedNorm)
+            : actualNorm === expectedNorm;
+        status = matches ? 'ok' : 'mismatch';
+        if (status === 'mismatch') {
+          note = `Expected "${expectedNorm}", DOM has "${actualNorm}"`;
+        }
+      }
+
+      reviewChecklist.push({
+        id: field.id,
+        label: field.label,
+        value: actualValue,
+        status,
+        category,
+        selector: field.selector,
+        intendedValue: intendedDisplay,
+        source,
+        error: fillErr || readErr,
+        required: field.required,
+        note,
+      });
+    }
+
+    return { reviewChecklist, missingRequiredFields };
+  }
+
+  /**
+   * Submits the form by clicking the confirmed submit button and verifying confirmation via DOM diff.
+   */
+  async submitForm(page: Page): Promise<SubmitFormResult> {
+    const beforeText = await page.evaluate(() => document.body?.innerText || '').catch(() => '');
+    const beforeUrl = page.url();
+
+    let submitClicked = false;
     for (const selector of this.submitButtonSelectors) {
       try {
         const btn = await page.$(selector);
@@ -201,24 +362,33 @@ export abstract class BaseAtsFiller {
     }
 
     if (!submitClicked) {
-      return { success: false };
+      return {
+        success: false,
+        status: 'failed',
+        submitButtonNotFound: true,
+      };
     }
 
-    // Wait for response / navigation
-    await page.waitForTimeout(1500);
+    // Wait for navigation / network idle (max 20s)
+    await page.waitForLoadState('networkidle', { timeout: 20000 }).catch(() => {});
+    await page.waitForTimeout(250);
 
-    // Check for confirmation text or elements
-    const confirmed = await this.detectConfirmation(page);
+    const confirmed = await this.detectConfirmation(page, beforeText, beforeUrl);
     const confirmationScreenshot = await this.captureScreenshot(page);
 
     return {
       success: confirmed.success,
+      status: confirmed.success ? 'verified' : 'unverified',
       confirmationText: confirmed.text,
       screenshotConfirmation: confirmationScreenshot,
     };
   }
 
-  async detectConfirmation(page: Page): Promise<{ success: boolean; text?: string }> {
+  async detectConfirmation(
+    page: Page,
+    beforeText = '',
+    beforeUrl = ''
+  ): Promise<{ success: boolean; text?: string }> {
     // 1. Selector check
     for (const sel of this.confirmationSelectors) {
       try {
@@ -232,16 +402,34 @@ export abstract class BaseAtsFiller {
       }
     }
 
-    // 2. Text heuristics
+    // 2. Text phrases ONLY in content that appeared AFTER the click (DOM diff)
     try {
-      const pageText = await page.evaluate(() => document.body?.innerText || '');
+      const afterText = await page.evaluate(() => document.body?.innerText || '');
+      const beforeLines = new Set(
+        beforeText
+          .split(/\r?\n/)
+          .map((l) => l.trim().toLowerCase())
+          .filter(Boolean)
+      );
+      const addedText = afterText
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter((l) => l.length > 0 && !beforeLines.has(l.toLowerCase()))
+        .join('\n');
+
       for (const phrase of this.confirmationTexts) {
-        if (pageText.toLowerCase().includes(phrase.toLowerCase())) {
+        if (addedText.toLowerCase().includes(phrase.toLowerCase())) {
           return { success: true, text: phrase };
         }
       }
     } catch {
       // ignore
+    }
+
+    // 3. URL pattern check (only if URL changed or matches confirmation route)
+    const afterUrl = page.url();
+    if (afterUrl !== beforeUrl && /thank|confirm|success/i.test(afterUrl)) {
+      return { success: true, text: `URL navigated to ${afterUrl}` };
     }
 
     return { success: false };

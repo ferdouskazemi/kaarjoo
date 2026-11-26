@@ -935,14 +935,28 @@ pub async fn applications_execute_review(
     )
     .await;
 
+    let window_bounds = app_handle.get_webview_window("main").and_then(|win| {
+        let pos = win.outer_position().ok()?;
+        let size = win.outer_size().ok()?;
+        Some(json!({
+            "x": pos.x + size.width as i32 + 12,
+            "y": pos.y,
+            "width": 820,
+            "height": size.height.max(700)
+        }))
+    });
+
     // Call engine sidecar RPC application.execute (which runs Playwright in Review mode)
-    let params = json!({
+    let mut params = json!({
         "id": app.id,
         "job": job,
         "profile": profile,
         "mode": "review",
         "resumePath": app.tailored_resume_path
     });
+    if let Some(bounds) = window_bounds {
+        params["windowBounds"] = bounds;
+    }
 
     let res = match state.engine.request("application.execute", params).await {
         Ok(v) => v,
@@ -1053,6 +1067,80 @@ pub(crate) fn map_submit_outcome(res: &serde_json::Value) -> Result<(&'static st
             Err(format!("Submission failed (engine status: {}): {}", other.unwrap_or("unknown"), msg))
         }
     }
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn applications_resume(
+    app_handle: tauri::AppHandle,
+    state: State<'_, AppState>,
+    id: String,
+) -> Result<ApplicationRecordDto, String> {
+    let profile = db::get_profile(&state.pool)
+        .await
+        .map_err(|e| format!("DB error: {}", e))?;
+
+    let res = state
+        .engine
+        .request(
+            "application.resume",
+            json!({
+                "id": id,
+                "profile": profile,
+            }),
+        )
+        .await?;
+
+    let status = map_execute_status(&res);
+    let stop_reason = res
+        .get("stopReason")
+        .and_then(|v| v.as_str())
+        .unwrap_or("none");
+    let stop_message = res.get("stopMessage").and_then(|v| v.as_str());
+    let checklist_val = res.get("reviewChecklist").cloned().unwrap_or(json!([]));
+    let checklist_json = serde_json::to_string(&checklist_val).unwrap_or_else(|_| "[]".to_string());
+    let missing_fields_val = res.get("missingRequiredFields").cloned().unwrap_or(json!([]));
+    let missing_fields_json =
+        serde_json::to_string(&missing_fields_val).unwrap_or_else(|_| "[]".to_string());
+
+    let screenshot_before = save_screenshot_to_disk(
+        &app_handle,
+        &id,
+        "before",
+        res.get("screenshotBeforeSubmit")
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string()),
+    );
+    let step_id = format!("step_{}", uuid::Uuid::new_v4().simple());
+    db::record_application_step(
+        &state.pool,
+        &step_id,
+        &id,
+        "resume_review",
+        status,
+        &checklist_json,
+        screenshot_before.as_deref(),
+    )
+    .await
+    .map_err(|e| format!("DB error recording step: {}", e))?;
+
+    db::update_application_review_outcome(
+        &state.pool,
+        &id,
+        status,
+        if stop_reason == "none" { None } else { Some(stop_reason) },
+        stop_message,
+        &missing_fields_json,
+    )
+    .await
+    .map_err(|e| format!("DB update error: {}", e))?;
+
+    let updated = db::get_application_by_id(&state.pool, &id)
+        .await
+        .map_err(|e| format!("DB fetch error: {}", e))?
+        .ok_or_else(|| format!("Application '{}' disappeared", id))?;
+    let _ = app_handle.emit("app:application-updated", &updated);
+    Ok(updated)
 }
 
 #[tauri::command]

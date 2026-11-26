@@ -44,7 +44,12 @@ import {
 } from '@kaarjoo/shared';
 
 const server = new StdioRpcServer();
-const applicationEngine = new ApplicationEngine({ headless: true });
+const applicationEngine = new ApplicationEngine({
+  maxConcurrentContexts: 2,
+  onFieldChanged: (appId, reviewChecklist) => {
+    server.sendNotification('application.fieldChanged', { appId, reviewChecklist });
+  },
+});
 
 // --- Ping & System Specs ---
 server.register('system.ping', {
@@ -579,9 +584,20 @@ server.register('application.execute', {
     tailoredResumePath: z.string().optional(),
     coverLetterText: z.string().optional(),
     answers: z.record(z.string()).optional(),
+    windowBounds: z
+      .object({
+        x: z.number(),
+        y: z.number(),
+        width: z.number(),
+        height: z.number(),
+      })
+      .optional(),
   }),
   handler: async (params) => {
     try {
+      if (params.windowBounds) {
+        applicationEngine.setWindowBounds(params.windowBounds);
+      }
       let targetId = params.id;
       let resumePath = params.tailoredResumePath || params.resumePath;
       if (resumePath) {
@@ -613,6 +629,32 @@ server.register('application.execute', {
   },
 });
 
+server.register('application.resume', {
+  inputSchema: z.object({
+    id: z.string().min(1),
+    profile: UserProfileSchema.optional(),
+    tailoredResumePath: z.string().optional(),
+    coverLetterText: z.string().optional(),
+    answers: z.record(z.string()).optional(),
+  }),
+  handler: async ({ id, profile, tailoredResumePath, coverLetterText, answers }) => {
+    try {
+      let safeResumePath = tailoredResumePath;
+      if (safeResumePath) {
+        safeResumePath = resolveAllowedEnginePath(safeResumePath, ['sources', 'exports']);
+      }
+      return await applicationEngine.resumeApplication(id, {
+        profile: profile as any,
+        tailoredResumePath: safeResumePath,
+        coverLetterText,
+        answers,
+      });
+    } catch (err: any) {
+      throw new RpcError(RpcErrorCode.BrowserAutomationError, `Failed to resume application: ${err.message}`);
+    }
+  },
+});
+
 server.register('application.submitReviewed', {
   inputSchema: z.object({
     id: z.string().min(1),
@@ -621,8 +663,9 @@ server.register('application.submitReviewed', {
     job: JobPostingSchema.optional(),
     tailoredResumePath: z.string().optional(),
     coverLetterText: z.string().optional(),
+    acceptedMismatchIds: z.array(z.string()).optional(),
   }),
-  handler: async ({ id, submitAttemptId, profile, job, tailoredResumePath, coverLetterText }) => {
+  handler: async ({ id, submitAttemptId, profile, job, tailoredResumePath, coverLetterText, acceptedMismatchIds }) => {
     try {
       return await applicationEngine.submitReviewedApplication(id, {
         submitAttemptId,
@@ -630,6 +673,7 @@ server.register('application.submitReviewed', {
         job: job as any,
         tailoredResumePath,
         coverLetterText,
+        acceptedMismatchIds,
       });
     } catch (err: any) {
       throw new RpcError(RpcErrorCode.BrowserAutomationError, `Failed to submit reviewed application: ${err.message}`);
