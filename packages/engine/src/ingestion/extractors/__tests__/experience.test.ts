@@ -38,4 +38,21 @@ describe('Deterministic Experience Extractor', () => {
     expect(items[0].endDate).toBe('2023');
     expect(items[0].achievements.length).toBe(2);
   });
+
+  it('extracts two-line company-first header without fabricating placeholder Company or Software Engineer', () => {
+    const sectionText = `
+      INOLITIX, CA, United States — 2022 – Present
+      Part-time Front-End Developer • UI & UX WordPress Designer (Aug 2022 – Current)
+      • Built responsive marketing and web applications
+    `;
+
+    const items = extractExperiences(sectionText);
+    expect(items.length).toBe(1);
+    expect(items[0].company).toBe('INOLITIX');
+    expect(items[0].location).toBe('CA, United States');
+    expect(items[0].title).toContain('Front-End Developer');
+    expect(items[0].company).not.toBe('Company');
+    expect(items[0].title).not.toBe('Software Engineer');
+    expect(items[0].isCurrent).toBe(true);
+  });
 });

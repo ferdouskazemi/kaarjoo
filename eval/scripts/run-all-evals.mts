@@ -90,7 +90,7 @@ async function runExtractionEval(hasInstructModel: boolean) {
       if (gotEmail === expEmail) emailTP++;
       else {
         emailFN++;
-        if (gotEmail && gotEmail !== 'unspecified@example.com') emailFP++;
+        if (gotEmail) emailFP++;
       }
     }
 

@@ -63,12 +63,12 @@ export function extractContactInfo(pages: RawTextPage[]): ContactInfo | null {
     .map((l) => l.trim())
     .filter((l) => l.length > 0 && !EMAIL_REGEX.test(l) && !l.includes('http'));
 
-  const candidateName = firstPageLines[0] || 'Unknown';
+  const candidateName = firstPageLines[0] || undefined;
 
   return {
-    fullName: candidateName !== 'Unknown' ? candidateName : 'Ferdous Kazemi',
-    email: email || 'ferdouskazemi1000@gmail.com',
-    phone: detectedPhone || '+93 728 200 021',
+    fullName: candidateName,
+    email: email || undefined,
+    phone: detectedPhone || undefined,
     linkedinUrl,
     githubUrl,
   };

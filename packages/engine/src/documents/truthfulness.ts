@@ -37,8 +37,8 @@ export class TruthfulnessGuard {
     const verifiedNumbers = new Set<string>();
 
     for (const exp of profile.experiences || []) {
-      verifiedCompanies.add(exp.company.toLowerCase().trim());
-      verifiedTitles.add(exp.title.toLowerCase().trim());
+      if (exp.company) verifiedCompanies.add(exp.company.toLowerCase().trim());
+      if (exp.title) verifiedTitles.add(exp.title.toLowerCase().trim());
       if (exp.startDate) verifiedDates.add(normalizeDigits(exp.startDate).toLowerCase().trim());
       if (exp.endDate) verifiedDates.add(normalizeDigits(exp.endDate).toLowerCase().trim());
       for (const sk of exp.skillsUsed || []) {

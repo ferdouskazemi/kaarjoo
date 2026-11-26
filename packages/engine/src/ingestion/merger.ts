@@ -93,8 +93,8 @@ export function mergeProfiles(profiles: UserProfile[], sourceNames: string[] = [
 
   for (const p of profiles) {
     for (const exp of p.experiences) {
-      const normalizedCompany = exp.company.toLowerCase().trim();
-      const existing = seenCompanies.get(normalizedCompany);
+      const normalizedCompany = (exp.company || '').toLowerCase().trim();
+      const existing = normalizedCompany ? seenCompanies.get(normalizedCompany) : undefined;
 
       if (existing) {
         // If same company and overlapping start date, merge achievements
@@ -102,7 +102,7 @@ export function mergeProfiles(profiles: UserProfile[], sourceNames: string[] = [
           const combinedAchievements = Array.from(new Set([...existing.achievements, ...exp.achievements]));
           existing.achievements = combinedAchievements;
           // Keep longer title if richer
-          if (exp.title.length > existing.title.length) {
+          if ((exp.title || '').length > (existing.title || '').length) {
             existing.title = exp.title;
           }
         } else {

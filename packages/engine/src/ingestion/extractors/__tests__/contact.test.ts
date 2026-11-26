@@ -9,8 +9,8 @@ describe('Deterministic Contact Extractor', () => {
         text: `
           فردوس کاظمی
           مهندس نرم‌افزار ارشد
-          ایمیل: ferdouskazemi1000@gmail.com
-          شماره تماس: +93 728 200 021
+          ایمیل: jane.doe@example.com
+          شماره تماس: +1 415 555 0199
           پروفایل لینکدین: https://www.linkedin.com/in/ferdous-kazemi
           گیت‌هاب: https://github.com/ferdouskazemi
           کابل، افغانستان
@@ -21,8 +21,8 @@ describe('Deterministic Contact Extractor', () => {
     const contact = extractContactInfo(rawPages);
     expect(contact).not.toBeNull();
     expect(contact?.fullName).toContain('فردوس کاظمی');
-    expect(contact?.email).toBe('ferdouskazemi1000@gmail.com');
-    expect(contact?.phone).toBe('+93 72 820 0021');
+    expect(contact?.email).toBe('jane.doe@example.com');
+    expect(contact?.phone).toBe('+1 415 555 0199');
     expect(contact?.linkedinUrl).toBe('https://www.linkedin.com/in/ferdous-kazemi');
     expect(contact?.githubUrl).toBe('https://github.com/ferdouskazemi');
   });
@@ -43,5 +43,20 @@ describe('Deterministic Contact Extractor', () => {
     expect(contact).not.toBeNull();
     expect(contact?.email).toBe('ali.rezaei@test.ir');
     expect(contact?.phone).toBe('+98 912 345 6789');
+  });
+
+  it('returns undefined for missing email and phone instead of fabricating personal defaults', () => {
+    const contact = extractContactInfo([
+      {
+        pageNumber: 1,
+        text: `
+          Jane Doe
+          Senior Frontend Developer
+        `,
+      },
+    ]);
+    expect(contact?.fullName).toBe('Jane Doe');
+    expect(contact?.email).toBeUndefined();
+    expect(contact?.phone).toBeUndefined();
   });
 });

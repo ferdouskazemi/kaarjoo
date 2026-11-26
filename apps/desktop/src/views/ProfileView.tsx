@@ -63,6 +63,7 @@ export const ProfileView: React.FC = () => {
   const [extractError, setExtractError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [confirmToast, setConfirmToast] = useState(false);
+  const [isConfirmed, setIsConfirmed] = useState(false);
   const [rightTab, setRightTab] = useState<'readable' | 'raw'>('readable');
 
   // Inline Edit States
@@ -204,6 +205,7 @@ export const ProfileView: React.FC = () => {
 
   const handleConfirmProfile = () => {
     if (profile) {
+      setIsConfirmed(true);
       useApplicationStore.getState().syncWithProfile(profile as any);
       setConfirmToast(true);
       setTimeout(() => setConfirmToast(false), 3500);
@@ -231,17 +233,29 @@ export const ProfileView: React.FC = () => {
     }
   };
 
+  const validExperiences = (profile?.experiences || []).filter(
+    (e) => Boolean(e.title) && Boolean(e.company) && e.company !== 'Company' && e.company !== 'Organization'
+  );
+  const missingFields: string[] = [];
+  if (profile) {
+    if (!profile.contact?.fullName) missingFields.push(t('profile.fullName'));
+    if (!profile.contact?.email) missingFields.push(t('profile.email'));
+    if (!profile.contact?.phone) missingFields.push(t('profile.phone'));
+    if (!profile.summary) missingFields.push(t('profile.summary'));
+    if (validExperiences.length === 0) missingFields.push(t('profile.experience'));
+    if (!profile.skills || profile.skills.length === 0) missingFields.push(t('profile.skills'));
+  }
+
   const completenessScore = profile
     ? Math.min(
         100,
         Math.round(
           (profile.contact?.fullName ? 20 : 0) +
           (profile.contact?.email ? 20 : 0) +
-          (profile.contact?.phone ? 10 : 0) +
+          (profile.contact?.phone ? 15 : 0) +
           (profile.summary ? 15 : 0) +
-          (profile.experiences && profile.experiences.length > 0 ? 15 : 0) +
-          (profile.education && profile.education.length > 0 ? 10 : 0) +
-          (profile.skills && profile.skills.length > 0 ? 10 : 0)
+          (validExperiences.length > 0 ? 15 : 0) +
+          (profile.skills && profile.skills.length > 0 ? 15 : 0)
         )
       )
     : 0;
@@ -683,9 +697,11 @@ export const ProfileView: React.FC = () => {
                         <Pencil className="w-3 h-3 text-sky-400" />
                         <span>{t('profile.editSection')}</span>
                       </button>
-                      <span className="text-[10px] px-2 py-0.5 rounded font-mono bg-[#1b2b21] text-emerald-400 border border-emerald-500/20">
-                        {t('profile.verified')}
-                      </span>
+                      {isConfirmed && (
+                        <span className="text-[10px] px-2 py-0.5 rounded font-mono bg-[#1b2b21] text-emerald-400 border border-emerald-500/20">
+                          {t('profile.verified')}
+                        </span>
+                      )}
                     </div>
                   </>
                 )}
@@ -885,10 +901,10 @@ export const ProfileView: React.FC = () => {
                                 <button
                                   onClick={() => {
                                     setExpDraft({
-                                      title: exp.title,
-                                      company: exp.company,
+                                      title: exp.title || '',
+                                      company: exp.company || '',
                                       location: exp.location || '',
-                                      startDate: exp.startDate,
+                                      startDate: exp.startDate || '',
                                       endDate: exp.endDate || '',
                                       achievementsText: (exp.achievements || []).join('\n'),
                                     });

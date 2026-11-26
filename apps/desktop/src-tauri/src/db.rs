@@ -53,8 +53,10 @@ pub async fn get_profile(pool: &DbPool) -> Result<Option<UserProfileDto>, sqlx::
 
     let profile_id: String = row.get("id");
     let version: i32 = row.get("version");
-    let full_name: String = row.get("full_name");
-    let email: String = row.get("email");
+    let full_name_raw: Option<String> = row.try_get("full_name").ok();
+    let email_raw: Option<String> = row.try_get("email").ok();
+    let full_name = full_name_raw.filter(|s| !s.trim().is_empty());
+    let email = email_raw.filter(|s| !s.trim().is_empty());
     let phone: Option<String> = row.get("phone");
     let location: Option<String> = row.get("location");
     let summary: Option<String> = row.get("summary");
@@ -73,12 +75,15 @@ pub async fn get_profile(pool: &DbPool) -> Result<Option<UserProfileDto>, sqlx::
         .map(|r| {
             let ach_json: String = r.get("achievements_json");
             let achievements: Vec<String> = serde_json::from_str(&ach_json).unwrap_or_default();
+            let title_raw: Option<String> = r.try_get("title").ok();
+            let company_raw: Option<String> = r.try_get("company").ok();
+            let start_raw: Option<String> = r.try_get("start_date").ok();
             ExperienceItemDto {
                 id: r.get("id"),
-                title: r.get("title"),
-                company: r.get("company"),
+                title: title_raw.filter(|s| !s.trim().is_empty()),
+                company: company_raw.filter(|s| !s.trim().is_empty()),
                 location: r.get("location"),
-                start_date: r.get("start_date"),
+                start_date: start_raw.filter(|s| !s.trim().is_empty()),
                 end_date: r.get("end_date"),
                 is_current: r.get::<i64, _>("is_current") == 1,
                 description: r.get("description"),
@@ -152,8 +157,8 @@ pub async fn save_profile(pool: &DbPool, p: &UserProfileDto) -> Result<(), sqlx:
     )
     .bind(&p.id)
     .bind(p.version)
-    .bind(&p.contact.full_name)
-    .bind(&p.contact.email)
+    .bind(p.contact.full_name.as_deref().unwrap_or(""))
+    .bind(p.contact.email.as_deref().unwrap_or(""))
     .bind(&p.contact.phone)
     .bind(&p.contact.location)
     .bind(&p.summary)
@@ -193,10 +198,10 @@ pub async fn save_profile(pool: &DbPool, p: &UserProfileDto) -> Result<(), sqlx:
         )
         .bind(&exp.id)
         .bind(&p.id)
-        .bind(&exp.title)
-        .bind(&exp.company)
+        .bind(exp.title.as_deref().unwrap_or(""))
+        .bind(exp.company.as_deref().unwrap_or(""))
         .bind(&exp.location)
-        .bind(&exp.start_date)
+        .bind(exp.start_date.as_deref().unwrap_or(""))
         .bind(&exp.end_date)
         .bind(if exp.is_current { 1 } else { 0 })
         .bind(&exp.description)
@@ -743,8 +748,9 @@ pub async fn get_all_applications(pool: &DbPool) -> Result<Vec<ApplicationRecord
         r#"
         SELECT a.id, a.job_id, a.profile_id, a.status, a.mode, a.submitted_at,
                a.confirmation_text, a.screenshot_path, a.created_at, a.updated_at,
+               a.stop_reason, a.stop_message, a.missing_required_fields_json, a.submit_attempt_id,
                j.title as job_title, j.company, j.location, j.apply_url, j.ats_type,
-               CAST(coalesce(m.overall_score, 0.0) AS REAL) as match_score
+               CAST(m.overall_score AS REAL) as match_score
         FROM applications a
         JOIN jobs j ON a.job_id = j.id
         LEFT JOIN matches m ON a.job_id = m.job_id
@@ -801,6 +807,9 @@ pub async fn get_all_applications(pool: &DbPool) -> Result<Vec<ApplicationRecord
             });
         }
 
+        let missing_json: String = r.try_get("missing_required_fields_json").unwrap_or_else(|_| "[]".to_string());
+        let missing_required_fields: Vec<String> = serde_json::from_str(&missing_json).unwrap_or_default();
+
         result.push(ApplicationRecordDto {
             id: app_id,
             job_id: r.get("job_id"),
@@ -811,7 +820,7 @@ pub async fn get_all_applications(pool: &DbPool) -> Result<Vec<ApplicationRecord
             ats_type: r.get("ats_type"),
             mode: r.get("mode"),
             status,
-            match_score: r.try_get::<f64, _>("match_score").unwrap_or(0.0),
+            match_score: r.try_get::<Option<f64>, _>("match_score").ok().flatten(),
             profile_id: r.get("profile_id"),
             tailored_resume_path: None,
             cover_letter_text: None,
@@ -820,6 +829,10 @@ pub async fn get_all_applications(pool: &DbPool) -> Result<Vec<ApplicationRecord
             submitted_at,
             screenshot_before_submit,
             screenshot_confirmation: r.get("screenshot_path"),
+            stop_reason: r.try_get("stop_reason").ok().flatten(),
+            stop_message: r.try_get("stop_message").ok().flatten(),
+            missing_required_fields,
+            submit_attempt_id: r.try_get("submit_attempt_id").ok().flatten(),
             filled_fields: Vec::new(),
             review_checklist,
             timeline,
@@ -837,16 +850,21 @@ pub async fn get_application_by_id(pool: &DbPool, id: &str) -> Result<Option<App
 }
 
 pub async fn create_or_update_application(pool: &DbPool, app: &ApplicationRecordDto) -> Result<(), sqlx::Error> {
+    let missing_json = serde_json::to_string(&app.missing_required_fields).unwrap_or_else(|_| "[]".to_string());
     sqlx::query(
         r#"
-        INSERT INTO applications (id, job_id, profile_id, status, mode, submitted_at, confirmation_text, screenshot_path, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO applications (id, job_id, profile_id, status, mode, submitted_at, confirmation_text, screenshot_path, stop_reason, stop_message, missing_required_fields_json, submit_attempt_id, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(id) DO UPDATE SET
             status = excluded.status,
             mode = excluded.mode,
             submitted_at = excluded.submitted_at,
             confirmation_text = excluded.confirmation_text,
             screenshot_path = excluded.screenshot_path,
+            stop_reason = excluded.stop_reason,
+            stop_message = excluded.stop_message,
+            missing_required_fields_json = excluded.missing_required_fields_json,
+            submit_attempt_id = excluded.submit_attempt_id,
             updated_at = excluded.updated_at
         "#
     )
@@ -858,11 +876,45 @@ pub async fn create_or_update_application(pool: &DbPool, app: &ApplicationRecord
     .bind(&app.submitted_at)
     .bind(&app.notes)
     .bind(&app.screenshot_confirmation)
+    .bind(&app.stop_reason)
+    .bind(&app.stop_message)
+    .bind(missing_json)
+    .bind(&app.submit_attempt_id)
     .bind(&app.created_at)
     .bind(&app.updated_at)
     .execute(pool)
     .await?;
 
+    Ok(())
+}
+
+pub async fn update_application_review_outcome(
+    pool: &DbPool,
+    id: &str,
+    status: &str,
+    stop_reason: Option<&str>,
+    stop_message: Option<&str>,
+    missing_required_fields_json: &str,
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "UPDATE applications SET status = ?, stop_reason = ?, stop_message = ?, missing_required_fields_json = ?, updated_at = datetime('now') WHERE id = ?"
+    )
+    .bind(status)
+    .bind(stop_reason)
+    .bind(stop_message)
+    .bind(missing_required_fields_json)
+    .bind(id)
+    .execute(pool)
+    .await?;
+    Ok(())
+}
+
+pub async fn set_submit_attempt_id(pool: &DbPool, id: &str, attempt_id: &str) -> Result<(), sqlx::Error> {
+    sqlx::query("UPDATE applications SET submit_attempt_id = ? WHERE id = ?")
+        .bind(attempt_id)
+        .bind(id)
+        .execute(pool)
+        .await?;
     Ok(())
 }
 
@@ -1057,6 +1109,6 @@ mod tests {
         let apps = get_all_applications(&pool).await.unwrap();
         assert_eq!(apps.len(), 1);
         assert_eq!(apps[0].id, "a1");
-        assert_eq!(apps[0].match_score, 0.0);
+        assert_eq!(apps[0].match_score, None);
     }
 }

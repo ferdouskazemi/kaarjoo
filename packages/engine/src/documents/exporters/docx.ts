@@ -33,7 +33,7 @@ export async function exportResumeToDocx(
       spacing: { after: 120 },
       children: [
         new TextRun({
-          text: resume.contact.fullName,
+          text: resume.contact.fullName || '',
           bold: true,
           size: 36, // 18pt
           font: isFa ? 'Vazirmatn' : 'Calibri',

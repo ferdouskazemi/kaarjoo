@@ -65,7 +65,7 @@ export const QueueView: React.FC = () => {
         atsType: (a.atsType as AtsType) ?? 'generic',
         mode: (a.mode as any) ?? 'review',
         status: (a.status as any) ?? 'queued',
-        matchScore: a.matchScore,
+        matchScore: a.matchScore ?? undefined,
         profileId: a.profileId,
         tailoredResumePath: a.tailoredResumePath ?? undefined,
         coverLetterText: a.coverLetterText ?? undefined,
@@ -160,11 +160,20 @@ export const QueueView: React.FC = () => {
           </span>
         );
       case 'submitted':
+      case 'submitted_verified':
+      case 'submitted_unverified':
       case 'applied':
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#182a20] text-emerald-300 border border-emerald-500/40 font-mono">
             <CheckCircle2 className="w-3 h-3 text-emerald-400" />
             {t('status.applied')}
+          </span>
+        );
+      case 'failed':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#2b1717] text-rose-300 border border-rose-500/40 font-mono">
+            <AlertTriangle className="w-3 h-3 text-rose-400" />
+            {t('common.error')}
           </span>
         );
       case 'needs_user':

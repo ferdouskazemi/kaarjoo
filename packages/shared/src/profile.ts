@@ -20,29 +20,29 @@ export const FactProvenanceSchema = z.object({
 export type FactProvenance = z.infer<typeof FactProvenanceSchema>;
 
 export const ContactInfoSchema = z.object({
-  fullName: z.string().min(1),
-  email: z.string().email(),
-  phone: z.string().optional(),
-  location: z.string().optional(),
-  linkedinUrl: z.string().url().optional(),
-  githubUrl: z.string().url().optional(),
-  portfolioUrl: z.string().url().optional(),
-  provenance: FactProvenanceSchema.optional(),
+  fullName: z.string().nullable().optional(),
+  email: z.string().email().nullable().optional(),
+  phone: z.string().nullable().optional(),
+  location: z.string().nullable().optional(),
+  linkedinUrl: z.string().url().nullable().optional(),
+  githubUrl: z.string().url().nullable().optional(),
+  portfolioUrl: z.string().url().nullable().optional(),
+  provenance: FactProvenanceSchema.nullable().optional(),
 });
 export type ContactInfo = z.infer<typeof ContactInfoSchema>;
 
 export const ExperienceItemSchema = z.object({
   id: z.string(),
-  title: z.string(),
-  company: z.string(),
-  location: z.string().optional(),
-  startDate: z.string(), // ISO YYYY-MM or YYYY
-  endDate: z.string().optional(), // undefined = current
+  title: z.string().nullable().optional(),
+  company: z.string().nullable().optional(),
+  location: z.string().nullable().optional(),
+  startDate: z.string().nullable().optional(), // ISO YYYY-MM or YYYY
+  endDate: z.string().nullable().optional(), // undefined = current
   isCurrent: z.boolean().default(false),
-  description: z.string().optional(),
+  description: z.string().nullable().optional(),
   achievements: z.array(z.string()).default([]),
   skillsUsed: z.array(z.string()).default([]),
-  provenance: FactProvenanceSchema.optional(),
+  provenance: FactProvenanceSchema.nullable().optional(),
 });
 export type ExperienceItem = z.infer<typeof ExperienceItemSchema>;
 

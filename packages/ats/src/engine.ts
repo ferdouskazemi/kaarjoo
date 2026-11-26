@@ -28,6 +28,8 @@ export class ApplicationEngine {
   private fillers: AtsFiller[];
   private applications: Map<string, ApplicationRecord> = new Map();
   private contexts: Map<string, { context: BrowserContext; page: Page; tempDir?: string }> = new Map();
+  private submittingIds: Set<string> = new Set();
+  private completedAttemptIds: Set<string> = new Set();
   private options: ApplicationEngineOptions;
 
   constructor(options: ApplicationEngineOptions = {}) {
@@ -188,16 +190,25 @@ export class ApplicationEngine {
   async submitReviewedApplication(
     id: string,
     rehydrate?: {
+      submitAttemptId?: string;
       profile?: UserProfile;
       job?: JobPosting;
       tailoredResumePath?: string;
       coverLetterText?: string;
     }
-  ): Promise<ApplicationRecord> {
+  ): Promise<ApplicationRecord & { refilled?: boolean }> {
+    const attemptId = rehydrate?.submitAttemptId;
+    if (attemptId && this.completedAttemptIds.has(attemptId)) {
+      throw new Error(`Submit attempt ${attemptId} already completed (idempotent guard)`);
+    }
+    if (this.submittingIds.has(id)) {
+      throw new Error(`Application ${id} submission is already in flight`);
+    }
+
     let record = this.applications.get(id);
     let session = this.contexts.get(id);
 
-    // If the sidecar restarted or the browser session expired, transparently re-open and re-fill in Review Mode
+    // P0-5: Rehydrate must NEVER auto-submit without user reviewing the newly filled form!
     if ((!record || !session) && rehydrate?.profile && rehydrate?.job) {
       record = this.queueApplication({
         id,
@@ -212,10 +223,7 @@ export class ApplicationEngine {
         tailoredResumePath: rehydrate.tailoredResumePath,
         coverLetterText: rehydrate.coverLetterText,
       });
-      session = this.contexts.get(id);
-      if (record.status !== 'needs_review' || !session) {
-        return record;
-      }
+      return { ...record, refilled: true };
     }
 
     if (!record) {
@@ -233,6 +241,7 @@ export class ApplicationEngine {
       throw new Error(`Active browser session for application ${id} expired or closed`);
     }
 
+    this.submittingIds.add(id);
     try {
       const filler = this.getFiller(record.applyUrl);
       const submitResult = await filler.submitForm(session.page);
@@ -241,11 +250,13 @@ export class ApplicationEngine {
         record.status = 'submitted';
         record.submittedAt = new Date().toISOString();
         record.screenshotConfirmation = submitResult.screenshotConfirmation;
+        if (attemptId) this.completedAttemptIds.add(attemptId);
       } else {
         record.status = 'failed';
         record.stopMessage = 'Submit button clicked but confirmation could not be verified.';
       }
     } finally {
+      this.submittingIds.delete(id);
       await this.cleanupSession(id);
     }
 

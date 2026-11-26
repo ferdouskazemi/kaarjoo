@@ -75,7 +75,7 @@ const mockInitialApplications: ApplicationRecord[] = [
     matchScore: 94,
     salaryText: '€95,000 - €125,000 / yr',
     profileId: 'usr_default',
-    tailoredResumePath: 'C:\\Work\\kaarjoo\\eval\\resumes\\Spotify_Tailored_ATS.pdf',
+    tailoredResumePath: 'Spotify_Tailored_ATS.pdf',
     coverLetterText: 'Dear Spotify Team,\nI am thrilled to apply for the Senior Backend Engineer role. With over 6 years of experience building high-throughput distributed microservices...',
     stopReason: 'none',
     timeline: [
@@ -94,8 +94,8 @@ const mockInitialApplications: ApplicationRecord[] = [
     filledFields: [
       { fieldId: 'first_name', fieldName: 'job_application[first_name]', label: 'First Name', value: 'Ferdous', displayValue: 'Ferdous', confidence: 0.98, canonicalField: 'first_name', isRequired: true },
       { fieldId: 'last_name', fieldName: 'job_application[last_name]', label: 'Last Name', value: 'Kazemi', displayValue: 'Kazemi', confidence: 0.98, canonicalField: 'last_name', isRequired: true },
-      { fieldId: 'email', fieldName: 'job_application[email]', label: 'Email', value: 'ferdouskazemi1000@gmail.com', displayValue: 'ferdouskazemi1000@gmail.com', confidence: 1.0, canonicalField: 'email', isRequired: true },
-      { fieldId: 'phone', fieldName: 'job_application[phone]', label: 'Phone', value: '+93 728 200 021', displayValue: '+93 728 200 021', confidence: 0.95, canonicalField: 'phone', isRequired: true },
+      { fieldId: 'email', fieldName: 'job_application[email]', label: 'Email', value: 'jane.doe@example.com', displayValue: 'jane.doe@example.com', confidence: 1.0, canonicalField: 'email', isRequired: true },
+      { fieldId: 'phone', fieldName: 'job_application[phone]', label: 'Phone', value: '+1 555 0100', displayValue: '+1 555 0100', confidence: 0.95, canonicalField: 'phone', isRequired: true },
       { fieldId: 'resume', fieldName: 'job_application[resume]', label: 'Resume / CV', value: 'Spotify_Tailored_ATS.pdf', displayValue: 'Spotify_Tailored_ATS.pdf (ATS-Safe)', confidence: 1.0, canonicalField: 'resume', isRequired: true },
       { fieldId: 'work_auth', fieldName: 'job_application[answers][work_auth]', label: 'Work Authorization (EU)', value: 'yes', displayValue: 'Yes', confidence: 0.95, canonicalField: 'work_authorization', isRequired: true },
       { fieldId: 'gender', fieldName: 'job_application[gender]', label: 'Demographic: Gender', value: 'decline', displayValue: 'I decline to self-identify', confidence: 1.0, canonicalField: 'eeo_gender', isRequired: false },
@@ -103,8 +103,8 @@ const mockInitialApplications: ApplicationRecord[] = [
     reviewChecklist: [
       { id: 'first_name', label: 'First Name', value: 'Ferdous', status: 'ok', category: 'contact' },
       { id: 'last_name', label: 'Last Name', value: 'Kazemi', status: 'ok', category: 'contact' },
-      { id: 'email', label: 'Email', value: 'ferdouskazemi1000@gmail.com', status: 'ok', category: 'contact' },
-      { id: 'phone', label: 'Phone', value: '+93 728 200 021', status: 'ok', category: 'contact' },
+      { id: 'email', label: 'Email', value: 'jane.doe@example.com', status: 'ok', category: 'contact' },
+      { id: 'phone', label: 'Phone', value: '+1 555 0100', status: 'ok', category: 'contact' },
       { id: 'resume', label: 'Tailored Résumé PDF', value: 'Spotify_Tailored_ATS.pdf', status: 'ok', category: 'documents' },
       { id: 'work_auth', label: 'Work Authorization (EU)', value: 'Yes', status: 'ok', category: 'screening' },
       { id: 'gender', label: 'EEO / Demographics', value: 'I decline to self-identify', status: 'ok', category: 'eeo' },
@@ -126,7 +126,7 @@ const mockInitialApplications: ApplicationRecord[] = [
     matchScore: 92,
     salaryText: '$210,000 - $275,000 / yr',
     profileId: 'usr_default',
-    tailoredResumePath: 'C:\\Work\\kaarjoo\\eval\\resumes\\Figma_DesignSystem_Tailored.pdf',
+    tailoredResumePath: 'Figma_DesignSystem_Tailored.pdf',
     notes: 'Submitted via Lever portal. Confirmation received.',
     submittedAt: new Date(Date.now() - 86400000 * 3).toISOString(),
     stopReason: 'none',
@@ -348,9 +348,9 @@ export const useApplicationStore = create<ApplicationStoreState>((set, get) => (
     await new Promise((r) => setTimeout(r, 600));
 
     const activeCandidateProfile = useProfileStore.getState().profile;
-    const applicantName = activeCandidateProfile?.contact.fullName || 'Ferdous Kazemi';
-    const applicantEmail = activeCandidateProfile?.contact.email || 'ferdouskazemi1000@gmail.com';
-    const applicantPhone = activeCandidateProfile?.contact.phone || '+93 728 200 021';
+    const applicantName = activeCandidateProfile?.contact.fullName || '';
+    const applicantEmail = activeCandidateProfile?.contact.email || '';
+    const applicantPhone = activeCandidateProfile?.contact.phone || '';
 
     const updatedFilledFields = [
       { fieldId: 'name', fieldName: 'name', label: 'Full Name', value: applicantName, displayValue: applicantName, confidence: 0.99, canonicalField: 'full_name', isRequired: true },
@@ -584,9 +584,9 @@ export const useApplicationStore = create<ApplicationStoreState>((set, get) => (
 
   syncWithProfile: (profile: UserProfile | null) => {
     if (!profile) return;
-    const safeName = profile.contact.fullName || 'Ferdous Kazemi';
-    const safeEmail = profile.contact.email || 'ferdouskazemi1000@gmail.com';
-    const safePhone = profile.contact.phone || '+93 728 200 021';
+    const safeName = profile.contact.fullName || '';
+    const safeEmail = profile.contact.email || '';
+    const safePhone = profile.contact.phone || '';
 
     set((state) => ({
       applications: state.applications.map((app) => ({

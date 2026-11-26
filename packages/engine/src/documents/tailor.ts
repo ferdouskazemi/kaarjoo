@@ -134,11 +134,11 @@ export function tailorResume(
 
     return {
       id: exp.id,
-      title: exp.title,
-      company: exp.company,
-      location: exp.location,
-      startDate: exp.startDate,
-      endDate: exp.endDate,
+      title: exp.title || '',
+      company: exp.company || '',
+      location: exp.location ?? undefined,
+      startDate: exp.startDate || '',
+      endDate: exp.endDate ?? undefined,
       isCurrent: exp.isCurrent,
       originalAchievements: exp.achievements || [],
       tailoredAchievements: tailoredAchievements.length > 0 ? tailoredAchievements : exp.achievements || [],

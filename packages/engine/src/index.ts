@@ -583,14 +583,16 @@ server.register('application.execute', {
 server.register('application.submitReviewed', {
   inputSchema: z.object({
     id: z.string().min(1),
+    submitAttemptId: z.string().optional(),
     profile: UserProfileSchema.optional(),
     job: JobPostingSchema.optional(),
     tailoredResumePath: z.string().optional(),
     coverLetterText: z.string().optional(),
   }),
-  handler: async ({ id, profile, job, tailoredResumePath, coverLetterText }) => {
+  handler: async ({ id, submitAttemptId, profile, job, tailoredResumePath, coverLetterText }) => {
     try {
       return await applicationEngine.submitReviewedApplication(id, {
+        submitAttemptId,
         profile: profile as any,
         job: job as any,
         tailoredResumePath,

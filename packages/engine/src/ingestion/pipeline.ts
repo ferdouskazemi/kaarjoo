@@ -59,10 +59,7 @@ export async function extractProfileFromParsedDocument(
   }
 
   // 2. Extract facts with deterministic rule-based extractors
-  const contact = extractContactInfo(document.pages.map((p) => ({ pageNumber: p.pageNumber, text: p.text }))) || {
-    fullName: document.fileName.replace(/\.[^/.]+$/, ''),
-    email: 'unspecified@example.com',
-  };
+  const contact = extractContactInfo(document.pages.map((p) => ({ pageNumber: p.pageNumber, text: p.text }))) || {};
 
   const expText = sectionTexts.experience.join('\n');
   const experiences = extractExperiences(expText);
@@ -93,7 +90,7 @@ export async function extractProfileFromParsedDocument(
     skills,
     languages: [],
     certifications: [],
-    targetTitles: experiences.length > 0 ? [experiences[0].title] : [],
+    targetTitles: experiences.length > 0 && experiences[0].title ? [experiences[0].title] : [],
     workAuthorization: [],
   };
 
@@ -111,10 +108,10 @@ export async function extractProfileFromParsedDocument(
         tokensPerSec = llmRes.tokensPerSec;
 
         const gaps = llmRes.verifiedGaps;
-        if (gaps.fullName && (!profile.contact.fullName || profile.contact.fullName === document.fileName.replace(/\.[^/.]+$/, ''))) {
+        if (gaps.fullName && !profile.contact.fullName) {
           profile.contact.fullName = gaps.fullName.value;
         }
-        if (gaps.email && (!profile.contact.email || profile.contact.email === 'unspecified@example.com')) {
+        if (gaps.email && !profile.contact.email) {
           profile.contact.email = gaps.email.value;
         }
         if (gaps.phone && !profile.contact.phone) {

@@ -44,7 +44,7 @@ export const ApplicationsView: React.FC = () => {
         atsType: (a.atsType as AtsType) ?? 'generic',
         mode: (a.mode as any) ?? 'review',
         status: (a.status as ApplicationStatus) ?? 'saved',
-        matchScore: a.matchScore,
+        matchScore: a.matchScore ?? undefined,
         profileId: a.profileId,
         tailoredResumePath: a.tailoredResumePath ?? undefined,
         coverLetterText: a.coverLetterText ?? undefined,

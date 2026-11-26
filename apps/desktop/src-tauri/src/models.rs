@@ -24,8 +24,8 @@ pub struct FactProvenanceDto {
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 pub struct ContactInfoDto {
     #[serde(rename = "fullName")]
-    pub full_name: String,
-    pub email: String,
+    pub full_name: Option<String>,
+    pub email: Option<String>,
     pub phone: Option<String>,
     pub location: Option<String>,
     #[serde(rename = "linkedinUrl")]
@@ -40,11 +40,11 @@ pub struct ContactInfoDto {
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 pub struct ExperienceItemDto {
     pub id: String,
-    pub title: String,
-    pub company: String,
+    pub title: Option<String>,
+    pub company: Option<String>,
     pub location: Option<String>,
     #[serde(rename = "startDate")]
-    pub start_date: String,
+    pub start_date: Option<String>,
     #[serde(rename = "endDate")]
     pub end_date: Option<String>,
     #[serde(rename = "isCurrent")]
@@ -271,7 +271,7 @@ pub struct ApplicationRecordDto {
     pub mode: String,
     pub status: String,
     #[serde(rename = "matchScore")]
-    pub match_score: f64,
+    pub match_score: Option<f64>,
     #[serde(rename = "profileId")]
     pub profile_id: String,
     #[serde(rename = "tailoredResumePath")]
@@ -287,6 +287,14 @@ pub struct ApplicationRecordDto {
     pub screenshot_before_submit: Option<String>,
     #[serde(rename = "screenshotConfirmation")]
     pub screenshot_confirmation: Option<String>,
+    #[serde(default, rename = "stopReason")]
+    pub stop_reason: Option<String>,
+    #[serde(default, rename = "stopMessage")]
+    pub stop_message: Option<String>,
+    #[serde(default, rename = "missingRequiredFields")]
+    pub missing_required_fields: Vec<String>,
+    #[serde(default, rename = "submitAttemptId")]
+    pub submit_attempt_id: Option<String>,
     #[serde(default, rename = "filledFields")]
     pub filled_fields: Vec<FilledFieldDto>,
     #[serde(default, rename = "reviewChecklist")]

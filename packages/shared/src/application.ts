@@ -10,6 +10,8 @@ export const ApplicationStatusSchema = z.enum([
   'needs_review',
   'submitting',
   'submitted',
+  'submitted_verified',
+  'submitted_unverified',
   'applied',
   'interview',
   'offer',

@@ -191,8 +191,8 @@ async function runSmokeTest() {
   fs.writeFileSync(
     resumePath,
     `Ferdous Kazemi
-Email: ferdouskazemi1000@gmail.com
-Phone: +93 728 200 021
+Email: jane.doe@example.com
+Phone: +1 555 010 0199
 Location: Kabul / Remote
 
 SUMMARY
@@ -375,7 +375,7 @@ TypeScript, Rust, React, Node.js, PostgreSQL, SQLite, Playwright, Docker
   assert.equal(pingAfterReopen.status, 'ok');
 
   const persistedProfile = db.prepare('SELECT full_name, email FROM profiles WHERE id = ?').get(profile.id) as any;
-  assert.equal(persistedProfile.email, 'ferdouskazemi1000@gmail.com');
+  assert.equal(persistedProfile.email, 'jane.doe@example.com');
 
   const persistedApp = db.prepare('SELECT status FROM applications WHERE job_id = ?').get(jobId) as any;
   assert.equal(persistedApp.status, 'needs_review');

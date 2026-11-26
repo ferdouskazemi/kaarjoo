@@ -17,7 +17,7 @@ export function calculateTotalExperienceYears(profile: UserProfile): number {
   let totalMonths = 0;
   for (const exp of profile.experiences) {
     try {
-      const start = new Date(exp.startDate).getTime();
+      const start = exp.startDate ? new Date(exp.startDate).getTime() : Date.now();
       const end = exp.endDate ? new Date(exp.endDate).getTime() : Date.now();
       const months = Math.max(0, Math.round((end - start) / (1000 * 60 * 60 * 24 * 30.4375)));
       totalMonths += months;

@@ -352,17 +352,26 @@ pub async fn matching_record_feedback(
     job_id: String,
     feedback: String,
 ) -> Result<(), String> {
+    if feedback != "relevant" && feedback != "irrelevant" {
+        return Err(format!("Invalid feedback '{}': must be 'relevant' or 'irrelevant'", feedback));
+    }
+
     db::save_feedback(&state.pool, &job_id, &feedback)
         .await
         .map_err(|e| format!("DB error: {}", e))?;
 
-    let _ = state
+    let profile = db::get_profile(&state.pool)
+        .await
+        .map_err(|e| format!("DB error fetching profile: {}", e))?
+        .ok_or_else(|| "No candidate profile found for feedback.".to_string())?;
+
+    state
         .engine
         .request(
             "matching.recordFeedback",
-            json!({ "jobId": job_id, "feedback": feedback }),
+            json!({ "profileId": profile.id, "jobId": job_id, "feedback": feedback }),
         )
-        .await;
+        .await?;
 
     Ok(())
 }
@@ -502,7 +511,7 @@ pub async fn applications_create(
         ats_type: job.ats_type,
         mode,
         status: "saved".to_string(),
-        match_score: job.match_score.unwrap_or(85.0),
+        match_score: job.match_score,
         profile_id: profile.id,
         tailored_resume_path: resume_path,
         cover_letter_text: cover_letter,
@@ -511,6 +520,10 @@ pub async fn applications_create(
         submitted_at: None,
         screenshot_before_submit: None,
         screenshot_confirmation: None,
+        stop_reason: None,
+        stop_message: None,
+        missing_required_fields: Vec::new(),
+        submit_attempt_id: None,
         filled_fields: Vec::new(),
         review_checklist: Vec::new(),
         timeline: vec![TimelineEventDto {
@@ -620,19 +633,39 @@ pub async fn applications_execute_review(
     let checklist_val = res.get("reviewChecklist").cloned().unwrap_or(json!([]));
     let checklist_json = serde_json::to_string(&checklist_val).unwrap_or_else(|_| "[]".to_string());
 
+    let mapped_status = map_execute_status(&res);
+    let stop_reason = res
+        .get("stopReason")
+        .and_then(|v| v.as_str())
+        .filter(|s| *s != "none");
+    let stop_message = res.get("stopMessage").and_then(|v| v.as_str());
+    let missing_fields_val = res.get("missingRequiredFields").cloned().unwrap_or(json!([]));
+    let missing_fields_json =
+        serde_json::to_string(&missing_fields_val).unwrap_or_else(|_| "[]".to_string());
+
     let step_id = format!("step_{}", uuid::Uuid::new_v4().simple());
-    let _ = db::record_application_step(
+    db::record_application_step(
         &state.pool,
         &step_id,
         &app.id,
         "review_ready",
-        "needs_review",
+        mapped_status,
         &checklist_json,
         screenshot.as_deref(),
     )
-    .await;
+    .await
+    .map_err(|e| format!("DB error recording step: {}", e))?;
 
-    let _ = db::update_application_status(&state.pool, &app.id, "needs_review").await;
+    db::update_application_review_outcome(
+        &state.pool,
+        &app.id,
+        mapped_status,
+        stop_reason,
+        stop_message,
+        &missing_fields_json,
+    )
+    .await
+    .map_err(|e| format!("DB error updating application review outcome: {}", e))?;
 
     let updated = db::get_application_by_id(&state.pool, &app.id)
         .await
@@ -640,6 +673,49 @@ pub async fn applications_execute_review(
         .ok_or_else(|| "Failed to reload updated application".to_string())?;
 
     Ok(updated)
+}
+
+pub(crate) fn map_execute_status(res: &serde_json::Value) -> &'static str {
+    match res.get("status").and_then(|v| v.as_str()) {
+        Some("needs_review") => "needs_review",
+        Some("needs_user") => "needs_user",
+        Some("submitted") => "submitted_unverified",
+        _ => "failed",
+    }
+}
+
+pub(crate) fn map_submit_outcome(res: &serde_json::Value) -> Result<(&'static str, Option<String>), String> {
+    if res.get("refilled").and_then(|v| v.as_bool()) == Some(true)
+        || res.get("status").and_then(|v| v.as_str()) == Some("needs_review")
+    {
+        return Err("Form session expired and was refilled; please review the updated form before submitting.".to_string());
+    }
+
+    match res.get("status").and_then(|v| v.as_str()) {
+        Some("submitted") | Some("applied") => {
+            let screenshot = res
+                .get("screenshotConfirmation")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string());
+            let has_confirmation = screenshot.as_deref().is_some_and(|s| !s.is_empty())
+                || res
+                    .get("confirmationText")
+                    .and_then(|v| v.as_str())
+                    .is_some_and(|s| !s.is_empty());
+            if has_confirmation {
+                Ok(("submitted_verified", screenshot))
+            } else {
+                Ok(("submitted_unverified", screenshot))
+            }
+        }
+        other => {
+            let msg = res
+                .get("stopMessage")
+                .and_then(|v| v.as_str())
+                .unwrap_or("Submission did not succeed");
+            Err(format!("Submission failed (engine status: {}): {}", other.unwrap_or("unknown"), msg))
+        }
+    }
 }
 
 #[tauri::command]
@@ -653,6 +729,26 @@ pub async fn applications_submit_reviewed(
         .map_err(|e| format!("DB error: {}", e))?
         .ok_or_else(|| "Application not found".to_string())?;
 
+    if app.status == "submitted_verified" || app.status == "submitted_unverified" || app.status == "applied" {
+        return Err(format!("Application '{}' was already submitted ({}).", id, app.status));
+    }
+    if app.status != "needs_review" {
+        return Err(format!("Cannot submit application '{}': status is '{}', expected 'needs_review'.", id, app.status));
+    }
+    if !app.missing_required_fields.is_empty() {
+        return Err(format!(
+            "Cannot submit application '{}': missing required fields: {}",
+            id,
+            app.missing_required_fields.join(", ")
+        ));
+    }
+
+    let attempt_id = uuid::Uuid::new_v4().to_string();
+    db::set_submit_attempt_id(&state.pool, &id, &attempt_id)
+        .await
+        .map_err(|e| format!("DB error persisting submit attempt id: {}", e))?;
+    app.submit_attempt_id = Some(attempt_id.clone());
+
     let profile = db::get_profile(&state.pool).await.ok().flatten();
     let job = db::get_job_by_id(&state.pool, &app.job_id).await.ok().flatten();
 
@@ -662,6 +758,7 @@ pub async fn applications_submit_reviewed(
             "application.submitReviewed",
             json!({
                 "id": id,
+                "submitAttemptId": attempt_id,
                 "profile": profile,
                 "job": job,
                 "tailoredResumePath": app.tailored_resume_path,
@@ -670,12 +767,9 @@ pub async fn applications_submit_reviewed(
         )
         .await?;
 
-    let screenshot: Option<String> = res
-        .get("screenshotConfirmation")
-        .and_then(|v| v.as_str())
-        .map(|s| s.to_string());
+    let (new_status, screenshot) = map_submit_outcome(&res)?;
 
-    app.status = "applied".to_string();
+    app.status = new_status.to_string();
     app.submitted_at = Some(chrono_lite_iso());
     app.screenshot_confirmation = screenshot;
     app.updated_at = chrono_lite_iso();
@@ -786,7 +880,53 @@ pub async fn models_download(
 }
 
 fn chrono_lite_iso() -> String {
-    let now = std::time::SystemTime::now();
-    let since = now.duration_since(std::time::UNIX_EPOCH).unwrap_or_default();
-    format!("{}.{:03}Z", since.as_secs(), since.subsec_millis())
+    time::OffsetDateTime::now_utc()
+        .format(&time::format_description::well_known::Rfc3339)
+        .unwrap_or_else(|_| "1970-01-01T00:00:00Z".to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_map_execute_status_never_fabricates_needs_review() {
+        assert_eq!(map_execute_status(&json!({ "status": "needs_review" })), "needs_review");
+        assert_eq!(map_execute_status(&json!({ "status": "needs_user" })), "needs_user");
+        assert_eq!(map_execute_status(&json!({ "status": "failed" })), "failed");
+        assert_eq!(map_execute_status(&json!({})), "failed");
+    }
+
+    #[test]
+    fn test_map_submit_outcome_separates_verified_unverified_and_refilled() {
+        let verified = map_submit_outcome(&json!({
+            "status": "submitted",
+            "screenshotConfirmation": "data:image/jpeg;base64,abc"
+        }));
+        assert_eq!(verified.unwrap().0, "submitted_verified");
+
+        let unverified = map_submit_outcome(&json!({
+            "status": "submitted"
+        }));
+        assert_eq!(unverified.unwrap().0, "submitted_unverified");
+
+        let refilled = map_submit_outcome(&json!({
+            "status": "needs_review",
+            "refilled": true
+        }));
+        assert!(refilled.is_err());
+
+        let failed = map_submit_outcome(&json!({
+            "status": "failed",
+            "stopMessage": "Submit failed"
+        }));
+        assert!(failed.is_err());
+    }
+
+    #[test]
+    fn test_chrono_lite_iso_is_rfc3339() {
+        let ts = chrono_lite_iso();
+        assert!(ts.contains('T') && ts.ends_with('Z'));
+        assert!(ts.starts_with("20"));
+    }
 }

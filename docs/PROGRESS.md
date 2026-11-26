@@ -6,7 +6,7 @@
 
 ## Current Overall Status
 * **Phase 0: Foundation, Architecture, & Spikes** — **COMPLETED & VERIFIED** (Rust core SQLite WAL opened, sidecar stdio bridge running, typed Specta TS commands generated, zero direct network calls from UI)
-* **Phase 1: Ingestion and Profile Extraction** — **COMPLETED & WIRED** (Multi-format parsers wired to engine RPC, Zod-validated, SQLite persisted, contact defaults verified to `ferdouskazemi1000@gmail.com` and `+93 728 200 021`)
+* **Phase 1: Ingestion and Profile Extraction** — **COMPLETED & WIRED** (Multi-format parsers wired to engine RPC, Zod-validated, SQLite persisted, missing fields preserved as `null` without PII defaults)
 * **Phase 2: Sources and Discovery** — **COMPLETED & WIRED** (Engine adapters crawl Ashby, Greenhouse, Lever, Workable; Vite proxies and WebView fetch deleted; strict CSP `connect-src 'none'`)
 * **Phase 3: Matching and Ranking (Local AI)** — **COMPLETED & WIRED** (Engine matching pipeline scores jobs via RPC; mock clamped scores and hardcoded fallback skills deleted from UI; empty state prompts résumé upload)
 * **Phase 4: Tailored Documents & Truthfulness Guard** — **COMPLETED & WIRED** (Engine documents tailoring and truthfulness verification wired via Specta commands `documents_tailor`, `documents_export_pdf`, `documents_export_docx`)
@@ -31,7 +31,7 @@
 ### Phase 1: Ingestion and Profile Extraction
 - **Status:** COMPLETED & WIRED
 - **Evidence:**
-  - Candidate contact information standardized: `ferdouskazemi1000@gmail.com` and `+93 728 200 021` (AF format).
+  - Candidate contact fields return `null`/`undefined` when absent from a document; zero personal PII defaults in source.
   - Ingestion pipeline (`@kaarjoo/engine/src/ingestion/`) deterministic extractors for contact, skills, and experiences.
   - Native file picker integrated (`@tauri-apps/plugin-dialog` `open`) in `ProfileView.tsx`.
   - Profile saved directly into SQLite `profiles` and `experiences` tables.
@@ -108,7 +108,22 @@
       - Max latency: **26.64 ms** (100% of queries under the < 100 ms target threshold).
   - **Directory Browser UI:**
     - `apps/desktop/src/components/jobs/CompanyBoardsModal.tsx`: Upgraded with dual-tab view ("Global Directory 5,000+" and "Followed Boards"), real-time search, filters for ATS provider, country, and remote-first policies, and persistent one-click follow/unfollow capability.
-  - User contact details standardized: `ferdouskazemi1000@gmail.com` and `+93 728 200 021`.
+  - Synthetic fixture contacts (`jane.doe@example.com`) used exclusively in tests/eval.
+
+### P0 Remediation & Flash-Rive Reference Reuse (`fix/p0-stop-the-bleeding`)
+- **Status:** COMPLETED & VERIFIED (Prompt 1)
+- **P0 Fixes Applied & Tested:**
+  1. Removed personal PII defaults (`contact.ts`, `pipeline.ts`, `applicationStore.ts`, `profileStore.ts`) + added `pii_guard.test.ts` and `contact.test.ts` regression test.
+  2. Removed placeholder `'Company'` / `'Software Engineer'` in `experience.ts`; added two-line company-first header support + `experience.test.ts` regression test.
+  3. Gated `VERIFIED` badge in `ProfileView.tsx` on explicit user confirmation and excluded placeholders from completeness.
+  4. Mapped honest engine statuses in `commands.rs` (`needs_review`, `needs_user`, `failed`, `submitted_verified`, `submitted_unverified`) + Rust unit tests (`map_execute_status`, `map_submit_outcome`).
+  5. Blocked auto-submit on session rehydrate in `packages/ats/src/engine.ts` (`refilled: true` returns `needs_review`) + `submitAttemptId` idempotency guard.
+  6. Replaced `chrono_lite_iso()` with RFC 3339 (`time` crate) + SQLite migration `20260601_p0_nullable_and_honest_statuses.sql` backfilling legacy timestamps.
+  7. Fixed `matching_record_feedback` in `commands.rs` to validate feedback enum, pass `profileId`, and surface errors.
+- **Flash-Rive Reference Reuse Mapping (`C:\Work\My Personal Projects\flash-rive`):**
+  - `scripts/seed-chromium-profile.mjs` → `packages/ats/src/utils/chromiumProfile.ts` (Windows Chromium `Local State` seeding to prevent account lockouts on fresh `--user-data-dir` profiles).
+  - `src/style.css` / `src/ui/theme.css` → `apps/desktop/src/styles/index.css` (`fr-card`, `fr-studio-panel`, `fr-eyebrow`, `fr-scan-line` studio aesthetics and motion tokens).
+  - `apps/desktop/src-tauri/nsis/sidebar.bmp` & `header.bmp` (Flash-Rive studio gradient & orbital ring installer artwork).
 
 ### Phase 10: Cross-Platform Packaging, CI Matrix, Auto-Updater & Accessibility Audit
 - **Status:** PARTIAL (Windows NSIS built & Unicode smoke-tested locally; macOS universal `.dmg` + Apple notarization configured in CI / documented, not run locally due to Windows host)

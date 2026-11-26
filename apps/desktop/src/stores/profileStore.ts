@@ -28,9 +28,9 @@ export const DEMO_CANDIDATE_PROFILE: UserProfile = {
   createdAt: '2026-04-01',
   updatedAt: '2026-04-01',
   contact: {
-    fullName: 'Ferdous Kazemi',
-    email: 'ferdouskazemi1000@gmail.com',
-    phone: '+93 728 200 021',
+    fullName: 'Jane Doe',
+    email: 'jane.doe@example.com',
+    phone: '+1 555 0100',
     location: 'Kabul, Afghanistan',
     linkedinUrl: 'https://linkedin.com/in/ferdous-kazemi',
     githubUrl: 'https://github.com/skazemi1000',
@@ -142,10 +142,10 @@ export const useProfileStore = create<ProfileStoreState>()(
       loadDemoProfile: () =>
         set({
           profile: DEMO_CANDIDATE_PROFILE,
-          uploadedFileName: 'Ferdous Kazemi Resume (april 2025).pdf',
-          uploadedDocumentText: `FERDOUS KAZEMI\nEmail: ferdouskazemi1000@gmail.com\nPhone: +93 728 200 021\nLocation: Kabul, Afghanistan\n\nFull Stack & Frontend Engineer`,
+          uploadedFileName: 'Jane_Doe_Demo_Resume.pdf',
+          uploadedDocumentText: `JANE DOE\nEmail: jane.doe@example.com\nPhone: +1 555 0100\nLocation: Remote\n\nFull Stack & Frontend Engineer`,
           documentMeta: { pageCount: 2, fileType: 'pdf' },
-          activeHighlight: 'ferdouskazemi1000@gmail.com',
+          activeHighlight: 'jane.doe@example.com',
           activeFieldLabel: 'Email',
         }),
     }),
