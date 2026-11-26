@@ -3,6 +3,7 @@ use specta::Type;
 use tauri_specta::{collect_commands, Builder};
 use tauri::Manager;
 
+pub mod application_fsm;
 pub mod commands;
 pub mod db;
 pub mod engine;
@@ -20,27 +21,8 @@ pub struct SystemStatus {
     pub is_ready: bool,
 }
 
-pub fn run() {
-    std::panic::set_hook(Box::new(|info| {
-        let payload = info
-            .payload()
-            .downcast_ref::<&str>()
-            .copied()
-            .or_else(|| info.payload().downcast_ref::<String>().map(|s| s.as_str()))
-            .unwrap_or("Unknown panic payload");
-        let bt = std::backtrace::Backtrace::force_capture();
-        let log_msg = format!("PANIC: {}\nLocation: {:?}\nBacktrace:\n{}\n---\n", payload, info.location(), bt);
-        let panic_path = dirs_or_temp_panic_path();
-        if let Some(parent) = panic_path.parent() {
-            let _ = std::fs::create_dir_all(parent);
-        }
-        if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(&panic_path) {
-            use std::io::Write;
-            let _ = f.write_all(log_msg.as_bytes());
-        }
-    }));
-
-    let specta_builder = Builder::<tauri::Wry>::new().commands(collect_commands![
+pub fn specta_builder() -> Builder<tauri::Wry> {
+    Builder::<tauri::Wry>::new().commands(collect_commands![
         commands::get_system_status,
         commands::profile_get,
         commands::profile_save,
@@ -66,6 +48,9 @@ pub fn run() {
         commands::applications_update_notes,
         commands::applications_execute_review,
         commands::applications_submit_reviewed,
+        commands::pipeline_start_discovery,
+        commands::applications_prepare,
+        commands::applications_fill,
         commands::settings_get_all,
         commands::settings_set,
         commands::settings_wipe_all_data,
@@ -73,7 +58,30 @@ pub fn run() {
         commands::models_get_status,
         commands::models_detect_hardware,
         commands::models_download,
-    ]);
+    ])
+}
+
+pub fn run() {
+    std::panic::set_hook(Box::new(|info| {
+        let payload = info
+            .payload()
+            .downcast_ref::<&str>()
+            .copied()
+            .or_else(|| info.payload().downcast_ref::<String>().map(|s| s.as_str()))
+            .unwrap_or("Unknown panic payload");
+        let bt = std::backtrace::Backtrace::force_capture();
+        let log_msg = format!("PANIC: {}\nLocation: {:?}\nBacktrace:\n{}\n---\n", payload, info.location(), bt);
+        let panic_path = dirs_or_temp_panic_path();
+        if let Some(parent) = panic_path.parent() {
+            let _ = std::fs::create_dir_all(parent);
+        }
+        if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(&panic_path) {
+            use std::io::Write;
+            let _ = f.write_all(log_msg.as_bytes());
+        }
+    }));
+
+    let specta_builder = specta_builder();
 
     #[cfg(debug_assertions)]
     {

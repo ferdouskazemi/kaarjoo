@@ -205,6 +205,30 @@ async applicationsSubmitReviewed(id: string) : Promise<Result<ApplicationRecordD
     else return { status: "error", error: e  as any };
 }
 },
+async pipelineStartDiscovery() : Promise<Result<JobPostingDto[], string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("pipeline_start_discovery") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async applicationsPrepare(jobIds: string[]) : Promise<Result<ApplicationRecordDto[], string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("applications_prepare", { jobIds }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async applicationsFill(appIds: string[]) : Promise<Result<ApplicationRecordDto[], string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("applications_fill", { appIds }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async settingsGetAll() : Promise<Result<{ [key in string]: string }, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("settings_get_all") };

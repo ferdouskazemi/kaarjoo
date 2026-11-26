@@ -388,7 +388,7 @@ pub async fn get_jobs(
                j.requirements_json, j.ats_type, j.content_hash, j.sim_hash, j.first_seen,
                m.overall_score as match_score
         FROM jobs j
-        LEFT JOIN matches m ON j.id = m.job_id
+        LEFT JOIN matches m ON j.id = m.job_id AND m.profile_id = (SELECT id FROM profiles ORDER BY updated_at DESC LIMIT 1)
         WHERE j.status = 'active'
         "#
     );
@@ -436,7 +436,7 @@ pub async fn get_job_by_id(pool: &DbPool, id: &str) -> Result<Option<JobPostingD
                j.requirements_json, j.ats_type, j.content_hash, j.sim_hash, j.first_seen,
                m.overall_score as match_score
         FROM jobs j
-        LEFT JOIN matches m ON j.id = m.job_id
+        LEFT JOIN matches m ON j.id = m.job_id AND m.profile_id = (SELECT id FROM profiles ORDER BY updated_at DESC LIMIT 1)
         WHERE j.id = ?
         "#
     )
@@ -471,7 +471,7 @@ pub async fn search_jobs_fts(
                CAST(coalesce(m.overall_score, 0.0) AS REAL) as match_score
         FROM jobs_fts
         JOIN jobs j ON j.rowid = jobs_fts.rowid
-        LEFT JOIN matches m ON j.id = m.job_id
+        LEFT JOIN matches m ON j.id = m.job_id AND m.profile_id = (SELECT id FROM profiles ORDER BY updated_at DESC LIMIT 1)
         WHERE jobs_fts MATCH ?
           AND j.status = 'active'
         ORDER BY rank, coalesce(m.overall_score, 0) DESC
@@ -753,7 +753,7 @@ pub async fn get_all_applications(pool: &DbPool) -> Result<Vec<ApplicationRecord
                CAST(m.overall_score AS REAL) as match_score
         FROM applications a
         JOIN jobs j ON a.job_id = j.id
-        LEFT JOIN matches m ON a.job_id = m.job_id
+        LEFT JOIN matches m ON a.job_id = m.job_id AND m.profile_id = a.profile_id
         ORDER BY a.created_at DESC
         "#
     )

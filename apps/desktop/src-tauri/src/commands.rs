@@ -1,10 +1,13 @@
+use crate::application_fsm;
 use crate::db;
 use crate::models::*;
 use crate::state::AppState;
 use crate::SystemStatus;
+use base64::Engine as _;
 use serde_json::json;
+use sha2::{Digest, Sha256};
 use std::collections::HashMap;
-use tauri::State;
+use tauri::{Emitter, Manager, State};
 
 // -----------------------------------------------------------------------------
 // System
@@ -51,39 +54,107 @@ pub async fn profile_parse_and_extract(
         .request("profile.parseAndExtract", json!({ "filePath": file_path }))
         .await?;
 
-    let extraction: ProfileExtractionResultDto = serde_json::from_value(res)
+    let mut extraction: ProfileExtractionResultDto = serde_json::from_value(res)
         .map_err(|e| format!("Failed to parse profile extraction response: {}", e))?;
+
+    // Preserve existing user profile by merging & bumping version rather than silent overwrite
+    if let Ok(Some(existing)) = db::get_profile(&state.pool).await {
+        if let Ok(merged_val) = state
+            .engine
+            .request(
+                "profile.merge",
+                json!({ "profiles": [existing.clone(), extraction.profile.clone()] }),
+            )
+            .await
+        {
+            if let Ok(mut merged) = serde_json::from_value::<UserProfileDto>(merged_val) {
+                merged.id = existing.id.clone();
+                merged.version = existing.version + 1;
+                merged.updated_at = chrono_lite_iso();
+                extraction.profile = merged;
+            }
+        }
+    }
 
     // Save profile to database
     db::save_profile(&state.pool, &extraction.profile)
         .await
         .map_err(|e| format!("Database error saving extracted profile: {}", e))?;
 
-    // Record source file
+    // Record source file with real MIME & SHA-256
     let path_obj = std::path::Path::new(&file_path);
     let file_name = path_obj
         .file_name()
         .map(|f| f.to_string_lossy().to_string())
         .unwrap_or_else(|| "resume.pdf".to_string());
-    let file_size = std::fs::metadata(&file_path)
-        .map(|m| m.len() as i64)
-        .unwrap_or(0);
+    let file_bytes = std::fs::read(&file_path).unwrap_or_default();
+    let file_size = file_bytes.len() as i64;
+    let sha_hex = hex::encode(Sha256::digest(&file_bytes));
+    let mime_type = detect_mime_from_ext(path_obj);
 
-    let _ = db::save_source_file(
+    db::save_source_file(
         &state.pool,
         &extraction.source_file_id,
         &extraction.profile.id,
         &file_path,
         &file_name,
         file_size,
-        "application/pdf",
-        "sha256_placeholder",
+        mime_type,
+        &sha_hex,
         extraction.pages_count,
         false,
     )
-    .await;
+    .await
+    .map_err(|e| format!("Database error saving source file: {}", e))?;
 
     Ok(extraction)
+}
+
+fn detect_mime_from_ext(path: &std::path::Path) -> &'static str {
+    match path.extension().and_then(|e| e.to_str()).map(|s| s.to_ascii_lowercase()).as_deref() {
+        Some("pdf") => "application/pdf",
+        Some("docx") => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        Some("doc") => "application/msword",
+        Some("odt") => "application/vnd.oasis.opendocument.text",
+        Some("rtf") => "application/rtf",
+        Some("txt") => "text/plain",
+        Some("md") => "text/markdown",
+        Some("png") => "image/png",
+        Some("jpg") | Some("jpeg") => "image/jpeg",
+        Some("webp") => "image/webp",
+        _ => "application/octet-stream",
+    }
+}
+
+fn save_screenshot_to_disk(
+    app_handle: &tauri::AppHandle,
+    app_id: &str,
+    label: &str,
+    raw_or_path: Option<String>,
+) -> Option<String> {
+    let val = raw_or_path?;
+    if !val.starts_with("data:image/") {
+        return Some(val);
+    }
+    let Some((_, b64)) = val.split_once(";base64,") else {
+        return Some(val);
+    };
+    let Ok(bytes) = base64::engine::general_purpose::STANDARD.decode(b64) else {
+        return Some(val);
+    };
+    let Ok(app_data) = app_handle.path().app_data_dir() else {
+        return Some(val);
+    };
+    let dir = app_data.join("screenshots").join(app_id);
+    if std::fs::create_dir_all(&dir).is_err() {
+        return Some(val);
+    }
+    let file_path = dir.join(format!("{}.jpg", label));
+    if std::fs::write(&file_path, &bytes).is_ok() {
+        Some(file_path.to_string_lossy().to_string())
+    } else {
+        Some(val)
+    }
 }
 
 #[tauri::command]
@@ -547,13 +618,14 @@ pub async fn applications_create(
 #[tauri::command]
 #[specta::specta]
 pub async fn applications_update_status(
+    app_handle: tauri::AppHandle,
     state: State<'_, AppState>,
     id: String,
     status: String,
 ) -> Result<(), String> {
-    db::update_application_status(&state.pool, &id, &status)
-        .await
-        .map_err(|e| format!("Database error updating status: {}", e))
+    let event = application_fsm::user_event_from_status(&status)?;
+    application_fsm::transition_application(&state.pool, &id, event, Some(&app_handle)).await?;
+    Ok(())
 }
 
 #[tauri::command]
@@ -570,7 +642,147 @@ pub async fn applications_update_notes(
 
 #[tauri::command]
 #[specta::specta]
+pub async fn pipeline_start_discovery(
+    app_handle: tauri::AppHandle,
+    state: State<'_, AppState>,
+) -> Result<Vec<JobPostingDto>, String> {
+    let task_id = format!("task_disc_{}", uuid::Uuid::new_v4().simple());
+    let _ = db::create_task(&state.pool, &task_id, "discover", "{}").await;
+    let _ = app_handle.emit(
+        "task:progress",
+        json!({ "taskId": task_id, "stage": "discover", "pct": 10, "message": "Searching boards..." }),
+    );
+
+    let profile = db::get_profile(&state.pool)
+        .await
+        .map_err(|e| format!("DB error: {}", e))?
+        .ok_or_else(|| "No candidate profile found.".to_string())?;
+
+    let keywords: Vec<String> = profile.skills.iter().map(|s| s.name.clone()).take(6).collect();
+    let jobs = jobs_search(
+        state.clone(),
+        JobsSearchQueryDto {
+            keywords: if keywords.is_empty() { None } else { Some(keywords) },
+            locations: None,
+            remote_only: None,
+            company: None,
+            ats_type: None,
+            limit: Some(30),
+        },
+    )
+    .await?;
+
+    let _ = db::update_task_status(&state.pool, &task_id, "done", None, None).await;
+    let _ = app_handle.emit(
+        "task:progress",
+        json!({ "taskId": task_id, "stage": "discover", "pct": 100, "message": "Discovery complete" }),
+    );
+    Ok(jobs)
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn applications_prepare(
+    app_handle: tauri::AppHandle,
+    state: State<'_, AppState>,
+    job_ids: Vec<String>,
+) -> Result<Vec<ApplicationRecordDto>, String> {
+    let profile = db::get_profile(&state.pool)
+        .await
+        .map_err(|e| format!("DB error: {}", e))?
+        .ok_or_else(|| "No candidate profile found.".to_string())?;
+
+    let mut prepared = Vec::new();
+    let total = job_ids.len().max(1);
+
+    for (idx, job_id) in job_ids.iter().enumerate() {
+        let task_id = format!("task_prep_{}", uuid::Uuid::new_v4().simple());
+        let _ = db::create_task(&state.pool, &task_id, "tailor", &json!({ "jobId": job_id }).to_string()).await;
+        let pct = ((idx + 1) * 100) / total;
+        let _ = app_handle.emit(
+            "task:progress",
+            json!({ "taskId": task_id, "appId": job_id, "stage": "tailor", "pct": pct, "message": "Tailoring documents..." }),
+        );
+
+        let mut cover_letter: Option<String> = None;
+        let mut resume_path: Option<String> = None;
+        if let Ok(job_opt) = db::get_job_by_id(&state.pool, job_id).await {
+            if let Some(job) = job_opt {
+                if let Ok(tailor_res) = state
+                    .engine
+                    .request(
+                        "documents.tailor",
+                        json!({ "profile": profile, "job": job, "templateId": "ats-clean", "language": "en" }),
+                    )
+                    .await
+                {
+                    cover_letter = tailor_res
+                        .get("coverLetterText")
+                        .and_then(|v| v.as_str())
+                        .map(|s| s.to_string());
+                    if let Some(html) = tailor_res.get("resumeHtml").and_then(|v| v.as_str()) {
+                        if let Ok(pdf_val) = state
+                            .engine
+                            .request(
+                                "documents.exportPdf",
+                                json!({ "html": html, "filename": format!("tailored_{}.pdf", job_id) }),
+                            )
+                            .await
+                        {
+                            resume_path = pdf_val.as_str().map(|s| s.to_string());
+                        }
+                    }
+                }
+            }
+        }
+
+        let created = applications_create(
+            state.clone(),
+            job_id.clone(),
+            "review".to_string(),
+            resume_path,
+            cover_letter,
+        )
+        .await?;
+        let _ = application_fsm::transition_application(
+            &state.pool,
+            &created.id,
+            application_fsm::AppTransitionEvent::PrepareKit,
+            Some(&app_handle),
+        )
+        .await;
+        let _ = db::update_task_status(&state.pool, &task_id, "done", None, None).await;
+        prepared.push(created);
+    }
+
+    Ok(prepared)
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn applications_fill(
+    app_handle: tauri::AppHandle,
+    state: State<'_, AppState>,
+    app_ids: Vec<String>,
+) -> Result<Vec<ApplicationRecordDto>, String> {
+    let mut results = Vec::new();
+    let total = app_ids.len().max(1);
+    for (idx, app_id) in app_ids.iter().enumerate() {
+        let pct = ((idx + 1) * 100) / total;
+        let _ = app_handle.emit(
+            "task:progress",
+            json!({ "taskId": app_id, "appId": app_id, "stage": "fill", "pct": pct, "message": "Filling form in Review Mode..." }),
+        );
+        let updated = applications_execute_review(app_handle.clone(), state.clone(), app_id.clone()).await?;
+        results.push(updated);
+    }
+    Ok(results)
+}
+
+#[tauri::command]
+#[specta::specta]
 pub async fn applications_execute_review(
+    app_handle: tauri::AppHandle,
     state: State<'_, AppState>,
     id: String,
 ) -> Result<ApplicationRecordDto, String> {
@@ -625,10 +837,11 @@ pub async fn applications_execute_review(
     )
     .await;
 
-    let screenshot: Option<String> = res
+    let raw_screenshot: Option<String> = res
         .get("screenshotBeforeSubmit")
         .and_then(|v| v.as_str())
         .map(|s| s.to_string());
+    let screenshot = save_screenshot_to_disk(&app_handle, &app.id, "before_submit", raw_screenshot);
 
     let checklist_val = res.get("reviewChecklist").cloned().unwrap_or(json!([]));
     let checklist_json = serde_json::to_string(&checklist_val).unwrap_or_else(|_| "[]".to_string());
@@ -721,6 +934,7 @@ pub(crate) fn map_submit_outcome(res: &serde_json::Value) -> Result<(&'static st
 #[tauri::command]
 #[specta::specta]
 pub async fn applications_submit_reviewed(
+    app_handle: tauri::AppHandle,
     state: State<'_, AppState>,
     id: String,
 ) -> Result<ApplicationRecordDto, String> {
@@ -767,7 +981,8 @@ pub async fn applications_submit_reviewed(
         )
         .await?;
 
-    let (new_status, screenshot) = map_submit_outcome(&res)?;
+    let (new_status, raw_screenshot) = map_submit_outcome(&res)?;
+    let screenshot = save_screenshot_to_disk(&app_handle, &app.id, "confirmation", raw_screenshot);
 
     app.status = new_status.to_string();
     app.submitted_at = Some(chrono_lite_iso());

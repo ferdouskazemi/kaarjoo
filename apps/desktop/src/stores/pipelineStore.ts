@@ -125,47 +125,40 @@ export const usePipelineStore = create<PipelineState>((set, get) => ({
       }> = [];
 
       if (!demoMode) {
-        const searchRes = await commands.jobsSearch({
-          keywords: keywords.length > 0 ? keywords : null,
-          locations: null,
-          remoteOnly: null,
-          company: null,
-          atsType: null,
-          limit: 30,
-        });
-        if (searchRes.status === 'ok' && searchRes.data.length > 0) {
-          for (const j of searchRes.data) {
-            rawJobs.push({
-              id: j.id,
-              title: j.title,
-              company: j.company,
-              location: j.location ?? undefined,
-              applyUrl: j.applyUrl,
-              atsType: j.atsType,
-              descriptionMarkdown: j.descriptionMarkdown,
-              requirements: j.requirements,
-              matchScore: j.matchScore,
-            });
-          }
-        } else {
-          const allRes = await commands.jobsGetAll(null, null, null, 30);
-          if (allRes.status === 'ok') {
-            for (const j of allRes.data) {
-              rawJobs.push({
-                id: j.id,
-                title: j.title,
-                company: j.company,
-                location: j.location ?? undefined,
-                applyUrl: j.applyUrl,
-                atsType: j.atsType,
-                descriptionMarkdown: j.descriptionMarkdown,
-                requirements: j.requirements,
-                matchScore: j.matchScore,
-              });
-            }
-          }
+        const discRes = await commands.pipelineStartDiscovery();
+        if (discRes.status === 'error') {
+          throw new Error(discRes.error);
         }
-      } else {
+        const matchedItems: PipelineJobItem[] = discRes.data.slice(0, 5).map((j) => ({
+          id: j.id,
+          title: j.title,
+          company: j.company,
+          location: j.location ?? undefined,
+          applyUrl: j.applyUrl,
+          atsType: j.atsType,
+          matchScore: typeof j.matchScore === 'number' ? Math.round(j.matchScore) : 0,
+          matchedSkills: [],
+          itemStatus: 'pending',
+        }));
+
+        for (let i = 0; i < matchedItems.length; i++) {
+          if (get().isCancelled) return;
+          set((state) => ({
+            discoveredJobs: [...state.discoveredJobs, matchedItems[i]],
+          }));
+          await new Promise((r) => setTimeout(r, 150));
+        }
+
+        await onInvalidate();
+        set({
+          isRunning: false,
+          status: 'discovered',
+          steps: { discover: 'done', tailor: 'pending', prefill: 'pending' },
+        });
+        return;
+      }
+
+      if (demoMode) {
         await new Promise((r) => setTimeout(r, 900));
         rawJobs.push(
           {
@@ -241,7 +234,7 @@ export const usePipelineStore = create<PipelineState>((set, get) => ({
     }
   },
 
-  startApplyStage: async ({ demoMode, lang, onInvalidate, onNavigateQueue }) => {
+  startApplyStage: async ({ demoMode, lang: _lang, onInvalidate, onNavigateQueue }) => {
     const jobs = get().discoveredJobs;
     if (jobs.length === 0) return;
 
@@ -258,78 +251,56 @@ export const usePipelineStore = create<PipelineState>((set, get) => ({
     const appStore = useApplicationStore.getState();
 
     try {
-      for (let i = 0; i < jobs.length; i++) {
-        if (get().isCancelled) return;
-        const job = jobs[i];
-
+      if (!demoMode) {
+        const jobIds = jobs.map((j) => j.id);
         set((state) => ({
-          currentItemIndex: i + 1,
-          currentItemLabel: `${job.title} — ${job.company}`,
-          discoveredJobs: state.discoveredJobs.map((j) =>
-            j.id === job.id ? { ...j, itemStatus: 'tailoring' } : j
-          ),
+          discoveredJobs: state.discoveredJobs.map((j) => ({ ...j, itemStatus: 'tailoring' })),
         }));
-
-        let resumePath: string | null = null;
-        let coverLetter: string | null = null;
-
-        if (!demoMode) {
-          try {
-            const tailorRes = await commands.documentsTailor(job.id, 'ats-clean', lang === 'fa' ? 'fa' : 'en');
-            if (tailorRes.status === 'ok') {
-              coverLetter = tailorRes.data.coverLetterText || null;
-              try {
-                const pdfRes = await commands.documentsExportPdf(
-                  tailorRes.data.resumeHtml,
-                  `tailored_${job.id}.pdf`
-                );
-                if (pdfRes.status === 'ok') resumePath = pdfRes.data;
-              } catch {
-                // Skip PDF export if unavailable
-              }
-            }
-          } catch {
-            // Continue sequentially
-          }
-        } else {
-          await new Promise((r) => setTimeout(r, 450));
-          resumePath = 'Tailored_Resume.pdf';
+        const prepRes = await commands.applicationsPrepare(jobIds);
+        if (prepRes.status === 'error') {
+          throw new Error(prepRes.error);
         }
-
-        if (get().isCancelled) return;
-
+        const appIds = prepRes.data.map((a) => a.id);
         set((state) => ({
-          discoveredJobs: state.discoveredJobs.map((j) =>
-            j.id === job.id ? { ...j, itemStatus: 'filling' } : j
-          ),
+          discoveredJobs: state.discoveredJobs.map((j) => ({ ...j, itemStatus: 'filling' })),
         }));
+        const fillRes = await commands.applicationsFill(appIds);
+        if (fillRes.status === 'error') {
+          throw new Error(fillRes.error);
+        }
+        set((state) => ({
+          discoveredJobs: state.discoveredJobs.map((j) => {
+            const matchApp = fillRes.data.find((a) => a.jobId === j.id);
+            const ok = matchApp && (matchApp.status === 'needs_review' || matchApp.status === 'needs_user');
+            return {
+              ...j,
+              itemStatus: ok ? 'done' : 'error',
+              errorText: matchApp?.stopMessage ?? undefined,
+            };
+          }),
+        }));
+      } else {
+        for (let i = 0; i < jobs.length; i++) {
+          if (get().isCancelled) return;
+          const job = jobs[i];
 
-        let itemOk = true;
-        let itemErr: string | undefined;
+          set((state) => ({
+            currentItemIndex: i + 1,
+            currentItemLabel: `${job.title} — ${job.company}`,
+            discoveredJobs: state.discoveredJobs.map((j) =>
+              j.id === job.id ? { ...j, itemStatus: 'tailoring' } : j
+            ),
+          }));
 
-        if (!demoMode) {
-          try {
-            const created = await commands.applicationsCreate(
-              job.id,
-              'review',
-              resumePath,
-              coverLetter
-            );
-            if (created.status === 'ok') {
-              const execRes = await commands.applicationsExecuteReview(created.data.id);
-              if (execRes.status === 'error') {
-                itemOk = false;
-                itemErr = execRes.error;
-              }
-            } else {
-              itemOk = false;
-              itemErr = created.error;
-            }
-          } catch (err) {
-            itemOk = false;
-            itemErr = err instanceof Error ? err.message : String(err);
-          }
-        } else {
+          await new Promise((r) => setTimeout(r, 450));
+          if (get().isCancelled) return;
+
+          set((state) => ({
+            discoveredJobs: state.discoveredJobs.map((j) =>
+              j.id === job.id ? { ...j, itemStatus: 'filling' } : j
+            ),
+          }));
+
           const createdApp = appStore.queueJobApplication({
             job: {
               id: job.id,
@@ -340,15 +311,13 @@ export const usePipelineStore = create<PipelineState>((set, get) => ({
             },
           });
           await appStore.executeApplication(createdApp.id);
-        }
 
-        set((state) => ({
-          discoveredJobs: state.discoveredJobs.map((j) =>
-            j.id === job.id
-              ? { ...j, itemStatus: itemOk ? 'done' : 'error', errorText: itemErr }
-              : j
-          ),
-        }));
+          set((state) => ({
+            discoveredJobs: state.discoveredJobs.map((j) =>
+              j.id === job.id ? { ...j, itemStatus: 'done' } : j
+            ),
+          }));
+        }
       }
 
       if (get().isCancelled) return;

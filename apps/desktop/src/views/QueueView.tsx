@@ -53,9 +53,10 @@ export const QueueView: React.FC = () => {
   const [previewModalImg, setPreviewModalImg] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  // Applications list: database records take precedence, falling back to store apps in demo mode
-  const applications: ApplicationRecord[] = (dbApplications.length > 0
-    ? dbApplications.map((a) => ({
+  // Single source of truth: SQLite DB in production; storeApps only when demoMode is explicitly ON
+  const applications: ApplicationRecord[] = (demoMode
+    ? storeApps
+    : dbApplications.map((a) => ({
         id: a.id,
         jobId: a.jobId,
         jobTitle: a.jobTitle,
@@ -80,10 +81,7 @@ export const QueueView: React.FC = () => {
         stopReason: 'none',
         createdAt: a.createdAt,
         updatedAt: a.updatedAt,
-      }))
-    : (demoMode || storeApps.length > 0)
-    ? storeApps
-    : []) as ApplicationRecord[];
+      }))) as ApplicationRecord[];
 
   const activeApp: ApplicationRecord | undefined =
     applications.find((a) => a.id === activeApplicationId) || applications[0];

@@ -147,3 +147,21 @@
     - 32 multi-format résumés (`.pdf`, `.docx`, `.odt`, `.rtf`, `.png` OCR, `.txt`; 5 OCR-scanned): Email F1 `0.938`, Phone F1 `0.875`, Skills F1 `0.901`, Experience F1 `0.865`, Education F1 `0.600`, Evidence Guard `5/5` blocked.
     - 312 labeled profile–job pairs across 12 profiles: Precision@10 **`0.8819`**, NDCG@10 **`0.9336`**, `0` hard-filter violations.
     - 56 adversarial truthfulness cases (48 EN+FA attacks + 8 valid controls): **`48/48` (100.0%) caught**, **`0/8` (0.0%) false positives**.
+
+### Prompt 2: Engine Supervisor & Process Lifecycle (`fix/p2-engine-supervisor`)
+- **Status:** COMPLETED & VERIFIED (`cargo test` 8/8, `pnpm build` exit 0, `pnpm test` 27 files / 119 tests)
+- **Changes:**
+  - `apps/desktop/src-tauri/src/error.rs`: Added typed `AppError` enum (`serde` + `specta::Type`) across Tauri commands.
+  - `apps/desktop/src-tauri/src/engine.rs`: Replaced mutex-held client with actor-based `EngineSupervisor` (`EngineClient` alias), generation isolation, `ByteLineFramer` (splits `b'\n'` before UTF-8 decode, 32 MB cap), per-method timeouts + `$/cancelRequest`, max 5 restarts/5 min (`engine:fatal`), and `kill_child_process_tree` cleanup.
+  - `packages/engine/src/rpc.ts` & `packages/engine/src/index.ts`: Added `$/cancelRequest` + `AbortController` and `system.shutdown`.
+  - `apps/desktop/src-tauri/src/lib.rs`, `commands.rs`, `Cargo.toml`, `nsis/hooks.nsh`: Initialized `tracing-subscriber` + daily `tracing-appender` rotation (keep 7), fixed panic hook (`&str` + `String` + backtrace), wired `RunEvent::ExitRequested`/`Exit` to `engine.shutdown()`, aligned `Cargo.toml` version to `1.0.0`, read version from `app.package_info().version`, and removed `taskkill` workaround from `nsis/hooks.nsh`.
+
+### Prompt 3: Single Source of Truth, Rust FSM & Task Orchestration (`feat/p3-fsm-and-tasks`)
+- **Status:** COMPLETED & VERIFIED (`cargo test` 10/10, `pnpm build` exit 0, `pnpm test` 27 files / 119 tests)
+- **Changes:**
+  - `apps/desktop/src-tauri/src/application_fsm.rs`: Added Rust application state machine (`next_state`, `user_event_from_status`, `transition_application`) executing atomic DB transitions + emitting `app:application-updated`, with unit tests for allowed & forbidden transitions.
+  - `apps/desktop/src-tauri/migrations/20260701_fsm_indexes_and_screenshots.sql`: Added indexes on `applications(status, updated_at)`, `matches(profile_id, overall_score DESC)`, and `jobs(status, first_seen DESC)`.
+  - `apps/desktop/src-tauri/src/db.rs`: Scoped all 4 `LEFT JOIN matches` queries (`get_jobs`, `get_job_by_id`, `search_jobs_fts`, `get_all_applications`) by `profile_id`.
+  - `apps/desktop/src-tauri/src/commands.rs`: Merged extracted résumé profiles via `profile.merge` with version increment and real SHA-256 + MIME type (`sha2`, `hex`), saved screenshots to `appDataDir/screenshots/<appId>/*.jpg` (`base64`), routed `applications_update_status` through `application_fsm`, and added `pipeline_start_discovery`, `applications_prepare`, and `applications_fill` emitting `task:progress`.
+  - `apps/desktop/src-tauri/src/lib.rs` & `bin/export_bindings.rs`: Extracted shared `kaarjoo_lib::specta_builder()` so `bindings.ts` exports stay in sync with Tauri command registration; regenerated `apps/desktop/src/bindings.ts`.
+  - `apps/desktop/src/stores/pipelineStore.ts` & `views/QueueView.tsx`: Wired `!demoMode` discovery/prepare/fill to Rust commands and made SQLite DB the single source of truth in `QueueView` when `!demoMode`.
