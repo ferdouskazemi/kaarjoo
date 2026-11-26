@@ -6,6 +6,7 @@ use tauri::Manager;
 pub mod commands;
 pub mod db;
 pub mod engine;
+pub mod error;
 pub mod models;
 pub mod state;
 
@@ -21,9 +22,22 @@ pub struct SystemStatus {
 
 pub fn run() {
     std::panic::set_hook(Box::new(|info| {
-        let log_msg = format!("PANIC: {:?}\nLocation: {:?}\n", info.payload().downcast_ref::<&str>(), info.location());
-        let panic_path = std::env::temp_dir().join("kaarjoo-panic.log");
-        let _ = std::fs::write(panic_path, log_msg);
+        let payload = info
+            .payload()
+            .downcast_ref::<&str>()
+            .copied()
+            .or_else(|| info.payload().downcast_ref::<String>().map(|s| s.as_str()))
+            .unwrap_or("Unknown panic payload");
+        let bt = std::backtrace::Backtrace::force_capture();
+        let log_msg = format!("PANIC: {}\nLocation: {:?}\nBacktrace:\n{}\n---\n", payload, info.location(), bt);
+        let panic_path = dirs_or_temp_panic_path();
+        if let Some(parent) = panic_path.parent() {
+            let _ = std::fs::create_dir_all(parent);
+        }
+        if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(&panic_path) {
+            use std::io::Write;
+            let _ = f.write_all(log_msg.as_bytes());
+        }
     }));
 
     let specta_builder = Builder::<tauri::Wry>::new().commands(collect_commands![
@@ -90,6 +104,23 @@ pub fn run() {
                 .unwrap_or_else(|_| std::env::temp_dir().join("com.kaarjoo.desktop"));
 
             std::fs::create_dir_all(&app_data_dir)?;
+            let logs_dir = app_data_dir.join("logs");
+            std::fs::create_dir_all(&logs_dir)?;
+
+            // Initialize daily-rotating tracing subscriber (max 7 files; no engine stdout PII)
+            let file_appender = tracing_appender::rolling::Builder::new()
+                .rotation(tracing_appender::rolling::Rotation::DAILY)
+                .filename_prefix("kaarjoo")
+                .filename_suffix("log")
+                .max_log_files(7)
+                .build(&logs_dir)
+                .expect("Failed to initialize log appender");
+            let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
+            let _ = tracing_subscriber::fmt()
+                .with_writer(non_blocking)
+                .with_ansi(false)
+                .try_init();
+            std::mem::forget(_guard);
 
             // Initialize SQLite DB with WAL mode & embedded migrations
             let pool = tauri::async_runtime::block_on(async {
@@ -114,8 +145,29 @@ pub fn run() {
 
             Ok(())
         })
-        .run(tauri::generate_context!())
-        .expect("error while running kaarjoo desktop application");
+        .build(tauri::generate_context!())
+        .expect("error while building kaarjoo desktop application")
+        .run(|app_handle, event| {
+            if matches!(event, tauri::RunEvent::ExitRequested { .. } | tauri::RunEvent::Exit) {
+                if let Some(state) = app_handle.try_state::<AppState>() {
+                    let engine = state.engine.clone();
+                    tauri::async_runtime::block_on(async move {
+                        engine.shutdown().await;
+                    });
+                }
+            }
+        });
+}
+
+fn dirs_or_temp_panic_path() -> std::path::PathBuf {
+    #[cfg(target_os = "windows")]
+    if let Ok(appdata) = std::env::var("APPDATA") {
+        return std::path::PathBuf::from(appdata)
+            .join("com.kaarjoo.desktop")
+            .join("logs")
+            .join("kaarjoo-panic.log");
+    }
+    std::env::temp_dir().join("com.kaarjoo.desktop").join("logs").join("kaarjoo-panic.log")
 }
 
 

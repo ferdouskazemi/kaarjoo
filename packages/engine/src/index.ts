@@ -613,6 +613,11 @@ server.register('application.cancel', {
   },
 });
 
+server.register('system.shutdown', async () => {
+  setTimeout(() => process.exit(0), 50);
+  return { status: 'shutting_down' };
+});
+
 // Start listening on stdio
 server.start();
 

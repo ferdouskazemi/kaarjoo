@@ -12,9 +12,9 @@ use tauri::State;
 
 #[tauri::command]
 #[specta::specta]
-pub async fn get_system_status() -> Result<SystemStatus, String> {
+pub async fn get_system_status(app: tauri::AppHandle) -> Result<SystemStatus, String> {
     Ok(SystemStatus {
-        app_version: "0.1.0".to_string(),
+        app_version: app.package_info().version.to_string(),
         os: std::env::consts::OS.to_string(),
         is_ready: true,
     })

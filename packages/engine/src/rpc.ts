@@ -37,15 +37,16 @@ export class RpcError extends Error {
 export interface MethodConfig<TInput = any, TOutput = any> {
   inputSchema?: z.ZodType<TInput>;
   outputSchema?: z.ZodType<TOutput>;
-  handler: (params: TInput) => Promise<TOutput> | TOutput;
+  handler: (params: TInput, ctx?: { signal: AbortSignal }) => Promise<TOutput> | TOutput;
 }
 
 export type RpcRegistration<TInput = any, TOutput = any> =
   | MethodConfig<TInput, TOutput>
-  | ((params: TInput) => Promise<TOutput> | TOutput);
+  | ((params: TInput, ctx?: { signal: AbortSignal }) => Promise<TOutput> | TOutput);
 
 export class StdioRpcServer {
   private handlers = new Map<string, MethodConfig>();
+  private inFlight = new Map<string | number, AbortController>();
   private rl: readline.Interface | null = null;
 
   public register<TInput = any, TOutput = any>(
@@ -79,6 +80,17 @@ export class StdioRpcServer {
         return;
       }
 
+      if (request.method === '$/cancelRequest') {
+        const targetId = (request.params as any)?.id;
+        if (targetId !== undefined && targetId !== null) {
+          this.inFlight.get(targetId)?.abort();
+        }
+        if (request.id !== undefined && request.id !== null) {
+          this.sendResult(request.id, { cancelled: true });
+        }
+        return;
+      }
+
       const entry = this.handlers.get(request.method);
       if (!entry) {
         this.sendError(request.id, RpcErrorCode.MethodNotFound, `Method '${request.method}' not found`);
@@ -103,8 +115,17 @@ export class StdioRpcServer {
         params = parseResult.data;
       }
 
+      const controller = new AbortController();
+      if (request.id !== undefined && request.id !== null) {
+        this.inFlight.set(request.id, controller);
+      }
+
       try {
-        const result = await entry.handler(params);
+        const result = await entry.handler(params, { signal: controller.signal });
+        if (controller.signal.aborted) {
+          this.sendError(request.id, -32800, `Request '${request.method}' was cancelled`);
+          return;
+        }
         if (entry.outputSchema) {
           const outParse = entry.outputSchema.safeParse(result);
           if (!outParse.success) {
@@ -115,6 +136,10 @@ export class StdioRpcServer {
       } catch (err: any) {
         const code = typeof err?.code === 'number' ? err.code : RpcErrorCode.InternalError;
         this.sendError(request.id, code, err?.message || 'Internal handler error', err?.data);
+      } finally {
+        if (request.id !== undefined && request.id !== null) {
+          this.inFlight.delete(request.id);
+        }
       }
     });
 

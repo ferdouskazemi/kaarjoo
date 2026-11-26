@@ -1,8 +1,6 @@
 !macro NSIS_HOOK_PREINSTALL
-  ; Gracefully close any running Kaarjoo desktop or sidecar process so files aren't locked
-  nsExec::ExecToLog 'taskkill /F /IM kaarjoo-desktop.exe /T'
-  Sleep 400
-  ; Clean any stale engine directory before extracting updated resources
+  ; EngineSupervisor now terminates all child node/browser processes cleanly on exit.
+  ; Clean any stale engine directory before extracting updated resources.
   RMDir /r "$INSTDIR\engine"
 !macroend
 
