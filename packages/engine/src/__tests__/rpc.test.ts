@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { StdioRpcServer } from '../rpc.js';
-import { JsonRpcResponse } from '@kaarjoo/shared';
+import { StdioRpcServer, stripNulls } from '../rpc.js';
+import { JsonRpcResponse, UserProfileSchema, z } from '@kaarjoo/shared';
 
 describe('StdioRpcServer', () => {
   it('registers and executes methods returning proper JSON-RPC response', async () => {
@@ -43,5 +43,46 @@ describe('StdioRpcServer', () => {
     expect(parsed.error?.message).toBe("Method 'unknown' not found");
 
     writeSpy.mockRestore();
+  });
+
+  it('strips null optional fields from Rust payloads before Zod schema validation', () => {
+    const rawFromRust = {
+      profile: {
+        id: 'p1',
+        version: 1,
+        contact: {
+          fullName: 'Ferdous Kazemi',
+          email: 'ferdous@example.com',
+          phone: null,
+          location: null,
+          linkedinUrl: null,
+          githubUrl: null,
+          portfolioUrl: null,
+          provenance: null,
+        },
+        summary: null,
+        experiences: [],
+        education: [],
+        skills: [
+          {
+            id: 's1',
+            name: 'React',
+            escoId: null,
+            category: null,
+            yearsOfExperience: null,
+            level: null,
+            confidence: null,
+            provenance: null,
+          },
+        ],
+        targetTitles: ['Frontend Engineer'],
+        createdAt: '2026-01-01T00:00:00Z',
+        updatedAt: '2026-01-01T00:00:00Z',
+      },
+    };
+
+    const cleaned = stripNulls(rawFromRust);
+    const parsed = z.object({ profile: UserProfileSchema }).safeParse(cleaned);
+    expect(parsed.success).toBe(true);
   });
 });

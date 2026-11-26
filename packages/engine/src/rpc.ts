@@ -8,6 +8,21 @@ import {
   JSONRPC_VERSION,
 } from '@kaarjoo/shared';
 
+export function stripNulls(value: unknown): unknown {
+  if (value === null) return undefined;
+  if (Array.isArray(value)) return value.map((v) => stripNulls(v));
+  if (value && typeof value === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      if (v !== null) {
+        out[k] = stripNulls(v);
+      }
+    }
+    return out;
+  }
+  return value;
+}
+
 export class RpcError extends Error {
   constructor(
     public code: number,
@@ -70,7 +85,7 @@ export class StdioRpcServer {
         return;
       }
 
-      let params = request.params;
+      let params = stripNulls(request.params);
       if (entry.inputSchema) {
         const parseResult = entry.inputSchema.safeParse(params);
         if (!parseResult.success) {

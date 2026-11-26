@@ -114,7 +114,7 @@ pub async fn jobs_search(
     let _ = db::save_jobs_batch(&state.pool, &jobs).await;
 
     // Return current stored jobs
-    let stored = db::get_jobs(
+    let mut stored = db::get_jobs(
         &state.pool,
         query.ats_type.as_deref(),
         query.remote_only.map(|r| if r { "remote" } else { "all" }),
@@ -123,6 +123,66 @@ pub async fn jobs_search(
     )
     .await
     .map_err(|e| format!("Database error querying jobs: {}", e))?;
+
+    // Score and rank against candidate profile so only CV-relevant jobs surface
+    if let Ok(Some(profile)) = db::get_profile(&state.pool).await {
+        if !stored.is_empty() {
+            if let Ok(rank_res) = state
+                .engine
+                .request(
+                    "matching.rankAllJobs",
+                    json!({ "profile": profile, "jobs": stored }),
+                )
+                .await
+            {
+                if let Ok(matches) = serde_json::from_value::<Vec<MatchResultDto>>(rank_res) {
+                    for m in &matches {
+                        let _ = db::save_match(&state.pool, m).await;
+                    }
+                    if let Ok(ranked_jobs) = db::get_jobs(
+                        &state.pool,
+                        query.ats_type.as_deref(),
+                        query.remote_only.map(|r| if r { "remote" } else { "all" }),
+                        query.company.as_deref(),
+                        query.limit.unwrap_or(50) as i64,
+                    )
+                    .await
+                    {
+                        stored = ranked_jobs;
+                    }
+                }
+            }
+        }
+
+        // Filter to CV-matched jobs when keywords or skills are present
+        let kw_terms: Vec<String> = profile
+            .skills
+            .iter()
+            .map(|s| s.name.to_lowercase())
+            .chain(profile.target_titles.iter().map(|t| t.to_lowercase()))
+            .collect();
+
+        if !kw_terms.is_empty() {
+            let filtered: Vec<JobPostingDto> = stored
+                .iter()
+                .filter(|j| {
+                    let score_ok = j.match_score.unwrap_or(0.0) >= 35.0;
+                    let hay = format!(
+                        "{} {} {}",
+                        j.title.to_lowercase(),
+                        j.description_markdown.to_lowercase(),
+                        j.requirements.join(" ").to_lowercase()
+                    );
+                    let kw_ok = kw_terms.iter().any(|k| !k.is_empty() && hay.contains(k));
+                    score_ok || kw_ok
+                })
+                .cloned()
+                .collect();
+            if !filtered.is_empty() {
+                stored = filtered;
+            }
+        }
+    }
 
     Ok(stored)
 }
