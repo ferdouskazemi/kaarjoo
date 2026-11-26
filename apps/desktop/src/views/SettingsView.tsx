@@ -35,6 +35,12 @@ export const SettingsView: React.FC = () => {
   const [isHeadless, setIsHeadless] = useState(true);
   const [backupSuccess, setBackupSuccess] = useState(false);
   const [wipeSuccess, setWipeSuccess] = useState(false);
+  const [wipeSummary, setWipeSummary] = useState<{
+    dbRowsDeleted: number;
+    browsersClosed: number;
+    foldersRemoved: string[];
+    modelsRemoved: boolean;
+  } | null>(null);
   const [checkingUpdates, setCheckingUpdates] = useState(false);
   const [appUpdateStatus, setAppUpdateStatus] = useState<string | null>(null);
   const [availableVersion, setAvailableVersion] = useState<string | null>(null);
@@ -131,11 +137,10 @@ export const SettingsView: React.FC = () => {
   const handleInstallUpdate = async () => {
     try {
       const { check } = await import('@tauri-apps/plugin-updater');
-      const { relaunch } = await import('@tauri-apps/plugin-process');
       const update = await check();
       if (update) {
         await update.downloadAndInstall();
-        await relaunch();
+        await commands.appRestart();
       }
     } catch (err) {
       console.error('Update install failed:', err);
@@ -149,10 +154,14 @@ export const SettingsView: React.FC = () => {
 
   const handleWipeData = async () => {
     if (window.confirm(t('settings.clearConfirm'))) {
+      const includeModels = window.confirm(
+        'Also delete downloaded local AI models (GGUF files)? Click Cancel to keep downloaded models.'
+      );
       try {
-        await wipeMutation.mutateAsync();
+        const summary = await wipeMutation.mutateAsync(includeModels);
+        setWipeSummary(summary);
         setWipeSuccess(true);
-        setTimeout(() => setWipeSuccess(false), 3000);
+        setTimeout(() => setWipeSuccess(false), 5000);
       } catch (err) {
         console.error('Wipe error:', err);
       }
@@ -449,6 +458,12 @@ export const SettingsView: React.FC = () => {
               <span>{wipeSuccess ? t('settings.dataWiped') : t('settings.clearDatabase')}</span>
             </button>
           </div>
+          {wipeSummary && (
+            <div className="mt-2 p-3 rounded-lg bg-emerald-950/30 border border-emerald-800/40 text-xs text-emerald-200">
+              Deleted {wipeSummary.dbRowsDeleted} database rows, closed {wipeSummary.browsersClosed} browser sessions,
+              and removed folders: {wipeSummary.foldersRemoved.length > 0 ? wipeSummary.foldersRemoved.join(', ') : 'none'}.
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -28,7 +28,6 @@ import {
   X,
   GraduationCap,
 } from 'lucide-react';
-import { open } from '@tauri-apps/plugin-dialog';
 import { useProfile, useExtractProfile, useClearProfile } from '../queries/index.js';
 import { useProfileStore, DEMO_CANDIDATE_PROFILE } from '../stores/profileStore.js';
 import { useApplicationStore } from '../stores/applicationStore.js';
@@ -96,13 +95,14 @@ export const ProfileView: React.FC = () => {
     setActiveHighlight(highlightText, label);
   };
 
-  const processSelectedFile = async (selectedPath: string) => {
+  const handlePickNativeFile = async () => {
     setExtractError(null);
     setIsProcessing(true);
     try {
-      const res = await extractMutation.mutateAsync(selectedPath);
-      const fileName = res.sourceFileName || selectedPath.split(/[\\/]/).pop() || 'Resume';
-      const lowerExt = selectedPath.split('.').pop()?.toLowerCase() || 'pdf';
+      const res = await extractMutation.mutateAsync();
+      if (!res) return;
+      const fileName = res.sourceFileName || 'Resume';
+      const lowerExt = fileName.split('.').pop()?.toLowerCase() || 'pdf';
       setUploadedDocument({
         fileName,
         text: res.rawText,
@@ -118,27 +118,6 @@ export const ProfileView: React.FC = () => {
     }
   };
 
-  const handlePickNativeFile = async () => {
-    try {
-      const selected = await open({
-        multiple: false,
-        filters: [
-          {
-            name: 'Resume & Scanned Documents',
-            extensions: ['pdf', 'docx', 'doc', 'odt', 'rtf', 'txt', 'md', 'png', 'jpg', 'jpeg', 'webp'],
-          },
-        ],
-      });
-      if (selected && typeof selected === 'string') {
-        await processSelectedFile(selected);
-      }
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      console.error('Native file dialog error:', err);
-      setExtractError(message);
-    }
-  };
-
   React.useEffect(() => {
     let unlisten: (() => void) | undefined;
     import('@tauri-apps/api/webview')
@@ -150,10 +129,7 @@ export const ProfileView: React.FC = () => {
             setIsDragging(false);
           } else if (event.payload.type === 'drop') {
             setIsDragging(false);
-            const droppedPath = event.payload.paths?.[0];
-            if (droppedPath) {
-              void processSelectedFile(droppedPath);
-            }
+            void handlePickNativeFile();
           }
         })
       )

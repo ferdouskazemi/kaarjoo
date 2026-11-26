@@ -1,4 +1,5 @@
 import type { TailoredResume } from '@kaarjoo/shared';
+import { escapeAttr, escapeHtml } from './escapeHtml.js';
 
 /**
  * Standard ATS-safe Single Column Template.
@@ -24,11 +25,71 @@ export function renderAtsCleanHtml(resume: TailoredResume): string {
     resume.contact.githubUrl ? 'GitHub' : undefined,
   ].filter((p): p is string => Boolean(p));
 
+  const langAttr = escapeAttr(resume.language);
+  const fullName = escapeHtml(resume.contact.fullName);
+  const summaryHtml = resume.summary ? escapeHtml(resume.summary) : '';
+  const experiencesHtml = resume.experiences
+    .map(
+      (exp) => `
+      <div class="experience-item">
+        <div class="item-header">
+          <div>
+            <span class="job-title">${escapeHtml(exp.title)}</span> — 
+            <span class="company-name">${escapeHtml(exp.company)}</span>
+          </div>
+          <div class="date-location">
+            ${escapeHtml(exp.startDate)} – ${exp.isCurrent ? (isFa ? 'اکنون' : 'Present') : escapeHtml(exp.endDate || '')}
+            ${exp.location ? ` | ${escapeHtml(exp.location)}` : ''}
+          </div>
+        </div>
+        <ul>
+          ${exp.tailoredAchievements.map((ach) => `<li>${escapeHtml(ach)}</li>`).join('')}
+        </ul>
+      </div>
+    `
+    )
+    .join('');
+  const skillsHtml = resume.skillCategories
+    .map(
+      (cat) => `
+      <div class="skill-category">
+        <span class="skill-label">${escapeHtml(cat.category)}:</span>
+        <span class="skill-list">${cat.skills.map((s) => escapeHtml(s)).join(', ')}</span>
+      </div>
+    `
+    )
+    .join('');
+  const educationItemsHtml = (resume.education ?? [])
+    .map(
+      (edu) => `
+      <div class="experience-item">
+        <div class="item-header">
+          <div>
+            <span class="job-title">${escapeHtml(edu.degree)}</span>
+            ${edu.fieldOfStudy ? ` in ${escapeHtml(edu.fieldOfStudy)}` : ''} — 
+            <span class="company-name">${escapeHtml(edu.institution)}</span>
+          </div>
+          <div class="date-location">
+            ${escapeHtml(edu.startDate || '')} ${edu.endDate ? `– ${escapeHtml(edu.endDate)}` : ''}
+          </div>
+        </div>
+      </div>
+    `
+    )
+    .join('');
+  const educationHtml =
+    educationItemsHtml
+      ? `<section id="education">
+    <h2>${isFa ? 'تحصیلات' : 'Education'}</h2>
+    ${educationItemsHtml}
+  </section>`
+      : '';
+
   return `<!DOCTYPE html>
-<html lang="${resume.language}" dir="${dir}">
+<html lang="${langAttr}" dir="${dir}">
 <head>
   <meta charset="UTF-8">
-  <title>${resume.contact.fullName} - Résumé</title>
+  <title>${fullName} - Résumé</title>
   <style>
     @page {
       size: A4;
@@ -138,85 +199,32 @@ export function renderAtsCleanHtml(resume: TailoredResume): string {
 </head>
 <body>
   <header>
-    <h1>${resume.contact.fullName}</h1>
+    <h1>${fullName}</h1>
     <div class="contact-line">
-      ${contactParts.map((c) => `<span>${c}</span>`).join(' • ')}
+      ${contactParts.map((c) => `<span>${escapeHtml(c)}</span>`).join(' • ')}
     </div>
   </header>
 
   ${
-    resume.summary
+    summaryHtml
       ? `<section id="summary">
     <h2>${isFa ? 'خلاصه حرفه‌ای' : 'Professional Summary'}</h2>
-    <p class="summary-text">${resume.summary}</p>
+    <p class="summary-text">${summaryHtml}</p>
   </section>`
       : ''
   }
 
   <section id="experience">
     <h2>${isFa ? 'سوابق شغلی' : 'Professional Experience'}</h2>
-    ${resume.experiences
-      .map(
-        (exp) => `
-      <div class="experience-item">
-        <div class="item-header">
-          <div>
-            <span class="job-title">${exp.title}</span> — 
-            <span class="company-name">${exp.company}</span>
-          </div>
-          <div class="date-location">
-            ${exp.startDate} – ${exp.isCurrent ? (isFa ? 'اکنون' : 'Present') : exp.endDate || ''}
-            ${exp.location ? ` | ${exp.location}` : ''}
-          </div>
-        </div>
-        <ul>
-          ${exp.tailoredAchievements.map((ach) => `<li>${ach}</li>`).join('')}
-        </ul>
-      </div>
-    `
-      )
-      .join('')}
+    ${experiencesHtml}
   </section>
 
   <section id="skills">
     <h2>${isFa ? 'مهارت‌های تخصصی' : 'Technical Skills'}</h2>
-    ${resume.skillCategories
-      .map(
-        (cat) => `
-      <div class="skill-category">
-        <span class="skill-label">${cat.category}:</span>
-        <span class="skill-list">${cat.skills.join(', ')}</span>
-      </div>
-    `
-      )
-      .join('')}
+    ${skillsHtml}
   </section>
 
-  ${
-    resume.education && resume.education.length > 0
-      ? `<section id="education">
-    <h2>${isFa ? 'تحصیلات' : 'Education'}</h2>
-    ${resume.education
-      .map(
-        (edu) => `
-      <div class="experience-item">
-        <div class="item-header">
-          <div>
-            <span class="job-title">${edu.degree}</span>
-            ${edu.fieldOfStudy ? ` in ${edu.fieldOfStudy}` : ''} — 
-            <span class="company-name">${edu.institution}</span>
-          </div>
-          <div class="date-location">
-            ${edu.startDate || ''} ${edu.endDate ? `– ${edu.endDate}` : ''}
-          </div>
-        </div>
-      </div>
-    `
-      )
-      .join('')}
-  </section>`
-      : ''
-  }
+  ${educationHtml}
 </body>
 </html>`;
 }

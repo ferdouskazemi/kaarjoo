@@ -1059,17 +1059,35 @@ pub async fn set_setting(pool: &DbPool, key: &str, value: &str) -> Result<(), sq
     Ok(())
 }
 
-pub async fn wipe_all_data(pool: &DbPool) -> Result<(), sqlx::Error> {
+pub async fn wipe_all_data(pool: &DbPool) -> Result<i64, sqlx::Error> {
     let mut tx = pool.begin().await?;
-    sqlx::query("DELETE FROM applications").execute(&mut *tx).await?;
-    sqlx::query("DELETE FROM application_steps").execute(&mut *tx).await?;
-    sqlx::query("DELETE FROM matches").execute(&mut *tx).await?;
-    sqlx::query("DELETE FROM jobs").execute(&mut *tx).await?;
-    sqlx::query("DELETE FROM profiles").execute(&mut *tx).await?;
-    sqlx::query("DELETE FROM source_files").execute(&mut *tx).await?;
-    sqlx::query("DELETE FROM tasks").execute(&mut *tx).await?;
+    let mut total_deleted: i64 = 0;
+
+    for sql in [
+        "DELETE FROM applications",
+        "DELETE FROM application_steps",
+        "DELETE FROM matches",
+        "DELETE FROM jobs",
+        "DELETE FROM experiences",
+        "DELETE FROM skills",
+        "DELETE FROM source_files",
+        "DELETE FROM profiles",
+        "DELETE FROM tasks",
+        "DELETE FROM embedding_vectors",
+    ] {
+        let res = sqlx::query(sql).execute(&mut *tx).await?;
+        total_deleted += res.rows_affected() as i64;
+    }
+
+    let settings_res = sqlx::query(
+        "DELETE FROM settings WHERE key NOT IN ('language', 'ui_language', 'ui.language')",
+    )
+    .execute(&mut *tx)
+    .await?;
+    total_deleted += settings_res.rows_affected() as i64;
+
     tx.commit().await?;
-    Ok(())
+    Ok(total_deleted)
 }
 
 #[cfg(test)]

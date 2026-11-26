@@ -38,14 +38,16 @@ export function useSaveProfile() {
 
 export function useExtractProfile() {
   const qc = useQueryClient();
-  return useMutation<ProfileExtractionResultDto, Error, string>({
-    mutationFn: async (filePath: string) => {
-      const res = await commands.profileParseAndExtract(filePath);
+  return useMutation<ProfileExtractionResultDto | null, Error, void>({
+    mutationFn: async () => {
+      const res = await commands.profileImportResume();
       if (res.status === 'error') throw new Error(res.error);
       return res.data;
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['profile'] });
+    onSuccess: (data) => {
+      if (data) {
+        qc.invalidateQueries({ queryKey: ['profile'] });
+      }
     },
   });
 }
@@ -255,8 +257,8 @@ export function useSetSetting() {
 export function useWipeAllData() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async () => {
-      const res = await commands.settingsWipeAllData();
+    mutationFn: async (includeModels?: boolean) => {
+      const res = await commands.settingsWipeAllData(includeModels ?? false);
       if (res.status === 'error') throw new Error(res.error);
       return res.data;
     },

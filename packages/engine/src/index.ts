@@ -4,6 +4,7 @@ import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { StdioRpcServer, RpcError } from './rpc.js';
 import { discoverSystemBrowsers } from './utils/discovery.js';
+import { resolveAllowedEnginePath, resolveExportPath } from './utils/pathGuard.js';
 import {
   getModelManifestWithStatus,
   downloadModelWithResume,
@@ -130,8 +131,14 @@ server.register('profile.parseAndExtract', {
     filePath: z.string().min(1, 'filePath is required'),
   }),
   handler: async ({ filePath }) => {
+    let safePath: string;
     try {
-      const res = await processAndExtractProfile(filePath);
+      safePath = resolveAllowedEnginePath(filePath, ['sources']);
+    } catch (err: any) {
+      throw new RpcError(RpcErrorCode.InvalidParams, err.message);
+    }
+    try {
+      const res = await processAndExtractProfile(safePath);
       return {
         ...res,
         sourceFileId: `src_${Date.now()}`,
@@ -473,13 +480,15 @@ server.register('documents.exportPdf', {
     coverLetter: z.record(z.unknown()).optional(),
     html: z.string().optional(),
     filename: z.string().optional(),
-    outputPath: z.string().optional(),
   }),
-  handler: async ({ resume, coverLetter, html, filename, outputPath }) => {
-    const exportsDir = path.join(process.env.KAARJOO_APP_DATA_DIR || os.tmpdir(), 'exports');
-    await fs.mkdir(exportsDir, { recursive: true });
-    const safeName = (filename || `export_${Date.now()}.pdf`).replace(/[<>:"/\\|?*]/g, '_');
-    const resolvedPath = outputPath || path.join(exportsDir, safeName.endsWith('.pdf') ? safeName : `${safeName}.pdf`);
+  handler: async ({ resume, coverLetter, html, filename }) => {
+    let resolvedPath: string;
+    try {
+      resolvedPath = resolveExportPath(filename, '.pdf');
+    } catch (err: any) {
+      throw new RpcError(RpcErrorCode.InvalidParams, err.message);
+    }
+    await fs.mkdir(path.dirname(resolvedPath), { recursive: true });
 
     if (html) {
       const buffer = await exportToPdf(html, { outputPath: resolvedPath });
@@ -500,13 +509,15 @@ server.register('documents.exportDocx', {
     resume: z.record(z.unknown()).optional(),
     contentJson: z.string().optional(),
     filename: z.string().optional(),
-    outputPath: z.string().optional(),
   }),
-  handler: async ({ resume, contentJson, filename, outputPath }) => {
-    const exportsDir = path.join(process.env.KAARJOO_APP_DATA_DIR || os.tmpdir(), 'exports');
-    await fs.mkdir(exportsDir, { recursive: true });
-    const safeName = (filename || `export_${Date.now()}.docx`).replace(/[<>:"/\\|?*]/g, '_');
-    const resolvedPath = outputPath || path.join(exportsDir, safeName.endsWith('.docx') ? safeName : `${safeName}.docx`);
+  handler: async ({ resume, contentJson, filename }) => {
+    let resolvedPath: string;
+    try {
+      resolvedPath = resolveExportPath(filename, '.docx');
+    } catch (err: any) {
+      throw new RpcError(RpcErrorCode.InvalidParams, err.message);
+    }
+    await fs.mkdir(path.dirname(resolvedPath), { recursive: true });
     const targetResume = resume || (contentJson ? JSON.parse(contentJson) : null);
     if (!targetResume) {
       throw new RpcError(RpcErrorCode.InvalidParams, 'Neither resume nor contentJson provided for DOCX export');
@@ -527,6 +538,13 @@ server.register('application.queue', {
     answers: z.record(z.string()).optional(),
   }),
   handler: (params) => {
+    if (params.tailoredResumePath) {
+      try {
+        params.tailoredResumePath = resolveAllowedEnginePath(params.tailoredResumePath, ['sources', 'exports']);
+      } catch (err: any) {
+        throw new RpcError(RpcErrorCode.InvalidParams, err.message);
+      }
+    }
     return applicationEngine.queueApplication(params as any);
   },
 });
@@ -543,6 +561,14 @@ server.register('application.get', {
   handler: ({ id }) => applicationEngine.getApplication(id),
 });
 
+server.register('application.closeAll', {
+  inputSchema: z.unknown().optional(),
+  handler: async () => {
+    const closedCount = await applicationEngine.closeAllSessions();
+    return { closedCount };
+  },
+});
+
 server.register('application.execute', {
   inputSchema: z.object({
     id: z.string().min(1),
@@ -557,7 +583,14 @@ server.register('application.execute', {
   handler: async (params) => {
     try {
       let targetId = params.id;
-      const resumePath = params.tailoredResumePath || params.resumePath;
+      let resumePath = params.tailoredResumePath || params.resumePath;
+      if (resumePath) {
+        try {
+          resumePath = resolveAllowedEnginePath(resumePath, ['sources', 'exports']);
+        } catch (err: any) {
+          throw new RpcError(RpcErrorCode.InvalidParams, err.message);
+        }
+      }
       if (!applicationEngine.getApplication(targetId) && params.job) {
         const queued = applicationEngine.queueApplication({
           id: targetId,

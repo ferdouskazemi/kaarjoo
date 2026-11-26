@@ -8,6 +8,9 @@ use serde_json::json;
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use tauri::{Emitter, Manager, State};
+use tauri_plugin_dialog::DialogExt;
+
+const MAX_RESUME_BYTES: u64 = 25 * 1024 * 1024; // 25 MB
 
 // -----------------------------------------------------------------------------
 // System
@@ -21,6 +24,12 @@ pub async fn get_system_status(app: tauri::AppHandle) -> Result<SystemStatus, St
         os: std::env::consts::OS.to_string(),
         is_ready: true,
     })
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn app_restart(app: tauri::AppHandle) -> Result<(), String> {
+    app.restart();
 }
 
 // -----------------------------------------------------------------------------
@@ -43,15 +52,142 @@ pub async fn profile_save(state: State<'_, AppState>, profile: UserProfileDto) -
         .map_err(|e| format!("Database error saving profile: {}", e))
 }
 
+fn verify_magic_bytes(ext: &str, bytes: &[u8]) -> Result<(), String> {
+    match ext {
+        "pdf" => {
+            if !bytes.starts_with(b"%PDF-") {
+                return Err("File extension is .pdf but magic bytes do not match %PDF-".to_string());
+            }
+        }
+        "docx" | "odt" => {
+            if !bytes.starts_with(&[0x50, 0x4B, 0x03, 0x04]) {
+                return Err(format!("File extension is .{} but magic bytes do not match ZIP (PK)", ext));
+            }
+        }
+        "doc" => {
+            let is_ole = bytes.starts_with(&[0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1]);
+            let is_text = std::str::from_utf8(bytes).is_ok();
+            if !is_ole && !is_text {
+                return Err("File extension is .doc but content is neither OLE2 nor valid text".to_string());
+            }
+        }
+        "rtf" => {
+            if !bytes.starts_with(b"{\\rtf") {
+                return Err("File extension is .rtf but magic bytes do not match {\\rtf".to_string());
+            }
+        }
+        "png" => {
+            if !bytes.starts_with(&[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]) {
+                return Err("File extension is .png but magic bytes do not match PNG".to_string());
+            }
+        }
+        "jpg" | "jpeg" => {
+            if !bytes.starts_with(&[0xFF, 0xD8, 0xFF]) {
+                return Err("File extension is .jpg/.jpeg but magic bytes do not match JPEG".to_string());
+            }
+        }
+        "webp" => {
+            if bytes.len() < 12 || &bytes[0..4] != b"RIFF" || &bytes[8..12] != b"WEBP" {
+                return Err("File extension is .webp but magic bytes do not match RIFF/WEBP".to_string());
+            }
+        }
+        "txt" | "md" => {
+            if bytes.contains(&0) || std::str::from_utf8(bytes).is_err() {
+                return Err(format!("File extension is .{} but content is not valid UTF-8 text", ext));
+            }
+        }
+        _ => {
+            return Err(format!("Unsupported file extension: .{}", ext));
+        }
+    }
+    Ok(())
+}
+
+pub fn stage_resume_source_file(
+    app_data_dir: &std::path::Path,
+    source_path: &std::path::Path,
+) -> Result<(std::path::PathBuf, String, i64, &'static str), String> {
+    let ext = source_path
+        .extension()
+        .and_then(|e| e.to_str())
+        .map(|s| s.to_ascii_lowercase())
+        .ok_or_else(|| "Selected file must have a valid extension".to_string())?;
+
+    let metadata = std::fs::metadata(source_path)
+        .map_err(|e| format!("Failed to inspect selected file: {}", e))?;
+    if !metadata.is_file() {
+        return Err("Selected path is not a regular file".to_string());
+    }
+    if metadata.len() == 0 {
+        return Err("Selected file is empty".to_string());
+    }
+    if metadata.len() > MAX_RESUME_BYTES {
+        return Err(format!(
+            "File exceeds 25 MB limit ({} bytes)",
+            metadata.len()
+        ));
+    }
+
+    let bytes = std::fs::read(source_path)
+        .map_err(|e| format!("Failed to read selected file: {}", e))?;
+    verify_magic_bytes(&ext, &bytes)?;
+
+    let sha_hex = hex::encode(Sha256::digest(&bytes));
+    let sources_dir = app_data_dir.join("sources");
+    std::fs::create_dir_all(&sources_dir)
+        .map_err(|e| format!("Failed to create sources directory: {}", e))?;
+
+    let staged_path = sources_dir.join(format!("{}.{}", sha_hex, ext));
+    std::fs::write(&staged_path, &bytes)
+        .map_err(|e| format!("Failed to stage resume into sources/: {}", e))?;
+
+    let mime_type = detect_mime_from_ext(&staged_path);
+    Ok((staged_path, sha_hex, bytes.len() as i64, mime_type))
+}
+
 #[tauri::command]
 #[specta::specta]
-pub async fn profile_parse_and_extract(
+pub async fn profile_import_resume(
+    app: tauri::AppHandle,
     state: State<'_, AppState>,
-    file_path: String,
-) -> Result<ProfileExtractionResultDto, String> {
+) -> Result<Option<ProfileExtractionResultDto>, String> {
+    let app_clone = app.clone();
+    let picked = tokio::task::spawn_blocking(move || {
+        app_clone
+            .dialog()
+            .file()
+            .add_filter(
+                "Resume & Scanned Documents",
+                &["pdf", "docx", "doc", "odt", "rtf", "txt", "md", "png", "jpg", "jpeg", "webp"],
+            )
+            .blocking_pick_file()
+    })
+    .await
+    .map_err(|e| format!("Dialog task failed: {}", e))?;
+
+    let Some(file_path) = picked else {
+        return Ok(None);
+    };
+    let source_path = file_path
+        .into_path()
+        .map_err(|e| format!("Selected file path is not a local filesystem path: {}", e))?;
+
+    let app_data_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("Failed to resolve appDataDir: {}", e))?;
+    let original_name = source_path
+        .file_name()
+        .map(|f| f.to_string_lossy().to_string())
+        .unwrap_or_else(|| "resume.pdf".to_string());
+
+    let (staged_path, sha_hex, file_size, mime_type) =
+        stage_resume_source_file(&app_data_dir, &source_path)?;
+    let staged_str = staged_path.to_string_lossy().to_string();
+
     let res = state
         .engine
-        .request("profile.parseAndExtract", json!({ "filePath": file_path }))
+        .request("profile.parseAndExtract", json!({ "filePath": staged_str }))
         .await?;
 
     let mut extraction: ProfileExtractionResultDto = serde_json::from_value(res)
@@ -76,28 +212,16 @@ pub async fn profile_parse_and_extract(
         }
     }
 
-    // Save profile to database
     db::save_profile(&state.pool, &extraction.profile)
         .await
         .map_err(|e| format!("Database error saving extracted profile: {}", e))?;
-
-    // Record source file with real MIME & SHA-256
-    let path_obj = std::path::Path::new(&file_path);
-    let file_name = path_obj
-        .file_name()
-        .map(|f| f.to_string_lossy().to_string())
-        .unwrap_or_else(|| "resume.pdf".to_string());
-    let file_bytes = std::fs::read(&file_path).unwrap_or_default();
-    let file_size = file_bytes.len() as i64;
-    let sha_hex = hex::encode(Sha256::digest(&file_bytes));
-    let mime_type = detect_mime_from_ext(path_obj);
 
     db::save_source_file(
         &state.pool,
         &extraction.source_file_id,
         &extraction.profile.id,
-        &file_path,
-        &file_name,
+        &staged_str,
+        &original_name,
         file_size,
         mime_type,
         &sha_hex,
@@ -107,7 +231,7 @@ pub async fn profile_parse_and_extract(
     .await
     .map_err(|e| format!("Database error saving source file: {}", e))?;
 
-    Ok(extraction)
+    Ok(Some(extraction))
 }
 
 fn detect_mime_from_ext(path: &std::path::Path) -> &'static str {
@@ -1020,12 +1144,60 @@ pub async fn settings_set(
         .map_err(|e| format!("Database error saving setting: {}", e))
 }
 
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, specta::Type)]
+#[serde(rename_all = "camelCase")]
+pub struct WipeSummaryDto {
+    pub db_rows_deleted: i64,
+    pub browsers_closed: i64,
+    pub folders_removed: Vec<String>,
+    pub models_removed: bool,
+}
+
 #[tauri::command]
 #[specta::specta]
-pub async fn settings_wipe_all_data(state: State<'_, AppState>) -> Result<(), String> {
-    db::wipe_all_data(&state.pool)
+pub async fn settings_wipe_all_data(
+    app: tauri::AppHandle,
+    state: State<'_, AppState>,
+    include_models: Option<bool>,
+) -> Result<WipeSummaryDto, String> {
+    let browsers_closed = match state.engine.request("application.closeAll", json!({})).await {
+        Ok(val) => val.get("closedCount").and_then(|v| v.as_i64()).unwrap_or(0),
+        Err(_) => 0,
+    };
+
+    let db_rows_deleted = db::wipe_all_data(&state.pool)
         .await
-        .map_err(|e| format!("Database error wiping data: {}", e))
+        .map_err(|e| format!("Database error wiping data: {}", e))?;
+
+    let app_data_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("Failed to resolve appDataDir: {}", e))?;
+
+    let mut folders_removed = Vec::new();
+    for folder in ["sources", "exports", "screenshots", "browser-sessions", "logs"] {
+        let dir = app_data_dir.join(folder);
+        if dir.exists() && std::fs::remove_dir_all(&dir).is_ok() {
+            folders_removed.push(folder.to_string());
+        }
+    }
+
+    let remove_models = include_models.unwrap_or(false);
+    let mut models_removed = false;
+    if remove_models {
+        let models_dir = app_data_dir.join("models");
+        if models_dir.exists() && std::fs::remove_dir_all(&models_dir).is_ok() {
+            folders_removed.push("models".to_string());
+            models_removed = true;
+        }
+    }
+
+    Ok(WipeSummaryDto {
+        db_rows_deleted,
+        browsers_closed,
+        folders_removed,
+        models_removed,
+    })
 }
 
 #[tauri::command]
@@ -1143,5 +1315,26 @@ mod tests {
         let ts = chrono_lite_iso();
         assert!(ts.contains('T') && ts.ends_with('Z'));
         assert!(ts.starts_with("20"));
+    }
+
+    #[test]
+    fn test_stage_resume_source_file_validates_magic_bytes_and_stages() {
+        let base = std::env::temp_dir().join(format!("kaarjoo_stage_test_{}", std::process::id()));
+        let app_data = base.join("app_data");
+        std::fs::create_dir_all(&base).unwrap();
+
+        let fake_pdf = base.join("fake.pdf");
+        std::fs::write(&fake_pdf, b"<html>not a pdf</html>").unwrap();
+        assert!(stage_resume_source_file(&app_data, &fake_pdf).is_err());
+
+        let valid_pdf = base.join("valid.pdf");
+        std::fs::write(&valid_pdf, b"%PDF-1.7\n1 0 obj\n<<>>\nendobj\n").unwrap();
+        let (staged, sha, size, mime) = stage_resume_source_file(&app_data, &valid_pdf).unwrap();
+        assert!(staged.starts_with(app_data.join("sources")));
+        assert!(staged.to_string_lossy().ends_with(&format!("{}.pdf", sha)));
+        assert_eq!(mime, "application/pdf");
+        assert!(size > 0);
+
+        let _ = std::fs::remove_dir_all(&base);
     }
 }

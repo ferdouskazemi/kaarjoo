@@ -13,6 +13,14 @@ async getSystemStatus() : Promise<Result<SystemStatus, string>> {
     else return { status: "error", error: e  as any };
 }
 },
+async appRestart() : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("app_restart") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async profileGet() : Promise<Result<UserProfileDto | null, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("profile_get") };
@@ -29,9 +37,9 @@ async profileSave(profile: UserProfileDto) : Promise<Result<null, string>> {
     else return { status: "error", error: e  as any };
 }
 },
-async profileParseAndExtract(filePath: string) : Promise<Result<ProfileExtractionResultDto, string>> {
+async profileImportResume() : Promise<Result<ProfileExtractionResultDto | null, string>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("profile_parse_and_extract", { filePath }) };
+    return { status: "ok", data: await TAURI_INVOKE("profile_import_resume") };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -245,9 +253,9 @@ async settingsSet(key: string, value: string) : Promise<Result<null, string>> {
     else return { status: "error", error: e  as any };
 }
 },
-async settingsWipeAllData() : Promise<Result<null, string>> {
+async settingsWipeAllData(includeModels: boolean | null) : Promise<Result<WipeSummaryDto, string>> {
     try {
-    return { status: "ok", data: await TAURI_INVOKE("settings_wipe_all_data") };
+    return { status: "ok", data: await TAURI_INVOKE("settings_wipe_all_data", { includeModels }) };
 } catch (e) {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
@@ -320,6 +328,7 @@ export type SystemStatus = { app_version: string; os: string; is_ready: boolean 
 export type TailoredDocumentResultDto = { jobId: string; templateId: string; language: string; resumeHtml: string; coverLetterText: string; truthfulnessScore: number; truthfulnessPassed: boolean; warnings: string[] }
 export type TimelineEventDto = { id: string; status: string; timestamp: string; title: string; note: string | null }
 export type UserProfileDto = { id: string; version: number; contact: ContactInfoDto; summary: string | null; experiences?: ExperienceItemDto[]; education?: EducationItemDto[]; skills?: SkillItemDto[]; targetTitles?: string[]; createdAt: string; updatedAt: string }
+export type WipeSummaryDto = { dbRowsDeleted: number; browsersClosed: number; foldersRemoved: string[]; modelsRemoved: boolean }
 
 /** tauri-specta globals **/
 

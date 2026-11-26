@@ -1,4 +1,5 @@
 import type { TailoredResume } from '@kaarjoo/shared';
+import { escapeAttr, escapeHtml } from './escapeHtml.js';
 
 /**
  * Modern Minimal Template.
@@ -19,11 +20,72 @@ export function renderModernMinimalHtml(resume: TailoredResume): string {
     resume.contact.githubUrl ? 'GitHub' : undefined,
   ].filter((p): p is string => Boolean(p));
 
+  const langAttr = escapeAttr(resume.language);
+  const fullName = escapeHtml(resume.contact.fullName);
+  const summaryHtml = resume.summary ? escapeHtml(resume.summary) : '';
+  const experiencesHtml = resume.experiences
+    .map(
+      (exp) => `
+      <div class="experience-card">
+        <div class="item-header">
+          <div>
+            <span class="job-title">${escapeHtml(exp.title)}</span> — 
+            <span class="company-name">${escapeHtml(exp.company)}</span>
+          </div>
+          <span class="date-badge">
+            ${escapeHtml(exp.startDate)} – ${exp.isCurrent ? (isFa ? 'اکنون' : 'Present') : escapeHtml(exp.endDate || '')}
+          </span>
+        </div>
+        <ul>
+          ${exp.tailoredAchievements.map((ach) => `<li>${escapeHtml(ach)}</li>`).join('')}
+        </ul>
+      </div>
+    `
+    )
+    .join('');
+  const skillsHtml = resume.skillCategories
+    .map(
+      (cat) => `
+      <div class="skill-category">
+        <span class="skill-label">${escapeHtml(cat.category)}:</span>
+        <div class="skill-tags">
+          ${cat.skills.map((s) => `<span class="skill-pill">${escapeHtml(s)}</span>`).join('')}
+        </div>
+      </div>
+    `
+    )
+    .join('');
+  const educationItemsHtml = (resume.education ?? [])
+    .map(
+      (edu) => `
+      <div class="experience-card">
+        <div class="item-header">
+          <div>
+            <span class="job-title">${escapeHtml(edu.degree)}</span>
+            ${edu.fieldOfStudy ? ` in ${escapeHtml(edu.fieldOfStudy)}` : ''} — 
+            <span class="company-name">${escapeHtml(edu.institution)}</span>
+          </div>
+          <span class="date-badge">
+            ${escapeHtml(edu.startDate || '')} ${edu.endDate ? `– ${escapeHtml(edu.endDate)}` : ''}
+          </span>
+        </div>
+      </div>
+    `
+    )
+    .join('');
+  const educationHtml =
+    educationItemsHtml
+      ? `<section id="education">
+    <h2>${isFa ? 'تحصیلات' : 'Education'}</h2>
+    ${educationItemsHtml}
+  </section>`
+      : '';
+
   return `<!DOCTYPE html>
-<html lang="${resume.language}" dir="${dir}">
+<html lang="${langAttr}" dir="${dir}">
 <head>
   <meta charset="UTF-8">
-  <title>${resume.contact.fullName} - Résumé</title>
+  <title>${fullName} - Résumé</title>
   <style>
     @page {
       size: A4;
@@ -171,87 +233,33 @@ export function renderModernMinimalHtml(resume: TailoredResume): string {
 <body>
   <header>
     <div class="header-top">
-      <h1>${resume.contact.fullName}</h1>
+      <h1>${fullName}</h1>
     </div>
     <div class="contact-line">
-      ${contactParts.map((c) => `<span>${c}</span>`).join(' • ')}
+      ${contactParts.map((c) => `<span>${escapeHtml(c)}</span>`).join(' • ')}
     </div>
   </header>
 
   ${
-    resume.summary
+    summaryHtml
       ? `<section id="summary">
     <h2>${isFa ? 'خلاصه سوابق' : 'Executive Summary'}</h2>
-    <p class="summary-text">${resume.summary}</p>
+    <p class="summary-text">${summaryHtml}</p>
   </section>`
       : ''
   }
 
   <section id="experience">
     <h2>${isFa ? 'تجربیات حرفه‌ای' : 'Experience'}</h2>
-    ${resume.experiences
-      .map(
-        (exp) => `
-      <div class="experience-card">
-        <div class="item-header">
-          <div>
-            <span class="job-title">${exp.title}</span> — 
-            <span class="company-name">${exp.company}</span>
-          </div>
-          <span class="date-badge">
-            ${exp.startDate} – ${exp.isCurrent ? (isFa ? 'اکنون' : 'Present') : exp.endDate || ''}
-          </span>
-        </div>
-        <ul>
-          ${exp.tailoredAchievements.map((ach) => `<li>${ach}</li>`).join('')}
-        </ul>
-      </div>
-    `
-      )
-      .join('')}
+    ${experiencesHtml}
   </section>
 
   <section id="skills">
     <h2>${isFa ? 'مهارت‌ها و تخصص‌ها' : 'Core Competencies'}</h2>
-    ${resume.skillCategories
-      .map(
-        (cat) => `
-      <div class="skill-category">
-        <span class="skill-label">${cat.category}:</span>
-        <div class="skill-tags">
-          ${cat.skills.map((s) => `<span class="skill-pill">${s}</span>`).join('')}
-        </div>
-      </div>
-    `
-      )
-      .join('')}
+    ${skillsHtml}
   </section>
 
-  ${
-    resume.education && resume.education.length > 0
-      ? `<section id="education">
-    <h2>${isFa ? 'تحصیلات' : 'Education'}</h2>
-    ${resume.education
-      .map(
-        (edu) => `
-      <div class="experience-card">
-        <div class="item-header">
-          <div>
-            <span class="job-title">${edu.degree}</span>
-            ${edu.fieldOfStudy ? ` in ${edu.fieldOfStudy}` : ''} — 
-            <span class="company-name">${edu.institution}</span>
-          </div>
-          <span class="date-badge">
-            ${edu.startDate || ''} ${edu.endDate ? `– ${edu.endDate}` : ''}
-          </span>
-        </div>
-      </div>
-    `
-      )
-      .join('')}
-  </section>`
-      : ''
-  }
+  ${educationHtml}
 </body>
 </html>`;
 }

@@ -41,6 +41,43 @@ export class ApplicationEngine {
       new WorkableFiller(),
       new GenericFormFiller(),
     ];
+    this.cleanupStaleSessions();
+  }
+
+  private getBrowserSessionsRoot(): string {
+    return path.join(process.env.KAARJOO_APP_DATA_DIR || os.tmpdir(), 'browser-sessions');
+  }
+
+  /**
+   * Deletes any Playwright session directory older than `maxAgeMs` (default 24 hours).
+   */
+  cleanupStaleSessions(maxAgeMs = 24 * 60 * 60 * 1000): number {
+    const root = this.getBrowserSessionsRoot();
+    if (!fs.existsSync(root)) return 0;
+    const now = Date.now();
+    let removed = 0;
+    for (const entry of fs.readdirSync(root, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      const fullPath = path.join(root, entry.name);
+      try {
+        const stat = fs.statSync(fullPath);
+        if (now - stat.mtimeMs > maxAgeMs) {
+          fs.rmSync(fullPath, { recursive: true, force: true });
+          removed++;
+        }
+      } catch {
+        // ignore stale cleanup error
+      }
+    }
+    return removed;
+  }
+
+  async closeAllSessions(): Promise<number> {
+    const ids = Array.from(this.contexts.keys());
+    for (const id of ids) {
+      await this.cleanupSession(id);
+    }
+    return ids.length;
   }
 
   getFiller(url: string, html?: string): AtsFiller {
@@ -122,7 +159,8 @@ export class ApplicationEngine {
       return record;
     }
 
-    const tempDir = path.join(os.tmpdir(), `kaarjoo_apply_${id}`);
+    const safeSessionId = id.replace(/[^a-zA-Z0-9_-]/g, '_');
+    const tempDir = path.join(this.getBrowserSessionsRoot(), safeSessionId);
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir, { recursive: true });
     }

@@ -1,18 +1,20 @@
 import { chromium } from 'playwright-core';
 import path from 'node:path';
-import os from 'node:os';
 import fs from 'node:fs/promises';
 import { discoverSystemBrowsers } from '../../utils/discovery.js';
 import { renderResumeHtml } from '../templates/compactTechnical.js';
+import { escapeAttr, escapeHtml } from '../templates/escapeHtml.js';
 import type { CoverLetter, TailoredResume } from '@kaarjoo/shared';
 
 export interface PdfExportOptions {
   outputPath?: string;
   format?: 'A4' | 'Letter';
+  onBlockedNetworkRequest?: (url: string) => void;
 }
 
 /**
- * Generates a high-resolution PDF document using the host system's Chrome/Edge browser.
+ * Generates a high-resolution PDF document using the host system's Chrome/Edge browser
+ * in a fresh non-persistent context with JavaScript disabled and all network requests blocked.
  */
 export async function exportToPdf(
   htmlContent: string,
@@ -25,15 +27,21 @@ export async function exportToPdf(
     throw new Error('No system browser (Chrome/Edge/Chromium) found for PDF generation');
   }
 
-  const userDataDir = path.join(os.tmpdir(), `kaarjoo_pdf_gen_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`);
-
-  const context = await chromium.launchPersistentContext(userDataDir, {
+  const browser = await chromium.launch({
     executablePath: selectedBrowser.executablePath,
     headless: true,
   });
 
   try {
+    const context = await browser.newContext({
+      javaScriptEnabled: false,
+    });
     const page = await context.newPage();
+    await page.route('**/*', (route) => {
+      options.onBlockedNetworkRequest?.(route.request().url());
+      return route.abort();
+    });
+
     await page.setContent(htmlContent, { waitUntil: 'load' });
 
     const pdfBuffer = await page.pdf({
@@ -52,10 +60,10 @@ export async function exportToPdf(
       await fs.writeFile(options.outputPath, pdfBuffer);
     }
 
+    await context.close().catch(() => {});
     return pdfBuffer;
   } finally {
-    await context.close().catch(() => {});
-    await fs.rm(userDataDir, { recursive: true, force: true }).catch(() => {});
+    await browser.close().catch(() => {});
   }
 }
 
@@ -82,10 +90,10 @@ export async function exportCoverLetterToPdf(
   const fontFamily = isFa ? 'Vazirmatn, Tahoma, Arial' : 'Inter, system-ui, sans-serif';
 
   const html = `<!DOCTYPE html>
-<html lang="${letter.language}" dir="${dir}">
+<html lang="${escapeAttr(letter.language)}" dir="${dir}">
 <head>
   <meta charset="UTF-8">
-  <title>Cover Letter - ${letter.roleTitle}</title>
+  <title>Cover Letter - ${escapeHtml(letter.roleTitle)}</title>
   <style>
     @page { size: A4; margin: 25mm 20mm; }
     body {
@@ -103,8 +111,8 @@ export async function exportCoverLetterToPdf(
   </style>
 </head>
 <body>
-  ${letter.bodyParagraphs.map((p) => `<p>${p}</p>`).join('')}
-  <p style="margin-top: 24pt;">${letter.closing}</p>
+  ${letter.bodyParagraphs.map((p) => `<p>${escapeHtml(p)}</p>`).join('')}
+  <p style="margin-top: 24pt;">${escapeHtml(letter.closing)}</p>
 </body>
 </html>`;
 

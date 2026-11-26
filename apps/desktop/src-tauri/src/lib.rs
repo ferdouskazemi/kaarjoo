@@ -24,9 +24,10 @@ pub struct SystemStatus {
 pub fn specta_builder() -> Builder<tauri::Wry> {
     Builder::<tauri::Wry>::new().commands(collect_commands![
         commands::get_system_status,
+        commands::app_restart,
         commands::profile_get,
         commands::profile_save,
-        commands::profile_parse_and_extract,
+        commands::profile_import_resume,
         commands::profile_clear,
         commands::jobs_search,
         commands::jobs_get_all,

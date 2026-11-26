@@ -165,3 +165,15 @@
   - `apps/desktop/src-tauri/src/commands.rs`: Merged extracted résumé profiles via `profile.merge` with version increment and real SHA-256 + MIME type (`sha2`, `hex`), saved screenshots to `appDataDir/screenshots/<appId>/*.jpg` (`base64`), routed `applications_update_status` through `application_fsm`, and added `pipeline_start_discovery`, `applications_prepare`, and `applications_fill` emitting `task:progress`.
   - `apps/desktop/src-tauri/src/lib.rs` & `bin/export_bindings.rs`: Extracted shared `kaarjoo_lib::specta_builder()` so `bindings.ts` exports stay in sync with Tauri command registration; regenerated `apps/desktop/src/bindings.ts`.
   - `apps/desktop/src/stores/pipelineStore.ts` & `views/QueueView.tsx`: Wired `!demoMode` discovery/prepare/fill to Rust commands and made SQLite DB the single source of truth in `QueueView` when `!demoMode`.
+
+### Prompt 4: Security Hardening (`fix/p4-security-hardening`)
+- **Status:** COMPLETED & VERIFIED
+- **Changes:**
+  - `apps/desktop/src-tauri/capabilities/default.json`: Removed `fs:default`, `shell:default`, `process:default`, `dialog:default`; kept window controls, `dialog:allow-open`/`save`, `notification:default`, `updater:default`.
+  - `apps/desktop/src-tauri/tauri.conf.json`, `index.html`, `src/styles/index.css`, `public/fonts/*.woff2`: Bundled `Inter`, `Vazirmatn`, and `JetBrains Mono` locally, removed Google Fonts origins, set `img-src 'self' asset: data:`, `script-src 'self'`, `connect-src ipc: http://ipc.localhost`.
+  - `apps/desktop/src-tauri/src/commands.rs`, `lib.rs`, `queries/index.ts`, `ProfileView.tsx`, `SettingsView.tsx`: Replaced `profile_parse_and_extract(file_path)` with `profile_import_resume()` (native dialog in Rust + 25 MB limit + magic-byte check + copy into `appDataDir/sources/<sha256>.<ext>`), and replaced `@tauri-apps/plugin-process` relaunch with Rust `app_restart`.
+  - `packages/engine/src/utils/pathGuard.ts` & `packages/engine/src/index.ts`: Removed `outputPath` from `documents.exportPdf`/`exportDocx`, enforced `appDataDir/exports` resolution and `sources/`/`exports/`/`screenshots/` path guards.
+  - `packages/engine/src/documents/templates/{escapeHtml,atsClean,modernMinimal}.ts` & `exporters/pdf.ts`: Escaped all interpolated resume/cover-letter fields with `escapeHtml()`/`escapeAttr()`, switched `exportToPdf` to a fresh non-persistent context with `javaScriptEnabled: false` and `page.route('**/*', r => r.abort())`.
+  - `packages/ats/src/engine.ts`: Moved Playwright `userDataDir` to `appDataDir/browser-sessions/<appId>`, purged stale sessions (> 24h) on startup, and added `closeAllSessions()`.
+  - `apps/desktop/src-tauri/src/db.rs` & `commands.rs`: Implemented full `settings_wipe_all_data` closing browsers, wiping all user tables (preserving UI language), removing `sources/`, `exports/`, `screenshots/`, `browser-sessions/`, `logs/` (and optional `models/`), and returning `WipeSummaryDto`.
+  - `packages/engine/src/__tests__/security.test.ts` & `docs/SECURITY.md`: Added capability allowlist, path traversal, XSS escaping, and zero-network PDF export tests plus threat model documentation.
