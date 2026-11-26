@@ -583,10 +583,19 @@ server.register('application.execute', {
 server.register('application.submitReviewed', {
   inputSchema: z.object({
     id: z.string().min(1),
+    profile: UserProfileSchema.optional(),
+    job: JobPostingSchema.optional(),
+    tailoredResumePath: z.string().optional(),
+    coverLetterText: z.string().optional(),
   }),
-  handler: async ({ id }) => {
+  handler: async ({ id, profile, job, tailoredResumePath, coverLetterText }) => {
     try {
-      return await applicationEngine.submitReviewedApplication(id);
+      return await applicationEngine.submitReviewedApplication(id, {
+        profile: profile as any,
+        job: job as any,
+        tailoredResumePath,
+        coverLetterText,
+      });
     } catch (err: any) {
       throw new RpcError(RpcErrorCode.BrowserAutomationError, `Failed to submit reviewed application: ${err.message}`);
     }

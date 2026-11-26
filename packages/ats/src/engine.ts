@@ -185,8 +185,39 @@ export class ApplicationEngine {
     }
   }
 
-  async submitReviewedApplication(id: string): Promise<ApplicationRecord> {
-    const record = this.applications.get(id);
+  async submitReviewedApplication(
+    id: string,
+    rehydrate?: {
+      profile?: UserProfile;
+      job?: JobPosting;
+      tailoredResumePath?: string;
+      coverLetterText?: string;
+    }
+  ): Promise<ApplicationRecord> {
+    let record = this.applications.get(id);
+    let session = this.contexts.get(id);
+
+    // If the sidecar restarted or the browser session expired, transparently re-open and re-fill in Review Mode
+    if ((!record || !session) && rehydrate?.profile && rehydrate?.job) {
+      record = this.queueApplication({
+        id,
+        job: rehydrate.job,
+        profile: rehydrate.profile,
+        mode: 'review',
+        tailoredResumePath: rehydrate.tailoredResumePath,
+        coverLetterText: rehydrate.coverLetterText,
+      });
+      record = await this.executeApplication(id, {
+        profile: rehydrate.profile,
+        tailoredResumePath: rehydrate.tailoredResumePath,
+        coverLetterText: rehydrate.coverLetterText,
+      });
+      session = this.contexts.get(id);
+      if (record.status !== 'needs_review' || !session) {
+        return record;
+      }
+    }
+
     if (!record) {
       throw new Error(`Application ${id} not found`);
     }
@@ -198,7 +229,6 @@ export class ApplicationEngine {
     record.status = 'submitting';
     record.updatedAt = new Date().toISOString();
 
-    const session = this.contexts.get(id);
     if (!session) {
       throw new Error(`Active browser session for application ${id} expired or closed`);
     }

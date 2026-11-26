@@ -648,20 +648,32 @@ pub async fn applications_submit_reviewed(
     state: State<'_, AppState>,
     id: String,
 ) -> Result<ApplicationRecordDto, String> {
+    let mut app = db::get_application_by_id(&state.pool, &id)
+        .await
+        .map_err(|e| format!("DB error: {}", e))?
+        .ok_or_else(|| "Application not found".to_string())?;
+
+    let profile = db::get_profile(&state.pool).await.ok().flatten();
+    let job = db::get_job_by_id(&state.pool, &app.job_id).await.ok().flatten();
+
     let res = state
         .engine
-        .request("application.submitReviewed", json!({ "id": id }))
+        .request(
+            "application.submitReviewed",
+            json!({
+                "id": id,
+                "profile": profile,
+                "job": job,
+                "tailoredResumePath": app.tailored_resume_path,
+                "coverLetterText": app.cover_letter_text,
+            }),
+        )
         .await?;
 
     let screenshot: Option<String> = res
         .get("screenshotConfirmation")
         .and_then(|v| v.as_str())
         .map(|s| s.to_string());
-
-    let mut app = db::get_application_by_id(&state.pool, &id)
-        .await
-        .map_err(|e| format!("DB error: {}", e))?
-        .ok_or_else(|| "Application not found".to_string())?;
 
     app.status = "applied".to_string();
     app.submitted_at = Some(chrono_lite_iso());
