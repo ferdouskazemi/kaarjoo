@@ -51,7 +51,10 @@
       },
       "nsis": {
         "installMode": "currentUser",
-        "installerHooks": "nsis/hooks.nsh"
+        "installerHooks": "nsis/hooks.nsh",
+        "headerImage": "nsis/header.bmp",
+        "sidebarImage": "nsis/sidebar.bmp",
+        "installerIcon": "icons/icon.ico"
       }
     },
     "macOS": {
