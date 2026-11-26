@@ -321,6 +321,8 @@ export type ContactInfoDto = { fullName: string | null; email: string | null; ph
 export type DirectoryUpdateCheckDto = { hasUpdate: boolean; currentVersion: string; latestVersion: string | null; sha256: string | null }
 export type EducationItemDto = { id: string; institution: string; degree: string; fieldOfStudy: string | null; startDate: string | null; endDate: string | null; grade: string | null; provenance: FactProvenanceDto | null }
 export type ExperienceItemDto = { id: string; title: string | null; company: string | null; location: string | null; startDate: string | null; endDate: string | null; isCurrent: boolean; description: string | null; achievements?: string[]; skillsUsed?: string[]; provenance: FactProvenanceDto | null }
+export type ExtractedFactProvenanceDto = { value: string; confidence: number; evidence: FactEvidenceDto | null; method: string }
+export type FactEvidenceDto = { sourceFileId: string; page: number; charStart: number; charEnd: number; text: string }
 export type FactProvenanceDto = { sourceFileId: string; page: number; textSpan: string; bbox: BoundingBoxDto | null; confidence: number; status: string }
 export type FilledFieldDto = { fieldId: string; label: string; value: string; displayValue: string; confidence: number; isRequired: boolean }
 export type JobPostingDto = { id: string; sourceId: string; sourceName: string; canonicalUrl: string; applyUrl: string; title: string; company: string; location: string | null; remoteType: string; employmentType: string | null; salary: SalaryRangeDto | null; descriptionMarkdown: string; requirements?: string[]; postedAt: string | null; expiresAt: string | null; atsType: string; contentHash: string; simHash: string | null; matchScore: number | null }
@@ -328,14 +330,15 @@ export type JobsSearchQueryDto = { keywords: string[] | null; locations: string[
 export type MatchBreakdownDto = { hardFilter: number; semantic: number; skillCoverage: number; rerank: number }
 export type MatchResultDto = { jobId: string; profileId: string; score: number; breakdown: MatchBreakdownDto; topReasons: string[]; matchedSkills: string[]; missingSkills: string[]; whyNotHigher: string | null; userFeedback: string | null }
 export type ModelStatusDto = { id: string; name: string; role: string; tier: string; license: string; sha256: string; fileName: string; modelsDir: string; localPath: string; installed: boolean; partialBytes: number; bundledInApp: boolean; sizeBytes: number; downloadUrl: string }
-export type ProfileExtractionResultDto = { profile: UserProfileDto; sourceFileId: string; sourceFileName: string; pagesCount: number; rawText: string }
+export type ProfileExtractionResultDto = { profile: UserProfileDto; issues?: ProfileIssueDto[]; sourceFileId: string; sourceFileName: string; pagesCount: number; rawText: string }
+export type ProfileIssueDto = { severity: string; fieldPath: string; messageKey: string; suggestedAction: string }
 export type ReviewChecklistItemDto = { id: string; label: string; value: string; status: string; category: string }
 export type SalaryRangeDto = { min: number | null; max: number | null; currency: string; period: string }
 export type SkillItemDto = { id: string; name: string; escoId: string | null; category: string | null; yearsOfExperience: number | null; level: string | null; confidence: number | null; provenance: FactProvenanceDto | null }
 export type SystemStatus = { app_version: string; os: string; is_ready: boolean }
 export type TailoredDocumentResultDto = { jobId: string; templateId: string; language: string; resumeHtml: string; coverLetterText: string; truthfulnessScore: number; truthfulnessPassed: boolean; warnings: string[] }
 export type TimelineEventDto = { id: string; status: string; timestamp: string; title: string; note: string | null }
-export type UserProfileDto = { id: string; version: number; contact: ContactInfoDto; summary: string | null; experiences?: ExperienceItemDto[]; education?: EducationItemDto[]; skills?: SkillItemDto[]; targetTitles?: string[]; createdAt: string; updatedAt: string }
+export type UserProfileDto = { id: string; version: number; contact: ContactInfoDto; summary: string | null; experiences?: ExperienceItemDto[]; education?: EducationItemDto[]; skills?: SkillItemDto[]; targetTitles?: string[]; fieldProvenance?: { [key in string]: ExtractedFactProvenanceDto }; issues?: ProfileIssueDto[]; createdAt: string; updatedAt: string }
 export type WipeSummaryDto = { dbRowsDeleted: number; browsersClosed: number; foldersRemoved: string[]; modelsRemoved: boolean }
 
 /** tauri-specta globals **/

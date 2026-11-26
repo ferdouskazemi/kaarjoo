@@ -20,6 +20,7 @@ export interface ParsedDocument {
   mimeType: string;
   pageCount: number;
   isScanned: boolean;
+  ocrConfidence?: number;
   pages: ParsedPage[];
   rawText: string;
 }

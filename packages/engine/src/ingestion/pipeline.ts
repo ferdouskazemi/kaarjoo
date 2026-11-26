@@ -1,16 +1,26 @@
-import type { UserProfile } from '@kaarjoo/shared';
+import type { ProfileIssue, UserProfile } from '@kaarjoo/shared';
 import { parseDocument, type ParsedDocument } from './parsers/index.js';
 import { detectSectionType, type SectionType } from './sections.js';
 import { extractContactInfo } from './extractors/contact.js';
 import { extractExperiences } from './extractors/experience.js';
 import { extractEducation } from './extractors/education.js';
 import { extractSkills } from './extractors/skills.js';
+import { buildFieldProvenance, computeProfileIssues } from './provenance.js';
 import { extractProfileGapsWithLlm } from '../ai/prompts.js';
 import type { LocalLlamaRuntime } from '../ai/llamaRuntime.js';
+
+export type ProfileProgressStage = 'reading' | 'ocr' | 'sections' | 'facts' | 'llm';
+
+export interface ProfileProgressEvent {
+  stage: ProfileProgressStage;
+  page?: number;
+  totalPages?: number;
+}
 
 export interface ExtractionResult {
   document: ParsedDocument;
   profile: UserProfile;
+  issues: ProfileIssue[];
   extractionMode: 'rule+llm' | 'rule-only';
   droppedUnverifiedCount: number;
   tokensPerSec?: number;
@@ -19,6 +29,8 @@ export interface ExtractionResult {
 export interface ExtractProfileOptions {
   useLlm?: boolean;
   runtime?: LocalLlamaRuntime;
+  sourceFileId?: string;
+  onProgress?: (event: ProfileProgressEvent) => void;
 }
 
 /**
@@ -29,6 +41,10 @@ export async function extractProfileFromParsedDocument(
   document: ParsedDocument,
   options: ExtractProfileOptions = {}
 ): Promise<ExtractionResult> {
+  if (document.isScanned) {
+    options.onProgress?.({ stage: 'ocr', page: 1, totalPages: document.pageCount });
+  }
+  options.onProgress?.({ stage: 'sections' });
   // 1. Segment raw text into sections
   const lines = document.rawText.split(/\r?\n/);
   const sectionTexts: Record<SectionType, string[]> = {
@@ -58,6 +74,7 @@ export async function extractProfileFromParsedDocument(
     sectionTexts[currentSection].push(trimmed);
   }
 
+  options.onProgress?.({ stage: 'facts' });
   // 2. Extract facts with deterministic rule-based extractors
   const contact = extractContactInfo(document.pages.map((p) => ({ pageNumber: p.pageNumber, text: p.text }))) || {};
 
@@ -100,6 +117,7 @@ export async function extractProfileFromParsedDocument(
 
   // 3. Optional Local LLM gap-fill (only verified evidence spans survive!)
   if (options.useLlm !== false) {
+    options.onProgress?.({ stage: 'llm' });
     try {
       const llmRes = await extractProfileGapsWithLlm(document.rawText, profile, options.runtime);
       if (llmRes.usedLlm) {
@@ -142,7 +160,7 @@ export async function extractProfileFromParsedDocument(
               id: `exp_llm_${profile.experiences.length + 1}`,
               title: exp.title,
               company: exp.company,
-              startDate: exp.startDate || '2020',
+              startDate: exp.startDate || null,
               endDate: exp.endDate,
               isCurrent: !exp.endDate || /present|current|اکنون/i.test(exp.endDate),
               achievements: [],
@@ -165,9 +183,16 @@ export async function extractProfileFromParsedDocument(
     }
   }
 
+  const sourceFileId = options.sourceFileId || document.fileName;
+  const method = document.isScanned ? 'ocr' : 'rule';
+  profile.fieldProvenance = buildFieldProvenance(document, profile, sourceFileId, method);
+  const issues = computeProfileIssues(profile, { ocrConfidence: document.ocrConfidence });
+  profile.issues = issues;
+
   return {
     document,
     profile,
+    issues,
     extractionMode,
     droppedUnverifiedCount,
     tokensPerSec,
@@ -178,6 +203,7 @@ export async function processAndExtractProfile(
   filePath: string,
   options: ExtractProfileOptions = {}
 ): Promise<ExtractionResult> {
+  options.onProgress?.({ stage: 'reading' });
   const document = await parseDocument(filePath);
   return extractProfileFromParsedDocument(document, options);
 }

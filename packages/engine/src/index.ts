@@ -143,10 +143,14 @@ server.register('profile.parseAndExtract', {
       throw new RpcError(RpcErrorCode.InvalidParams, err.message);
     }
     try {
-      const res = await processAndExtractProfile(safePath);
+      const sourceFileId = `src_${Date.now()}`;
+      const res = await processAndExtractProfile(safePath, {
+        sourceFileId,
+        onProgress: (ev) => server.sendNotification('profile.progress', ev),
+      });
       return {
         ...res,
-        sourceFileId: `src_${Date.now()}`,
+        sourceFileId,
         sourceFileName: res.document.fileName,
         pagesCount: res.document.pageCount,
         rawText: res.document.rawText,

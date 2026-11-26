@@ -43,7 +43,7 @@ pub async fn init_db(app_data_dir: &Path) -> Result<DbPool, Box<dyn std::error::
 // -----------------------------------------------------------------------------
 
 pub async fn get_profile(pool: &DbPool) -> Result<Option<UserProfileDto>, sqlx::Error> {
-    let row_opt = sqlx::query("SELECT id, version, full_name, email, phone, location, summary, created_at, updated_at FROM profiles ORDER BY updated_at DESC LIMIT 1")
+    let row_opt = sqlx::query("SELECT id, version, full_name, email, phone, location, summary, field_provenance_json, issues_json, created_at, updated_at FROM profiles ORDER BY updated_at DESC LIMIT 1")
         .fetch_optional(pool)
         .await?;
 
@@ -115,6 +115,12 @@ pub async fn get_profile(pool: &DbPool) -> Result<Option<UserProfileDto>, sqlx::
         })
         .collect();
 
+    let field_prov_json: String = row.try_get("field_provenance_json").unwrap_or_else(|_| "{}".to_string());
+    let field_provenance: std::collections::HashMap<String, ExtractedFactProvenanceDto> =
+        serde_json::from_str(&field_prov_json).unwrap_or_default();
+    let issues_json: String = row.try_get("issues_json").unwrap_or_else(|_| "[]".to_string());
+    let issues: Vec<ProfileIssueDto> = serde_json::from_str(&issues_json).unwrap_or_default();
+
     Ok(Some(UserProfileDto {
         id: profile_id,
         version,
@@ -133,6 +139,8 @@ pub async fn get_profile(pool: &DbPool) -> Result<Option<UserProfileDto>, sqlx::
         education: Vec::new(),
         skills,
         target_titles: Vec::new(),
+        field_provenance,
+        issues,
         created_at,
         updated_at,
     }))
@@ -140,11 +148,13 @@ pub async fn get_profile(pool: &DbPool) -> Result<Option<UserProfileDto>, sqlx::
 
 pub async fn save_profile(pool: &DbPool, p: &UserProfileDto) -> Result<(), sqlx::Error> {
     let mut tx = pool.begin().await?;
+    let field_prov_json = serde_json::to_string(&p.field_provenance).unwrap_or_else(|_| "{}".to_string());
+    let issues_json = serde_json::to_string(&p.issues).unwrap_or_else(|_| "[]".to_string());
 
     sqlx::query(
         r#"
-        INSERT INTO profiles (id, version, full_name, email, phone, location, summary, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO profiles (id, version, full_name, email, phone, location, summary, field_provenance_json, issues_json, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(id) DO UPDATE SET
             version = excluded.version,
             full_name = excluded.full_name,
@@ -152,6 +162,8 @@ pub async fn save_profile(pool: &DbPool, p: &UserProfileDto) -> Result<(), sqlx:
             phone = excluded.phone,
             location = excluded.location,
             summary = excluded.summary,
+            field_provenance_json = excluded.field_provenance_json,
+            issues_json = excluded.issues_json,
             updated_at = excluded.updated_at
         "#
     )
@@ -162,6 +174,8 @@ pub async fn save_profile(pool: &DbPool, p: &UserProfileDto) -> Result<(), sqlx:
     .bind(&p.contact.phone)
     .bind(&p.contact.location)
     .bind(&p.summary)
+    .bind(&field_prov_json)
+    .bind(&issues_json)
     .bind(&p.created_at)
     .bind(&p.updated_at)
     .execute(&mut *tx)

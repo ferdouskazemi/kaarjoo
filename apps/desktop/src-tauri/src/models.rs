@@ -22,6 +22,34 @@ pub struct FactProvenanceDto {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct FactEvidenceDto {
+    pub source_file_id: String,
+    pub page: i32,
+    pub char_start: i32,
+    pub char_end: i32,
+    pub text: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct ExtractedFactProvenanceDto {
+    pub value: String,
+    pub confidence: f64,
+    pub evidence: Option<FactEvidenceDto>,
+    pub method: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct ProfileIssueDto {
+    pub severity: String,
+    pub field_path: String,
+    pub message_key: String,
+    pub suggested_action: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
 pub struct ContactInfoDto {
     #[serde(rename = "fullName")]
     pub full_name: Option<String>,
@@ -100,6 +128,10 @@ pub struct UserProfileDto {
     pub skills: Vec<SkillItemDto>,
     #[serde(default, rename = "targetTitles")]
     pub target_titles: Vec<String>,
+    #[serde(default, rename = "fieldProvenance")]
+    pub field_provenance: std::collections::HashMap<String, ExtractedFactProvenanceDto>,
+    #[serde(default)]
+    pub issues: Vec<ProfileIssueDto>,
     #[serde(rename = "createdAt")]
     pub created_at: String,
     #[serde(rename = "updatedAt")]
@@ -109,6 +141,8 @@ pub struct UserProfileDto {
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 pub struct ProfileExtractionResultDto {
     pub profile: UserProfileDto,
+    #[serde(default)]
+    pub issues: Vec<ProfileIssueDto>,
     #[serde(rename = "sourceFileId")]
     pub source_file_id: String,
     #[serde(rename = "sourceFileName")]

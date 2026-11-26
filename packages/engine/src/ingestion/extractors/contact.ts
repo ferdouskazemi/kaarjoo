@@ -33,7 +33,7 @@ export function extractContactInfo(pages: RawTextPage[]): ContactInfo | null {
   for (const candidate of phoneCandidates) {
     const cleaned = candidate.trim();
     if (cleaned.length < 8) continue;
-    
+
     // Try parsing with country defaults
     const countries: Array<'AF' | 'IR' | 'US' | 'GB'> = ['AF', 'IR', 'US', 'GB'];
     for (const country of countries) {
@@ -42,6 +42,16 @@ export function extractContactInfo(pages: RawTextPage[]): ContactInfo | null {
         if (parsed && parsed.isValid()) {
           detectedPhone = parsed.formatInternational();
           break;
+        }
+      } catch {
+        // ignore
+      }
+    }
+    if (!detectedPhone && cleaned.startsWith('+')) {
+      try {
+        const parsed = parsePhoneNumberFromString(cleaned);
+        if (parsed && parsed.isPossible() && parsed.nationalNumber.length >= 7) {
+          detectedPhone = parsed.formatInternational();
         }
       } catch {
         // ignore

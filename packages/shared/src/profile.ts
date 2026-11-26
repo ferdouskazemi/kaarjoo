@@ -19,6 +19,37 @@ export const FactProvenanceSchema = z.object({
 });
 export type FactProvenance = z.infer<typeof FactProvenanceSchema>;
 
+export const FactEvidenceSchema = z.object({
+  sourceFileId: z.string(),
+  page: z.number().int().min(1),
+  charStart: z.number().int().min(0),
+  charEnd: z.number().int().min(0),
+  text: z.string(),
+});
+export type FactEvidence = z.infer<typeof FactEvidenceSchema>;
+
+export const ExtractionMethodSchema = z.enum(['rule', 'ocr', 'llm', 'user']);
+export type ExtractionMethod = z.infer<typeof ExtractionMethodSchema>;
+
+export const ExtractedFactProvenanceSchema = z.object({
+  value: z.string(),
+  confidence: z.number().min(0).max(1),
+  evidence: FactEvidenceSchema.nullable(),
+  method: ExtractionMethodSchema,
+});
+export type ExtractedFactProvenance = z.infer<typeof ExtractedFactProvenanceSchema>;
+
+export const ProfileIssueSeveritySchema = z.enum(['blocker', 'warning', 'info']);
+export type ProfileIssueSeverity = z.infer<typeof ProfileIssueSeveritySchema>;
+
+export const ProfileIssueSchema = z.object({
+  severity: ProfileIssueSeveritySchema,
+  fieldPath: z.string(),
+  messageKey: z.string(),
+  suggestedAction: z.string(),
+});
+export type ProfileIssue = z.infer<typeof ProfileIssueSchema>;
+
 export const ContactInfoSchema = z.object({
   fullName: z.string().nullable().optional(),
   email: z.string().email().nullable().optional(),
@@ -121,5 +152,7 @@ export const UserProfileSchema = z.object({
   targetTitles: z.array(z.string()).default([]),
   workAuthorization: z.array(z.string()).default([]),
   preferences: UserPreferencesSchema.optional(),
+  fieldProvenance: z.record(ExtractedFactProvenanceSchema).optional(),
+  issues: z.array(ProfileIssueSchema).optional(),
 });
 export type UserProfile = z.infer<typeof UserProfileSchema>;

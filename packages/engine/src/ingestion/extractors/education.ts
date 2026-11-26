@@ -9,8 +9,8 @@ const DEGREE_PATTERNS = [
   { level: 'high_school', regex: /(high\s*school|دیپلم)/i },
 ];
 
-const JALALI_RANGE_REGEX = /(13[7-9]\d|14[0-1]\d)\s*(?:تا|-|to)\s*(13[7-9]\d|14[0-1]\d)/;
-const GREGORIAN_RANGE_REGEX = /(19[7-9]\d|20[0-3]\d)\s*(?:to|-)\s*(19[7-9]\d|20[0-3]\d)/i;
+const JALALI_RANGE_REGEX = /(13[7-9]\d|14[0-1]\d)\s*(?:تا|-|to)\s*(13[7-9]\d|14[0-1]\d|تاکنون|اکنون|حال|present|current)/i;
+const GREGORIAN_RANGE_REGEX = /(19[7-9]\d|20[0-3]\d)\s*(?:to|-|–|—)\s*(19[7-9]\d|20[0-3]\d|present|current|now)/i;
 
 export function extractEducation(sectionText: string): EducationItem[] {
   if (!sectionText.trim()) return [];
@@ -56,8 +56,8 @@ export function extractEducation(sectionText: string): EducationItem[] {
       if (currentItem && (currentItem.institution || currentItem.degree)) {
         items.push({
           id: `edu_${Date.now()}_${items.length}`,
-          institution: currentItem.institution || 'University',
-          degree: currentItem.degree || 'Degree',
+          institution: currentItem.institution || '',
+          degree: currentItem.degree || '',
           fieldOfStudy: currentItem.fieldOfStudy,
           startDate: currentItem.startDate,
           endDate: currentItem.endDate,
@@ -65,7 +65,7 @@ export function extractEducation(sectionText: string): EducationItem[] {
       }
 
       // Extract institution
-      let institution = 'University';
+      let institution = '';
       const parts = line.split(/[-–—|]/).map((p) => p.trim());
       for (const part of parts) {
         if (/دانشگاه|university|college|institute|موسسه|مکتب/i.test(part)) {
@@ -85,7 +85,7 @@ export function extractEducation(sectionText: string): EducationItem[] {
 
       currentItem = {
         institution,
-        degree: detectedDegree || 'Degree',
+        degree: detectedDegree || '',
         fieldOfStudy,
         startDate,
         endDate,
@@ -100,8 +100,8 @@ export function extractEducation(sectionText: string): EducationItem[] {
   if (currentItem && (currentItem.institution || currentItem.degree)) {
     items.push({
       id: `edu_${Date.now()}_${items.length}`,
-      institution: currentItem.institution || 'University',
-      degree: currentItem.degree || 'Degree',
+      institution: currentItem.institution || '',
+      degree: currentItem.degree || '',
       fieldOfStudy: currentItem.fieldOfStudy,
       startDate: currentItem.startDate,
       endDate: currentItem.endDate,

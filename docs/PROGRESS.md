@@ -187,3 +187,11 @@
   - `packages/ats/src/engine.ts` & `packages/engine/src/index.ts`: Defaulted Review mode to headed browser (`headless: false`) with Rust-provided `windowBounds`, enforced `maxConcurrentContexts: 2`, wired live `input`/`change` watchers (`application.fieldChanged`), added `bringToFront()` on `needs_user`, added `application.resume`, and enforced fresh DOM read-back + `submitButtonNotFound` handling in `submitReviewedApplication`.
   - `apps/desktop/src-tauri/src/commands.rs` & `lib.rs`: Passed `main` window bounds to `application.execute` and added `applications_resume` command.
   - `packages/ats/src/__tests__/copilot_review.test.ts`: Added 7 Playwright + mapper tests covering fill errors, empty required blocking, live `user_edited` sync, footer confirmation trap, `submitAttemptId` idempotency, restart refill guard, and mapper honesty rules.
+
+### Prompt 6: Profile Extraction Quality & Provenance (`feat/p6-extraction-provenance`)
+- **Status:** COMPLETED & VERIFIED
+- **Changes:**
+  - `packages/shared/src/profile.ts`, `apps/desktop/src-tauri/src/models.rs`, `db.rs`, & `migrations/20260801_profile_provenance_and_issues.sql`: Added `ExtractedFactProvenance` (`value`, `confidence`, `evidence: { sourceFileId, page, charStart, charEnd, text } | null`, `method`), `ProfileIssue` (`severity`, `fieldPath`, `messageKey`, `suggestedAction`), and SQLite persistence for `field_provenance_json` and `issues_json`.
+  - `packages/engine/src/ingestion/provenance.ts` & `pipeline.ts`: Built per-field provenance spans and `issues[]` blockers/warnings; streamed `profile.progress` notifications (`reading`, `ocr`, `sections`, `facts`, `llm`) in `packages/engine/src/index.ts`.
+  - `packages/engine/src/ingestion/extractors/{contact,experience,education}.ts`: Added international fallback phone parsing, ` - ` hyphenated title/company splitting, Persian `شرکت:`/`سمت:` labels, `"تاکنون"` Jalali end dates, two-line header preservation across multi-job sections, and removed `'University'`/`'Degree'`/`'2020'` placeholders.
+  - `packages/engine/src/ingestion/__tests__/provenance_issues.test.ts`: Added provenance span, `profile.progress`, and `issues[]` tests.

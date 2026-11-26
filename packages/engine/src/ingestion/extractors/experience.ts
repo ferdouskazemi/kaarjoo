@@ -3,7 +3,7 @@ import { ExperienceItem } from '@kaarjoo/shared';
 import { normalizeDigits } from '../normalizer.js';
 
 const JALALI_RANGE_REGEX =
-  /(13[7-9]\d|14[0-1]\d)\s*(?:تا|-|به\s*مدت|to)\s*(13[7-9]\d|14[0-1]\d|اکنون|حال|present|current)/i;
+  /(13[7-9]\d|14[0-1]\d)\s*(?:تا|-|به\s*مدت|to)\s*(13[7-9]\d|14[0-1]\d|تاکنون|اکنون|حال|present|current)/i;
 const GREGORIAN_RANGE_REGEX =
   /(19[7-9]\d|20[0-3]\d)(?:[-/.](?:0?[1-9]|1[0-2]))?\s*(?:to|-|until|through|–|—)\s*(19[7-9]\d|20[0-3]\d|present|current|now)(?:[-/.](?:0?[1-9]|1[0-2]))?/i;
 
@@ -24,6 +24,7 @@ function parseDateSpan(line: string, normalizedLine: string) {
     startDate = jalaliMatch[1];
     const endPart = jalaliMatch[2].toLowerCase();
     if (
+      endPart.includes('تاکنون') ||
       endPart.includes('اکنون') ||
       endPart.includes('حال') ||
       endPart.includes('present') ||
@@ -64,12 +65,22 @@ function stripDates(line: string): string {
 }
 
 function splitInlineTitleAndCompany(text: string): { title?: string; company?: string; location?: string } {
-  // Handle "Title at Company" or "Title | Company" or "Title — Company"
+  // Handle Persian labeled layouts: "شرکت: X | سمت: Y" or "سمت: Y - شرکت: X"
+  const faCompanyMatch = text.match(/شرکت\s*[:：]\s*([^|—–\n]+)/);
+  const faTitleMatch = text.match(/سمت\s*[:：]\s*([^|—–\n]+)/);
+  if (faCompanyMatch || faTitleMatch) {
+    return {
+      company: faCompanyMatch?.[1]?.trim(),
+      title: faTitleMatch?.[1]?.trim(),
+    };
+  }
+
+  // Handle "Title at Company" or "Title | Company" or "Company - Title"
   const atMatch = text.match(/^(.+?)\s+(?:at|@)\s+(.+)$/i);
   if (atMatch) {
     return { title: atMatch[1].trim(), company: atMatch[2].trim() };
   }
-  const sepMatch = text.match(/^(.+?)\s*[|—–]\s*(.+)$/);
+  const sepMatch = text.match(/^(.+?)\s*(?:[|—–]|\s+-\s+)\s*(.+)$/);
   if (sepMatch) {
     const left = sepMatch[1].trim();
     const right = sepMatch[2].trim();
@@ -176,7 +187,7 @@ export function extractExperiences(sectionText: string): ExperienceItem[] {
       currentItem.title = line;
     } else if (currentItem && !currentItem.company && !isBullet) {
       currentItem.company = line;
-    } else if (!currentItem && !isBullet) {
+    } else if (!isBullet) {
       pendingHeaderLine = line;
     }
   }
