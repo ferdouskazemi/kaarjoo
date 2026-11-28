@@ -1,5 +1,6 @@
 # Node
 node_modules/
+*.tsbuildinfo
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -16,6 +17,7 @@ Cargo.lock
 
 # Tauri
 apps/desktop/src-tauri/target/
+apps/desktop/src-tauri/gen/schemas/
 apps/desktop/src-tauri/binaries/*.exe
 apps/desktop/src-tauri/binaries/node-*
 apps/desktop/src-tauri/resources/engine/

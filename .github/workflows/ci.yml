@@ -53,11 +53,17 @@ jobs:
       - name: Install workspace dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run unit, i18n guard, and adapter tests
+      - name: Run TypeScript lint check across all packages
+        run: pnpm lint
+
+      - name: Run unit, i18n guard, security, and Playwright tests
         run: pnpm test
 
       - name: Run SQLite FTS5 100k-job benchmark
         run: pnpm benchmark:fts
+
+      - name: Run golden profile extraction eval
+        run: pnpm eval
 
       - name: Run AI, OCR, matching, and truthfulness evaluation gate
         run: pnpm eval:ci
@@ -68,12 +74,17 @@ jobs:
       - name: Prepare Node.js sidecar binaries
         run: node scripts/prepare-sidecar.mjs ${{ matrix.sidecar_flag }}
 
-      - name: Verify Rust core compilation and migrations
+      - name: Verify Rust formatting, clippy, tests, and bindings sync
         working-directory: apps/desktop/src-tauri
-        run: cargo check
+        run: |
+          cargo fmt --check
+          cargo clippy -- -D warnings
+          cargo test
+          cargo run --bin export_bindings
+          git diff --exit-code ../src/bindings.ts
 
       - name: Install Chromium for Playwright smoke test (CI)
-        run: pnpm --filter engine exec playwright-core install chromium || true
+        run: pnpm --filter engine exec playwright-core install chromium
 
       - name: Run end-to-end smoke test (including Unicode & space paths)
         run: pnpm smoke:test

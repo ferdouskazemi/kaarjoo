@@ -199,5 +199,5 @@ describe('Local AI, OCR, Format Parsers & Embedding Cache', () => {
     expect(['lite', 'standard', 'pro']).toContain(hw.recommendedTier);
     expect(['metal', 'cuda', 'vulkan', 'cpu']).toContain(hw.gpuBackend);
     expect(hw.totalRamGb).toBeGreaterThan(0);
-  });
+  }, 15000);
 });

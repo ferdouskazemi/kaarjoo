@@ -11,7 +11,7 @@
     "build": "pnpm --filter shared build && pnpm --filter adapters build && pnpm --filter ats build && pnpm --filter engine build && pnpm --filter desktop build",
     "smoke:test": "tsx eval/scripts/smoke-test.ts",
     "test": "vitest run",
-    "lint": "eslint . && prettier --check .",
+    "lint": "pnpm --filter shared exec tsc --noEmit && pnpm --filter adapters exec tsc --noEmit && pnpm --filter ats exec tsc --noEmit && pnpm --filter engine exec tsc --noEmit && pnpm --filter desktop exec tsc --noEmit",
     "format": "prettier --write .",
     "benchmark:fts": "tsx eval/scripts/benchmark-fts.ts",
     "eval": "tsx eval/scripts/run-eval.ts",

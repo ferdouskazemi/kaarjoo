@@ -117,11 +117,11 @@ enum SupervisorCmd {
 }
 
 pub struct EngineClient {
-    app_handle: AppHandle,
+    _app_handle: AppHandle,
     next_id: AtomicU64,
-    is_running: Arc<AtomicBool>,
+    _is_running: Arc<AtomicBool>,
     is_shutting_down: Arc<AtomicBool>,
-    app_data_dir: PathBuf,
+    _app_data_dir: PathBuf,
     cmd_tx: mpsc::UnboundedSender<SupervisorCmd>,
 }
 
@@ -137,11 +137,11 @@ impl EngineClient {
         let (cmd_tx, cmd_rx) = mpsc::unbounded_channel();
 
         let client = Arc::new(Self {
-            app_handle: app_handle.clone(),
+            _app_handle: app_handle.clone(),
             next_id: AtomicU64::new(1),
-            is_running: is_running.clone(),
+            _is_running: is_running.clone(),
             is_shutting_down: is_shutting_down.clone(),
-            app_data_dir: app_data_dir.to_path_buf(),
+            _app_data_dir: app_data_dir.to_path_buf(),
             cmd_tx: cmd_tx.clone(),
         });
 

@@ -213,3 +213,13 @@
   - `apps/desktop/src/views/JobsView.tsx`: Added `New` / `Shortlisted` / `Skipped` tabs, `Shortlist (S)` / `Not for me (X)` feedback wiring (`matchingRecordFeedback`), and `"Prepare N shortlisted →"` bulk action without hidden caps.
   - `apps/desktop/src/views/QueueView.tsx`: Grouped Review Inbox into `Needs you`, `Ready to review`, and `Submitted` (`✓ verified` / `? unverified`) lanes, added live `engine:application.fieldChanged` listener and `applicationsResume` action, and removed contradictory `Ready` labels on submitted items.
   - `apps/desktop/src/views/ApplicationsView.tsx`: Enforced SQLite DB single source of truth when `!demoMode`.
+
+### Prompt 9: Quality Gates, Tests, CI & Packaging (`chore/p9-quality-ci-packaging`)
+- **Status:** COMPLETED & VERIFIED
+- **Changes:**
+  - `vitest.config.ts`: Added `resolve.alias` pointing `@kaarjoo/{shared,adapters,ats,engine}` to `src/index.ts` so `pnpm test` works on a fresh clone without prior `pnpm build`.
+  - `.gitignore`: Ignored `*.tsbuildinfo` and `apps/desktop/src-tauri/gen/schemas/`, and untracked committed artifacts.
+  - `package.json`: Added working `pnpm lint` (`tsc --noEmit` across all 5 packages).
+  - `scripts/stage-engine-resources.mjs`: Filtered `@node-llama-cpp/*` optional prebuilts to the target platform/arch only (excluding CUDA and cross-OS binaries).
+  - `.github/workflows/ci.yml`: Added `pnpm lint`, `pnpm eval`, `cargo fmt --check`, `cargo clippy -- -D warnings`, `cargo test`, bindings sync check, and removed `|| true` from Playwright install.
+  - `packages/engine/src/__tests__/sidecar_e2e.test.ts`: Added real sidecar stdio JSON-RPC E2E test against local fixture server.

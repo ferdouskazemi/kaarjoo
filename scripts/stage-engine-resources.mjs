@@ -42,6 +42,26 @@ function resolveDepFrom(baseDir, depName) {
   return null;
 }
 
+function shouldStageOptionalDep(depName) {
+  if (!depName.startsWith('@node-llama-cpp/')) return true;
+  if (depName.includes('cuda')) return false;
+
+  const platform = process.env.KAARJOO_TARGET_PLATFORM || process.platform;
+  const arch = process.env.KAARJOO_TARGET_ARCH || process.arch;
+
+  if (platform === 'win32') {
+    return depName === '@node-llama-cpp/win-x64' || depName === '@node-llama-cpp/win-x64-vulkan';
+  }
+  if (platform === 'darwin') {
+    if (arch === 'arm64') return depName === '@node-llama-cpp/mac-arm64-metal';
+    return depName === '@node-llama-cpp/mac-x64';
+  }
+  if (platform === 'linux') {
+    return depName === '@node-llama-cpp/linux-x64' || depName === '@node-llama-cpp/linux-arm64';
+  }
+  return false;
+}
+
 function stageTransitivePackages(rootNames, destNodeModulesDir) {
   const placedTopVersion = new Map();
   const visitedEdges = new Set();
@@ -92,6 +112,9 @@ function stageTransitivePackages(rootNames, destNodeModulesDir) {
       ...(pkgJson.optionalDependencies || {}),
     };
     for (const depName of Object.keys(deps)) {
+      if (pkgJson.optionalDependencies?.[depName] && !shouldStageOptionalDep(depName)) {
+        continue;
+      }
       const resolved = resolveDepFrom(srcDir, depName);
       if (resolved) {
         queue.push({ name: depName, srcDir: resolved, parentDestDir: targetPkgDir });
