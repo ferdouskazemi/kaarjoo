@@ -34,6 +34,10 @@ import { useApplicationStore } from '../stores/applicationStore.js';
 import { useAppStore } from '../stores/appStore.js';
 import { usePipelineStore } from '../stores/pipelineStore.js';
 import { commands, type UserProfileDto } from '../bindings.js';
+import { Stepper } from '../components/ui/Stepper.js';
+import { Button } from '../components/ui/Button.js';
+import { IssuesFixCard } from '../components/profile/IssuesFixCard.js';
+import { PreferencesPanel } from '../components/profile/PreferencesPanel.js';
 
 export const ProfileView: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -64,6 +68,8 @@ export const ProfileView: React.FC = () => {
   const [confirmToast, setConfirmToast] = useState(false);
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [rightTab, setRightTab] = useState<'readable' | 'raw'>('readable');
+  const [activeStep, setActiveStep] = useState<'resume' | 'review' | 'preferences'>('review');
+  const [parseStage, setParseStage] = useState<string>('reading');
 
   // Inline Edit States
   const [editingIdentity, setEditingIdentity] = useState(false);
@@ -90,6 +96,35 @@ export const ProfileView: React.FC = () => {
 
   // Active profile: SQLite database profile takes precedence, falling back to demo profile in demo mode
   const profile = dbProfile ?? (demoMode ? demoProfile : null);
+  const profileIssues = (profile as UserProfileDto | null)?.issues ?? [];
+  const blockersCount = profileIssues.filter((i) => i.severity === 'blocker').length;
+  const readinessGates = [
+    Boolean(profile?.contact?.fullName?.trim()),
+    Boolean(profile?.contact?.email?.trim()),
+    Boolean(profile?.contact?.phone?.trim()),
+    (profile?.experiences?.length ?? 0) > 0 || (profile?.education?.length ?? 0) > 0,
+    (profile?.targetTitles?.length ?? 0) > 0,
+  ];
+  const readinessPercent = Math.round(
+    (readinessGates.filter(Boolean).length / readinessGates.length) * 100
+  );
+
+  React.useEffect(() => {
+    let unlisten: (() => void) | undefined;
+    import('@tauri-apps/api/event')
+      .then(({ listen }) =>
+        listen<{ stage?: string }>('engine:profile.progress', (ev) => {
+          if (ev.payload?.stage) setParseStage(ev.payload.stage);
+        })
+      )
+      .then((fn) => {
+        unlisten = fn;
+      })
+      .catch(() => {});
+    return () => {
+      if (unlisten) unlisten();
+    };
+  }, []);
 
   const handleFieldClick = (highlightText: string, label: string) => {
     setActiveHighlight(highlightText, label);
@@ -301,30 +336,39 @@ export const ProfileView: React.FC = () => {
                 <span>{t('profile.clear')}</span>
               </button>
 
-              <button
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={handlePickNativeFile}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-[#333333] hover:border-[#484848] bg-[#202020] hover:bg-[#262626] text-[11px] font-medium text-[#d4d4d8] hover:text-white transition-colors cursor-pointer"
               >
-                <UploadCloud className="w-3 h-3 text-sky-400" />
+                <UploadCloud className="w-3.5 h-3.5 text-accent" />
                 <span>{t('profile.uploadAnother')}</span>
-              </button>
+              </Button>
 
-              <button
-                onClick={handleConfirmProfile}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-[#333333] hover:border-[#484848] bg-[#202020] hover:bg-[#262626] text-[#d4d4d8] font-medium text-[11px] transition-all cursor-pointer"
+              <Button
+                variant="primary"
+                size="sm"
+                disabled={isPipelineRunning || blockersCount > 0}
+                disabledReason={
+                  blockersCount > 0
+                    ? `Fix ${blockersCount} blocker(s) in your profile before continuing`
+                    : undefined
+                }
+                onClick={() => {
+                  if (activeStep !== 'preferences') {
+                    setActiveStep('preferences');
+                  } else {
+                    handleStartExplore();
+                  }
+                }}
               >
-                <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                <span>{t('profile.confirm')}</span>
-              </button>
-
-              <button
-                onClick={handleStartExplore}
-                disabled={isPipelineRunning}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md fr-button-primary disabled:opacity-50 text-[11px] cursor-pointer"
-              >
-                <Play className="w-3 h-3 fill-white" />
-                <span>{t('profile.startExplore')}</span>
-              </button>
+                <Play className="w-3.5 h-3.5" />
+                <span>
+                  {activeStep === 'preferences'
+                    ? t('profile.startExplore')
+                    : 'Continue to preferences →'}
+                </span>
+              </Button>
             </>
           ) : demoMode ? (
             <button
@@ -340,6 +384,41 @@ export const ProfileView: React.FC = () => {
           ) : null}
         </div>
       </div>
+
+      {profile && (
+        <div className="px-6 py-2.5 border-b border-border bg-surface">
+          <Stepper
+            steps={[
+              { id: 'resume', label: 'Résumé', status: 'done' },
+              {
+                id: 'review',
+                label: 'Review profile',
+                status: activeStep === 'review' ? 'current' : blockersCount === 0 ? 'done' : 'current',
+              },
+              {
+                id: 'preferences',
+                label: 'Preferences',
+                status:
+                  activeStep === 'preferences'
+                    ? 'current'
+                    : blockersCount === 0 && (profile.targetTitles?.length ?? 0) > 0
+                    ? 'done'
+                    : 'upcoming',
+              },
+              {
+                id: 'ready',
+                label: 'Ready to search',
+                status: blockersCount === 0 && (profile.targetTitles?.length ?? 0) > 0 ? 'done' : 'upcoming',
+              },
+            ]}
+            onStepClick={(stepId) => {
+              if (stepId === 'review') setActiveStep('review');
+              if (stepId === 'preferences' && blockersCount === 0) setActiveStep('preferences');
+              if (stepId === 'resume') void handlePickNativeFile();
+            }}
+          />
+        </div>
+      )}
 
       {isProcessing ? (
         /* Conceptual Rive-Style Vector Scanner & Orbiting Extraction Nodes */
@@ -396,7 +475,7 @@ export const ProfileView: React.FC = () => {
             </div>
 
             <div className="text-center">
-              <span className="fr-eyebrow block mb-1">LOCAL PARSER</span>
+              <span className="fr-eyebrow block mb-1">LOCAL PARSER · {parseStage.toUpperCase()}</span>
               <h3 className="text-sm font-bold text-[#f4f4f5]">{t('profile.parsing')}</h3>
             </div>
 
@@ -469,11 +548,29 @@ export const ProfileView: React.FC = () => {
             </div>
           </div>
         </div>
+      ) : activeStep === 'preferences' ? (
+        <div className="flex-1 overflow-y-auto">
+          <PreferencesPanel
+            profile={profile as UserProfileDto}
+            onSaveProfile={async (updated) => {
+              await persistProfileUpdate(updated);
+            }}
+            onContinue={handleStartExplore}
+          />
+        </div>
       ) : (
         /* Split View Review Screen */
         <div className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x lg:divide-x-reverse divide-[#242424]">
           {/* Left Column: Structured Profile Cards */}
           <div className="h-full overflow-y-auto p-5 flex flex-col gap-4">
+            <IssuesFixCard
+              profile={profile as UserProfileDto}
+              issues={profileIssues}
+              readinessPercent={readinessPercent}
+              onSaveInlineFix={async (patch) => {
+                await persistProfileUpdate({ ...(profile as UserProfileDto), ...patch });
+              }}
+            />
             {/* Extraction Insights & Summary Card */}
             <div className="rounded-xl border border-[#2d3748] bg-gradient-to-br from-[#131d27] via-[#161b22] to-[#141414] p-4 flex flex-col gap-3">
               <div className="flex items-center justify-between">

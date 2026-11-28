@@ -61,7 +61,7 @@ export const ApplicationsView: React.FC = () => {
         updatedAt: a.updatedAt,
       }));
     }
-    return demoMode || storeApps.length > 0 ? storeApps : [];
+    return demoMode ? storeApps : [];
   }, [isUsingDb, dbApplications, demoMode, storeApps]);
 
   const [viewMode, setViewMode] = useState<'kanban' | 'table'>('kanban');

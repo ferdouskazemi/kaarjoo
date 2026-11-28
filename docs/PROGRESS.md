@@ -204,3 +204,12 @@
   - `apps/desktop/src/components/ui/`: Added shadcn-style primitives (`Button`, `Badge`/`Chip`, `Card`, `Input`, `Textarea`, `SegmentedControl`, `Tabs`, `Table`, `Stepper`, `ScoreRing`, `Meter`, `EmptyState`, `ErrorState`, `Skeleton`, `Dialog`, `KeyboardHint`, `FieldRow`) with `focus-visible` rings and `40px` min hit area.
   - `apps/desktop/src/components/layout/{TitleBar,Sidebar,AppShell,CommandPalette}.tsx`: Rebuilt `232px` sidebar with red "needs you" badge, plain-language footer status, jargon-free title bar, `<MotionConfig reducedMotion="user">`, and global `G` + `H/P/O/R/T/S` + `⌘K`/`Esc` shortcuts.
   - `apps/desktop/src/styles/__tests__/design_system.test.ts`: Added WCAG AA contrast verification across all dark/light token pairs and raw-hex / `<12px` lint tests for `components/ui/` and `components/layout/`.
+
+### Prompt 8: Workflow Screens (`feat/p8-workflow-screens`)
+- **Status:** COMPLETED & VERIFIED
+- **Changes:**
+  - `apps/desktop/src/views/HomeView.tsx`: Rebuilt with Prompt 7 primitives (`Card`, `Button`, `Badge`, `EmptyState`, `ErrorState`, `Skeleton`), "What needs you" summary, real DB activity, and next suggested action.
+  - `apps/desktop/src/views/ProfileView.tsx` & `components/profile/{IssuesFixCard,PreferencesPanel}.tsx`: Added 4-step `Stepper` with blocker gates, real `engine:profile.progress` stage indicator, `"Fix before you can apply"` inline issue fixer + gate-based readiness %, and full `PreferencesPanel` + Answer Bank persisted in SQLite settings/profile.
+  - `apps/desktop/src/views/JobsView.tsx`: Added `New` / `Shortlisted` / `Skipped` tabs, `Shortlist (S)` / `Not for me (X)` feedback wiring (`matchingRecordFeedback`), and `"Prepare N shortlisted →"` bulk action without hidden caps.
+  - `apps/desktop/src/views/QueueView.tsx`: Grouped Review Inbox into `Needs you`, `Ready to review`, and `Submitted` (`✓ verified` / `? unverified`) lanes, added live `engine:application.fieldChanged` listener and `applicationsResume` action, and removed contradictory `Ready` labels on submitted items.
+  - `apps/desktop/src/views/ApplicationsView.tsx`: Enforced SQLite DB single source of truth when `!demoMode`.

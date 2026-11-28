@@ -24,8 +24,11 @@ import { useApplications, useExecuteReview, useSubmitApplication, useUpdateAppli
 import { useApplicationStore } from '../stores/applicationStore.js';
 import { useProfileStore } from '../stores/profileStore.js';
 import { useAppStore } from '../stores/appStore.js';
+import { commands } from '../bindings.js';
 import { formatNumber } from '../utils/formatters.js';
-import type { ApplicationRecord, AtsType } from '@kaarjoo/shared';
+import { Badge } from '../components/ui/Badge.js';
+import { Button } from '../components/ui/Button.js';
+import type { ApplicationRecord, AtsType, ReviewChecklistItem } from '@kaarjoo/shared';
 
 export const QueueView: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -52,6 +55,32 @@ export const QueueView: React.FC = () => {
 
   const [previewModalImg, setPreviewModalImg] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [liveChecklists, setLiveChecklists] = useState<Record<string, ReviewChecklistItem[]>>({});
+
+  React.useEffect(() => {
+    let unlisten: (() => void) | undefined;
+    import('@tauri-apps/api/event')
+      .then(({ listen }) =>
+        listen<{ appId?: string; reviewChecklist?: ReviewChecklistItem[] }>(
+          'engine:application.fieldChanged',
+          (ev) => {
+            if (ev.payload?.appId && ev.payload?.reviewChecklist) {
+              setLiveChecklists((prev) => ({
+                ...prev,
+                [ev.payload.appId!]: ev.payload.reviewChecklist!,
+              }));
+            }
+          }
+        )
+      )
+      .then((fn) => {
+        unlisten = fn;
+      })
+      .catch(() => {});
+    return () => {
+      if (unlisten) unlisten();
+    };
+  }, []);
 
   // Single source of truth: SQLite DB in production; storeApps only when demoMode is explicitly ON
   const applications: ApplicationRecord[] = (demoMode
@@ -83,11 +112,27 @@ export const QueueView: React.FC = () => {
         updatedAt: a.updatedAt,
       }))) as ApplicationRecord[];
 
-  const activeApp: ApplicationRecord | undefined =
+  const activeAppRaw: ApplicationRecord | undefined =
     applications.find((a) => a.id === activeApplicationId) || applications[0];
+  const activeApp: ApplicationRecord | undefined = activeAppRaw
+    ? {
+        ...activeAppRaw,
+        reviewChecklist: liveChecklists[activeAppRaw.id] ?? activeAppRaw.reviewChecklist ?? [],
+      }
+    : undefined;
 
   const isUsingDb = dbApplications.length > 0;
   const isExecuting = executeReviewMutation.isPending || storeIsExecuting;
+
+  const handleResume = async (id: string) => {
+    setActionError(null);
+    try {
+      await commands.applicationsResume(id);
+      await refetchApps();
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : String(err));
+    }
+  };
 
   const handleExecute = async (id: string) => {
     setActionError(null);
@@ -157,15 +202,26 @@ export const QueueView: React.FC = () => {
             {t('status.filling')}
           </span>
         );
-      case 'submitted':
       case 'submitted_verified':
+        return (
+          <Badge tone="ok">
+            <CheckCircle2 className="w-3 h-3" aria-hidden="true" />
+            <span>✓ verified</span>
+          </Badge>
+        );
       case 'submitted_unverified':
+        return (
+          <Badge tone="warn">
+            <span>? unverified</span>
+          </Badge>
+        );
+      case 'submitted':
       case 'applied':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#182a20] text-emerald-300 border border-emerald-500/40 font-mono">
-            <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-            {t('status.applied')}
-          </span>
+          <Badge tone="ok">
+            <CheckCircle2 className="w-3 h-3" aria-hidden="true" />
+            <span>{t('status.applied')}</span>
+          </Badge>
         );
       case 'failed':
         return (
@@ -267,49 +323,95 @@ export const QueueView: React.FC = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-          {/* Left Column: Applications List (Cards) */}
-          <div className="lg:col-span-4 flex flex-col gap-2.5">
-            <h2 className="text-[11px] font-semibold uppercase tracking-wider text-[#a1a1aa] px-1">
-              {t('queue.queuedApps')} ({formatNumber(applications.length, i18n.language)})
-            </h2>
+          {/* Left Column: Applications List Grouped by Lane */}
+          <div className="lg:col-span-4 flex flex-col gap-4">
+            {(
+              [
+                {
+                  key: 'needs_you',
+                  title: 'Needs you',
+                  items: applications.filter(
+                    (a) =>
+                      a.status === 'needs_user' ||
+                      a.status === 'failed' ||
+                      (a.reviewChecklist ?? []).some(
+                        (c) => c.status === 'empty_required' || c.status === 'failed'
+                      )
+                  ),
+                },
+                {
+                  key: 'ready',
+                  title: 'Ready to review',
+                  items: applications.filter(
+                    (a) =>
+                      a.status !== 'needs_user' &&
+                      a.status !== 'failed' &&
+                      a.status !== 'submitted' &&
+                      a.status !== 'submitted_verified' &&
+                      a.status !== 'submitted_unverified' &&
+                      a.status !== 'applied' &&
+                      !(a.reviewChecklist ?? []).some(
+                        (c) => c.status === 'empty_required' || c.status === 'failed'
+                      )
+                  ),
+                },
+                {
+                  key: 'submitted',
+                  title: 'Submitted',
+                  items: applications.filter(
+                    (a) =>
+                      a.status === 'submitted' ||
+                      a.status === 'submitted_verified' ||
+                      a.status === 'submitted_unverified' ||
+                      a.status === 'applied'
+                  ),
+                },
+              ] as const
+            )
+              .filter((lane) => lane.items.length > 0)
+              .map((lane) => (
+                <div key={lane.key} className="flex flex-col gap-2">
+                  <h2 className="text-xs font-semibold uppercase tracking-wider text-muted px-1">
+                    {lane.title} ({formatNumber(lane.items.length, i18n.language)})
+                  </h2>
+                  {lane.items.map((app) => {
+                    const isSelected = app.id === activeApp?.id;
+                    const isSubmittedLane = lane.key === 'submitted';
+                    return (
+                      <div
+                        key={app.id}
+                        onClick={() => setActiveApplicationId(app.id)}
+                        className={`cursor-pointer rounded-[var(--radius-md)] p-3.5 border transition-all text-start ${
+                          isSelected
+                            ? 'bg-surface-2 border-accent shadow-sm'
+                            : 'bg-surface border-border hover:border-border-strong'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2 mb-1.5">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <Building2 className="w-3.5 h-3.5 text-muted shrink-0" aria-hidden="true" />
+                            <span className="text-xs font-semibold text-text truncate">{app.company}</span>
+                          </div>
+                          {getAtsBadge(app.atsType)}
+                        </div>
 
-            <div className="flex flex-col gap-2">
-              {applications.map((app) => {
-                const isSelected = app.id === activeApp?.id;
-                return (
-                  <div
-                    key={app.id}
-                    onClick={() => setActiveApplicationId(app.id)}
-                    className={`cursor-pointer rounded-xl p-3.5 border transition-all text-start ${
-                      isSelected
-                        ? 'bg-[#1e1e1e] border-sky-500/50 shadow-lg active-ring'
-                        : 'bg-[#161616] border-[#262626] hover:border-[#383838] hover:bg-[#1a1a1a]'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-2 mb-1.5">
-                      <div className="flex items-center gap-1.5">
-                        <Building2 className="w-3.5 h-3.5 text-[#a1a1aa]" />
-                        <span className="text-xs font-semibold text-[#f4f4f5]">{app.company}</span>
+                        <h3 className="text-sm font-medium text-text line-clamp-1 mb-2">
+                          {app.jobTitle}
+                        </h3>
+
+                        <div className="flex items-center justify-between text-xs pt-2 border-t border-border">
+                          {getStatusBadge(app.status)}
+                          {!isSubmittedLane && app.reviewChecklist?.length > 0 && (
+                            <span className="text-xs font-mono text-muted tabular-nums">
+                              {formatNumber(app.reviewChecklist.length, i18n.language)} {t('queue.fieldsCount')}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      {getAtsBadge(app.atsType)}
-                    </div>
-
-                    <h3 className="text-xs font-medium text-[#e4e4e7] line-clamp-1 mb-2">
-                      {app.jobTitle}
-                    </h3>
-
-                    <div className="flex items-center justify-between text-xs pt-2 border-t border-[#242424]">
-                      {getStatusBadge(app.status)}
-                      <span className="text-[10px] font-mono text-[#71717a]">
-                        {app.reviewChecklist?.length > 0
-                          ? `${formatNumber(app.reviewChecklist.length, i18n.language)} ${t('queue.fieldsCount')}`
-                          : t('queue.ready')}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                    );
+                  })}
+                </div>
+              ))}
           </div>
 
           {/* Right Column: Active Application Inspection & Approval View */}
@@ -329,6 +431,12 @@ export const QueueView: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-2">
+                  {activeApp.status === 'needs_user' && (
+                    <Button variant="primary" size="sm" onClick={() => void handleResume(activeApp.id)}>
+                      <Play className="w-3.5 h-3.5" aria-hidden="true" />
+                      <span>Resume in Chrome</span>
+                    </Button>
+                  )}
                   <a
                     href={activeApp.applyUrl}
                     target="_blank"

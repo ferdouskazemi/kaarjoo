@@ -18,6 +18,8 @@ import { useProfileStore } from '../stores/profileStore.js';
 import { useProfile, useJobs, useCreateApplication } from '../queries/index.js';
 import { commands } from '../bindings.js';
 import { formatNumber } from '../utils/formatters.js';
+import { Tabs } from '../components/ui/Tabs.js';
+import { Button } from '../components/ui/Button.js';
 import type { CompanyBoard, AtsType } from '@kaarjoo/shared';
 
 export const JobsView: React.FC = () => {
@@ -44,6 +46,57 @@ export const JobsView: React.FC = () => {
   const [remoteFilter, setRemoteFilter] = useState<'all' | 'remote' | 'hybrid' | 'on-site'>('all');
   const [atsFilter, setAtsFilter] = useState<'all' | AtsType>('all');
   const [stackFilter, setStackFilter] = useState<string>('all');
+  const [activeTab, setActiveTab] = useState<'new' | 'shortlisted' | 'skipped'>('new');
+  const [shortlistedIds, setShortlistedIds] = useState<Set<string>>(() => new Set());
+  const [skippedIds, setSkippedIds] = useState<Set<string>>(() => new Set());
+  const [isPreparingShortlist, setIsPreparingShortlist] = useState(false);
+
+  const toggleShortlist = (jobId: string) => {
+    setShortlistedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(jobId)) next.delete(jobId);
+      else next.add(jobId);
+      return next;
+    });
+    setSkippedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(jobId);
+      return next;
+    });
+  };
+
+  const handleSkipJob = async (jobId: string) => {
+    setSkippedIds((prev) => new Set(prev).add(jobId));
+    setShortlistedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(jobId);
+      return next;
+    });
+    try {
+      await commands.matchingRecordFeedback(jobId, 'irrelevant');
+    } catch {
+      // ignore if job is not in DB
+    }
+  };
+
+  const handlePrepareShortlisted = async () => {
+    if (shortlistedIds.size === 0) return;
+    setIsPreparingShortlist(true);
+    try {
+      const selected = displayJobs.filter((j) => shortlistedIds.has(j.id));
+      for (const job of selected) {
+        await createApplication.mutateAsync({
+          jobId: job.id,
+          mode: 'review',
+          resumePath: null,
+          coverLetter: null,
+        });
+      }
+      setCurrentView('queue');
+    } finally {
+      setIsPreparingShortlist(false);
+    }
+  };
 
   // Live crawl via Node engine sidecar & Rust core
   const handleSync = async () => {
@@ -157,9 +210,13 @@ export const JobsView: React.FC = () => {
         return false;
       }
 
+      if (activeTab === 'shortlisted' && !shortlistedIds.has(job.id)) return false;
+      if (activeTab === 'skipped' && !skippedIds.has(job.id)) return false;
+      if (activeTab === 'new' && (shortlistedIds.has(job.id) || skippedIds.has(job.id))) return false;
+
       return true;
     });
-  }, [displayJobs, searchQuery, regionFilter, remoteFilter, atsFilter, stackFilter]);
+  }, [displayJobs, searchQuery, regionFilter, remoteFilter, atsFilter, stackFilter, activeTab, shortlistedIds, skippedIds]);
 
   const handleApply = (job: DisplayJob) => {
     setSelectedJob(null);
@@ -226,6 +283,34 @@ export const JobsView: React.FC = () => {
             <span>{isSyncing ? t('jobs.syncing') : t('jobs.syncFeed')}</span>
           </button>
         </div>
+      </div>
+
+      {/* Opportunities Tabs & Prepare Bulk Action */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <Tabs
+          value={activeTab}
+          onChange={setActiveTab}
+          ariaLabel="Opportunities tabs"
+          items={[
+            {
+              id: 'new',
+              label: 'New',
+              count: displayJobs.filter((j) => !shortlistedIds.has(j.id) && !skippedIds.has(j.id)).length,
+            },
+            { id: 'shortlisted', label: 'Shortlisted', count: shortlistedIds.size },
+            { id: 'skipped', label: 'Skipped', count: skippedIds.size },
+          ]}
+        />
+        {shortlistedIds.size > 0 && (
+          <Button
+            variant="primary"
+            size="sm"
+            loading={isPreparingShortlist}
+            onClick={() => void handlePrepareShortlisted()}
+          >
+            <span>Prepare {formatNumber(shortlistedIds.size, i18n.language)} shortlisted →</span>
+          </Button>
+        )}
       </div>
 
       {/* Filter and Refinement Bar */}
@@ -359,12 +444,29 @@ export const JobsView: React.FC = () => {
       ) : filteredJobs.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filteredJobs.map((job) => (
-            <JobCard
-              key={job.id}
-              job={job}
-              onSelect={setSelectedJob}
-              onApply={handleApply}
-            />
+            <div key={job.id} className="flex flex-col gap-1.5">
+              <JobCard
+                job={job}
+                onSelect={setSelectedJob}
+                onApply={handleApply}
+              />
+              <div className="flex items-center justify-end gap-2 px-1">
+                <Button
+                  variant={shortlistedIds.has(job.id) ? 'success' : 'secondary'}
+                  size="sm"
+                  onClick={() => toggleShortlist(job.id)}
+                >
+                  <span>{shortlistedIds.has(job.id) ? 'Shortlisted' : 'Shortlist (S)'}</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => void handleSkipJob(job.id)}
+                >
+                  <span>Not for me (X)</span>
+                </Button>
+              </div>
+            </div>
           ))}
         </div>
       ) : (
