@@ -569,10 +569,25 @@ fn spawn_sidecar(
         env_vars.insert("NODE_PATH".to_string(), node_modules_dir.to_string_lossy().to_string());
     }
 
+    let sidecar_name = std::env::current_exe()
+        .ok()
+        .and_then(|p| p.parent().map(|d| d.to_path_buf()))
+        .map(|exe_dir| {
+            let bin_name = if cfg!(windows) { "node.exe" } else { "node" };
+            if exe_dir.join(bin_name).exists() {
+                "node"
+            } else if exe_dir.join("binaries").join(bin_name).exists() {
+                "binaries/node"
+            } else {
+                "node"
+            }
+        })
+        .unwrap_or("node");
+
     let sidecar_cmd = app_handle
         .shell()
-        .sidecar("binaries/node")
-        .map_err(|e| format!("Failed to locate bundled node sidecar: {}", e))?
+        .sidecar(sidecar_name)
+        .map_err(|e| format!("Failed to locate bundled node sidecar '{}': {}", sidecar_name, e))?
         .args([bundle_path.to_string_lossy().to_string()])
         .envs(env_vars);
 
