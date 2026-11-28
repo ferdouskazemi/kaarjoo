@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kaarjoo simple flow v2</title>
+<style>
+@font-face{font-family:Vazirmatn;src:url(../fonts/Vazirmatn-Regular.woff2) format("woff2");font-weight:400}
+@font-face{font-family:Vazirmatn;src:url(../fonts/Vazirmatn-Medium.woff2) format("woff2");font-weight:500}
+@font-face{font-family:Vazirmatn;src:url(../fonts/Vazirmatn-Bold.woff2) format("woff2");font-weight:700}
+:root{
+  --bg:#0E1013; --surface:#15191E; --surface-2:#1C2127; --surface-3:#252B33;
+  --border:#2A313A; --border-strong:#38414C;
+  --text:#ECEEF1; --text-2:#B4BBC5; --muted:#838C98;
+  --accent:#5B93FF; --accent-weak:rgba(91,147,255,.14); --accent-text:#8DB4FF;
+  --success:#3FC48F; --success-weak:rgba(63,196,143,.13);
+  --warning:#F3B84B; --warning-weak:rgba(243,184,75,.13);
+  --danger:#F26B5E; --danger-weak:rgba(242,107,94,.13);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#05070A;font-family:Inter,system-ui,sans-serif;color:var(--text);font-size:15px;line-height:1.5;padding:40px;display:flex;flex-direction:column;gap:48px;align-items:center}
+.caption{width:1440px;color:#9aa3ad;font-size:15px}
+.caption b{color:#fff;font-size:18px;display:block;margin-bottom:4px}
+.screen{width:1440px;height:900px;background:var(--bg);border-radius:12px;overflow:hidden;display:flex;border:1px solid #20262d;position:relative}
+.screen[dir=rtl]{font-family:Vazirmatn,Inter,sans-serif}
+/* slim rail */
+.rail{width:76px;background:var(--surface);border-inline-end:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:18px 0;gap:6px;flex-shrink:0}
+.logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#5B93FF,#3FC48F);display:grid;place-items:center;font-weight:800;color:#0b0d10;font-size:17px;margin-bottom:18px}
+.ri{width:60px;padding:8px 0;border-radius:12px;display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--muted);font-size:11.5px;font-weight:500;position:relative}
+.ri.on{color:var(--text);background:var(--accent-weak)}
+.ri svg{width:22px;height:22px}
+.ri .b{position:absolute;top:4px;inset-inline-end:10px;width:8px;height:8px;border-radius:50%;background:var(--danger)}
+.rail .grow{flex:1}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--surface-3);display:grid;place-items:center;font-weight:700;font-size:14px;color:var(--text-2)}
+.main{flex:1;display:flex;flex-direction:column;align-items:center;position:relative;min-width:0}
+.wrap{width:760px;padding-top:72px;display:flex;flex-direction:column;gap:22px}
+.hello{font-size:30px;font-weight:650;letter-spacing:-.01em}
+.sub{color:var(--text-2);font-size:16px}
+.hero{background:linear-gradient(160deg,#18202B 0%,#141920 70%);border:1px solid var(--border);border-radius:20px;padding:30px 32px;display:flex;flex-direction:column;gap:18px;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;inset-inline-end:-80px;top:-80px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(91,147,255,.22),transparent 70%)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 20px;border-radius:12px;font-weight:600;font-size:15px;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);white-space:nowrap}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#06101f}
+.btn.success{background:var(--success);border-color:var(--success);color:#04170f}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--text-2)}
+.btn.sm{height:34px;padding:0 14px;font-size:14px;border-radius:9px}
+.btn.xl{height:54px;padding:0 28px;font-size:17px;border-radius:14px}
+.row{display:flex;align-items:center;gap:12px}.col{display:flex;flex-direction:column}
+.sp{flex:1}
+.muted{color:var(--muted)}.t2{color:var(--text-2)}
+.chip{white-space:nowrap;flex-shrink:0;display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;padding:3px 10px;border-radius:99px;background:var(--surface-3);color:var(--text-2)}
+.chip.ok{background:var(--success-weak);color:var(--success)}
+.chip.warn{background:var(--warning-weak);color:var(--warning)}
+.chip.bad{background:var(--danger-weak);color:var(--danger)}
+.chip.info{background:var(--accent-weak);color:var(--accent-text)}
+.stack{position:relative;height:96px}
+.mini{position:absolute;left:0;right:0;overflow:hidden;background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px}
+.co{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-weight:700;color:#fff;flex-shrink:0}
+.quiet{display:flex;gap:10px}
+.qcard{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px}
+.qcard .n{font-size:22px;font-weight:700}
+.link{color:var(--accent-text);font-weight:600;font-size:14px}
+/* pill */
+.pill{position:absolute;bottom:22px;inset-inline-end:24px;background:var(--surface-2);border:1px solid var(--border-strong);border-radius:99px;padding:8px 16px 8px 10px;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.spin{width:24px;height:24px;border-radius:50%;background:conic-gradient(var(--accent) var(--p),var(--surface-3) 0);display:grid;place-items:center}
+.spin::before{content:"";width:16px;height:16px;border-radius:50%;background:var(--surface-2)}
+/* drawer */
+.scrim{position:absolute;inset:0;background:rgba(5,7,10,.55)}
+.drawer{position:absolute;bottom:22px;inset-inline-end:24px;width:440px;background:var(--surface);border:1px solid var(--border-strong);border-radius:20px;box-shadow:0 24px 60px rgba(0,0,0,.55);padding:20px;display:flex;flex-direction:column;gap:14px}
+.stepdot{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700;flex-shrink:0}
+.stepdot.done{background:var(--success);color:#04170f}
+.stepdot.run{border:2px solid var(--accent);color:var(--accent-text)}
+.stepdot.todo{border:1.5px solid var(--border-strong);color:var(--muted)}
+.vline{width:2px;height:14px;background:var(--border-strong);margin-inline-start:12px}
+.item{min-width:0;display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;background:var(--surface-2)}
+.bar{height:5px;border-radius:5px;background:var(--surface-3);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:5px}
+.fix{border:1px solid rgba(243,184,75,.35);background:var(--warning-weak);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
+/* jobs focus */
+.focus{width:620px;background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:28px 30px;display:flex;flex-direction:column;gap:18px;position:relative;z-index:2;box-shadow:0 30px 70px rgba(0,0,0,.45)}
+.ghostcard{position:absolute;width:620px;height:420px;border-radius:22px;background:var(--surface);border:1px solid var(--border);opacity:.5}
+.ring{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:18px;background:conic-gradient(var(--success) 91%,var(--surface-3) 0);position:relative;flex-shrink:0}
+.ring::before{content:"";position:absolute;inset:5px;background:var(--surface);border-radius:50%}
+.ring span{position:relative}
+.reason{display:flex;gap:10px;align-items:flex-start;color:var(--text-2)}
+.reason b{color:var(--text);font-weight:600}
+.kbd{font-family:ui-monospace,monospace;font-size:11.5px;padding:1px 7px;border-radius:5px;border:1px solid var(--border-strong);color:var(--muted)}
+.progress-top{display:flex;gap:6px;width:620px}
+.progress-top i{flex:1;height:4px;border-radius:4px;background:var(--surface-3)}
+.progress-top i.d{background:var(--accent)}
+/* review */
+.sum{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;gap:12px}
+.check{display:flex;align-items:center;gap:12px}
+.okc{width:24px;height:24px;border-radius:50%;background:var(--success-weak);color:var(--success);display:grid;place-items:center;font-weight:700;font-size:13px;flex-shrink:0}
+.warnc{width:24px;height:24px;border-radius:50%;background:var(--warning-weak);color:var(--warning);display:grid;place-items:center;font-weight:800;font-size:13px;flex-shrink:0}
+.input{height:44px;border-radius:12px;border:1.5px solid var(--accent);box-shadow:0 0 0 4px var(--accent-weak);background:var(--bg);padding:0 14px;display:flex;align-items:center;color:var(--muted)}
+.tabs{display:flex;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:4px;align-self:flex-start}
+.tabs span{padding:7px 14px;border-radius:9px;font-size:14px;color:var(--text-2);font-weight:500}
+.tabs span.on{background:var(--surface-3);color:var(--text)}
+/* storyboard */
+.sb{flex:1;padding:44px 56px;display:flex;flex-direction:column;gap:28px}
+.sbrow{display:flex;gap:18px;align-items:stretch}
+.sbcell{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.sbcell .lbl{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.pill.static{position:static;box-shadow:none}
+.toast{background:var(--surface-2);border:1px solid var(--border-strong);border-radius:14px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start;width:100%}
+table.m{width:100%;border-collapse:collapse;font-size:14px}
+table.m td{padding:9px 10px;border-bottom:1px solid var(--border);color:var(--text-2)}
+table.m td:first-child{color:var(--text);font-weight:600;width:190px}
+</style>
+</head>
+<body>
+
+<!-- ================= A. HOME / TODAY ================= -->
+<div class="caption"><b>A · Home = "Today": one next step, nothing else shouting</b>Three destinations only (Today, Jobs, Applications). Profile and settings live under the avatar. Background work becomes a small pill in the corner instead of a page-blocking panel.</div>
+<div class="screen" id="a">
+  <nav class="rail">
+    <div class="logo">K</div>
+    <div class="ri on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Today</div>
+    <div class="ri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Jobs</div>
+    <div class="ri"><span class="b"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4z"/><path d="M4 13h5l1.5 2h3L15 13h5"/></svg>Applied</div>
+    <div class="grow"></div>
+    <div class="avatar">FK</div>
+  </nav>
+  <div class="main">
+    <div class="wrap">
+      <div class="col" style="gap:6px"><div class="hello">Good afternoon, Ferdous</div><div class="sub">5 new jobs fit your profile today.</div></div>
+      <div class="hero">
+        <div class="row"><span class="chip info">Your next step</span></div>
+        <div style="font-size:24px;font-weight:650;position:relative;z-index:1">Look through 5 jobs picked for you</div>
+        <div class="stack">
+          <div class="mini" style="top:24px;transform:scale(.94);opacity:.45"><div class="co" style="background:#3A6FD8">L</div></div>
+          <div class="mini" style="top:12px;transform:scale(.97);opacity:.7"><div class="co" style="background:#2E9E6A">P</div></div>
+          <div class="mini" style="top:0"><div class="co" style="background:#7C5CFF">S</div><div class="col" style="flex:1"><b>Senior Shopify Developer</b><span class="t2" style="font-size:14px">Storetasker · Remote</span></div><span class="chip ok">91% match</span></div>
+        </div>
+        <div class="row" style="position:relative;z-index:1"><span class="btn primary xl">Start reviewing →</span><span class="muted" style="font-size:14px">About 2 minutes</span></div>
+      </div>
+      <div class="quiet">
+        <div class="qcard"><div class="warnc">1</div><div class="col" style="flex:1"><b>Application needs you</b><span class="muted" style="font-size:13.5px">Proxify AB · 1 question</span></div><span class="link">Open</span></div>
+        <div class="qcard"><div class="okc">✓</div><div class="col" style="flex:1"><b>3 sent this week</b><span class="muted" style="font-size:13.5px">1 confirmed by site</span></div><span class="link">View</span></div>
+      </div>
+    </div>
+    <div class="pill"><div class="spin" style="--p:60%"></div>Finding more jobs · 3 of 5 sites<span class="muted">⌃</span></div>
+  </div>
+</div>
+
+<!-- ================= B. PIPELINE DRAWER + PLAIN ERROR ================= -->
+<div class="caption"><b>B · Click the pill → a small drawer, not a wall</b>Three plain steps. Each job is one row with real progress. A problem becomes a sentence with a fix button. The raw technical message sits behind "Details" for bug reports.</div>
+<div class="screen" id="b">
+  <nav class="rail">
+    <div class="logo">K</div>
+    <div class="ri on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Today</div>
+    <div class="ri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Jobs</div>
+    <div class="ri"><span class="b"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4z"/><path d="M4 13h5l1.5 2h3L15 13h5"/></svg>Applied</div>
+    <div class="grow"></div>
+    <div class="avatar">FK</div>
+  </nav>
+  <div class="main">
+    <div class="wrap" style="opacity:.5">
+      <div class="col" style="gap:6px"><div class="hello">Good afternoon, Ferdous</div><div class="sub">5 new jobs fit your profile today.</div></div>
+      <div class="hero" style="height:300px"></div>
+    </div>
+    <div class="scrim"></div>
+    <div class="drawer">
+      <div class="row"><b style="font-size:17px">Preparing 3 applications</b><div class="sp"></div><span class="btn ghost sm">Pause</span><span class="muted">✕</span></div>
+      <div class="col">
+        <div class="row" style="gap:10px"><div class="stepdot done">✓</div><span>Find matching jobs</span><div class="sp"></div><span class="muted" style="font-size:13px">5 found</span></div>
+        <div class="vline"></div>
+        <div class="row" style="gap:10px"><div class="stepdot run">2</div><b>Tailor résumé &amp; letter</b><div class="sp"></div><span class="muted" style="font-size:13px">2 of 3</span></div>
+        <div class="vline"></div>
+        <div class="row" style="gap:10px"><div class="stepdot todo">3</div><span class="muted">Fill the forms for your review</span></div>
+      </div>
+      <div class="col" style="gap:8px">
+        <div class="item"><div class="co" style="background:#7C5CFF;width:30px;height:30px;font-size:13px">S</div><div class="col" style="flex:1;gap:6px"><div class="row"><span style="font-size:14px;font-weight:600">Shopify Developer</span><div class="sp"></div><span class="chip ok">Ready</span></div></div></div>
+        <div class="item"><div class="co" style="background:#2E9E6A;width:30px;height:30px;font-size:13px">L</div><div class="col" style="flex:1;gap:6px"><div class="row"><span style="font-size:14px;font-weight:600">React Developer · Lemon.io</span><div class="sp"></div><span class="muted" style="font-size:13px;white-space:nowrap">Writing letter…</span></div><div class="bar"><i style="width:64%"></i></div></div></div>
+      </div>
+      <div class="fix">
+        <div class="row" style="gap:10px;align-items:flex-start"><div class="warnc">!</div><div class="col" style="flex:1"><b>Proxify AB is waiting for your phone number</b><span class="t2" style="font-size:14px">It isn’t in your résumé, and we never guess it.</span></div></div>
+        <div class="row"><span class="btn primary sm">Add phone number</span><span class="btn ghost sm">Skip this job</span><div class="sp"></div><span class="muted" style="font-size:13px;white-space:nowrap">Details ▾</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= C. JOBS: ONE AT A TIME ================= -->
+<div class="caption"><b>C · Jobs: one card at a time</b>Keep or skip, like sorting mail. Three reasons in plain words, not a dashboard. The full description and score breakdown open only on request. Keyboard: ← skip, → keep.</div>
+<div class="screen" id="c">
+  <nav class="rail">
+    <div class="logo">K</div>
+    <div class="ri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Today</div>
+    <div class="ri on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Jobs</div>
+    <div class="ri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4z"/><path d="M4 13h5l1.5 2h3L15 13h5"/></svg>Applied</div>
+    <div class="grow"></div>
+    <div class="avatar">FK</div>
+  </nav>
+  <div class="main" style="justify-content:center;gap:22px">
+    <div class="row" style="width:620px"><span class="tabs"><span class="on">For you · 5</span><span>Kept · 2</span><span>All jobs</span></span><div class="sp"></div><span class="muted" style="font-size:14px">1 of 5</span></div>
+    <div class="progress-top"><i class="d"></i><i></i><i></i><i></i><i></i></div>
+    <div style="position:relative;display:grid;place-items:center">
+      <div class="ghostcard" style="transform:translateY(18px) scale(.95)"></div>
+      <div class="focus">
+        <div class="row" style="gap:16px"><div class="co" style="background:#7C5CFF;width:52px;height:52px;font-size:20px;border-radius:14px">S</div><div class="col" style="flex:1"><div style="font-size:23px;font-weight:650">Senior Shopify Developer</div><div class="t2">Storetasker · Remote worldwide · Contract</div></div><div class="ring"><span>91</span></div></div>
+        <div class="col" style="gap:12px;padding:6px 0">
+          <div class="reason"><div class="okc">✓</div><span><b>Your skills fit:</b> Shopify, JavaScript, Tailwind, Figma</span></div>
+          <div class="reason"><div class="okc">✓</div><span><b>Remote</b>, open to your time zone</span></div>
+          <div class="reason"><div class="warnc">?</div><span><b>Asks for Liquid</b>, which isn’t on your résumé</span></div>
+        </div>
+        <span class="link">See full job &amp; score details</span>
+        <div class="row" style="gap:12px;padding-top:6px"><span class="btn xl" style="flex:1">Skip <span class="kbd">←</span></span><span class="btn primary xl" style="flex:1.4">Keep &amp; prepare <span class="kbd" style="color:#06101f;border-color:rgba(6,16,31,.35)">→</span></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= D. APPLICATION: READY TO SEND ================= -->
+<div class="caption"><b>D · Applied → one application: "Ready to send?"</b>The good news is summarised in one line and folded away. Only the single thing that needs the user is open. One big button. The Chrome window stays beside the app for anyone who wants to look.</div>
+<div class="screen" id="d">
+  <nav class="rail">
+    <div class="logo">K</div>
+    <div class="ri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Today</div>
+    <div class="ri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Jobs</div>
+    <div class="ri on"><span class="b"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4z"/><path d="M4 13h5l1.5 2h3L15 13h5"/></svg>Applied</div>
+    <div class="grow"></div>
+    <div class="avatar">FK</div>
+  </nav>
+  <div class="main">
+    <div class="wrap" style="padding-top:48px;gap:18px">
+      <div class="row"><span class="muted">← Applications</span><div class="sp"></div><span class="muted" style="font-size:14px">1 of 3 waiting</span></div>
+      <div class="row" style="gap:16px"><div class="co" style="background:#7C5CFF;width:52px;height:52px;font-size:20px;border-radius:14px">S</div><div class="col"><div style="font-size:26px;font-weight:650">Ready to send to Storetasker?</div><div class="t2">Senior Shopify Developer · form filled 1 min ago</div></div></div>
+      <div class="sum">
+        <div class="check"><div class="okc">✓</div><b style="flex:1">8 fields filled from your profile</b><span class="link">Show</span></div>
+        <div class="check"><div class="okc">✓</div><b style="flex:1">Tailored résumé attached</b><span class="link">Preview</span></div>
+        <div class="check"><div class="okc">✓</div><b style="flex:1">Cover letter added</b><span class="link">Read</span></div>
+      </div>
+      <div class="sum" style="border-color:rgba(243,184,75,.4)">
+        <div class="check"><div class="warnc">1</div><b>One question needs your answer</b></div>
+        <div class="t2">“How many years of Liquid experience do you have?”</div>
+        <div class="input">Type your answer… we’ll remember it for next time</div>
+      </div>
+      <div class="row" style="padding-top:8px"><span class="btn ghost">Skip for now</span><span class="btn ghost">Show the form in Chrome</span><div class="sp"></div><span class="btn success xl" style="opacity:.45">Send application</span></div>
+      <div class="muted" style="font-size:13.5px;text-align:end">Answer the question to enable Send. Nothing is sent until you press it.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= E. PERSIAN HOME ================= -->
+<div class="caption"><b>E · Same "Today" screen in Persian</b>Right-to-left, Vazirmatn, Persian digits. Same calm layout.</div>
+<div class="screen" id="e" dir="rtl" lang="fa">
+  <nav class="rail">
+    <div class="logo">ک</div>
+    <div class="ri on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>امروز</div>
+    <div class="ri"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>شغل‌ها</div>
+    <div class="ri"><span class="b"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4z"/><path d="M4 13h5l1.5 2h3L15 13h5"/></svg>درخواست‌ها</div>
+    <div class="grow"></div>
+    <div class="avatar">ف</div>
+  </nav>
+  <div class="main">
+    <div class="wrap">
+      <div class="col" style="gap:6px"><div class="hello">عصر بخیر، فردوس</div><div class="sub">امروز ۵ شغل جدید با پروفایل شما جور است.</div></div>
+      <div class="hero">
+        <div class="row"><span class="chip info">قدم بعدی شما</span></div>
+        <div style="font-size:24px;font-weight:700;position:relative;z-index:1">۵ شغلی را که برایتان انتخاب کردیم ببینید</div>
+        <div class="stack">
+          <div class="mini" style="top:24px;transform:scale(.94);opacity:.45"><div class="co" style="background:#3A6FD8">L</div></div>
+          <div class="mini" style="top:12px;transform:scale(.97);opacity:.7"><div class="co" style="background:#2E9E6A">P</div></div>
+          <div class="mini" style="top:0"><div class="co" style="background:#7C5CFF">S</div><div class="col" style="flex:1"><b>توسعه‌دهنده‌ی ارشد Shopify</b><span class="t2" style="font-size:14px">Storetasker · دورکاری</span></div><span class="chip ok">۹۱٪ تطابق</span></div>
+        </div>
+        <div class="row" style="position:relative;z-index:1"><span class="btn primary xl">شروع بررسی ←</span><span class="muted" style="font-size:14px">حدود ۲ دقیقه</span></div>
+      </div>
+      <div class="quiet">
+        <div class="qcard"><div class="warnc">۱</div><div class="col" style="flex:1"><b>یک درخواست منتظر شماست</b><span class="muted" style="font-size:13.5px">Proxify AB · ۱ سؤال</span></div><span class="link">باز کردن</span></div>
+        <div class="qcard"><div class="okc">✓</div><div class="col" style="flex:1"><b>۳ درخواست این هفته ارسال شد</b><span class="muted" style="font-size:13.5px">۱ مورد را سایت تأیید کرد</span></div><span class="link">دیدن</span></div>
+      </div>
+    </div>
+    <div class="pill"><div class="spin" style="--p:60%"></div>در حال یافتن شغل‌های بیشتر · ۳ از ۵ سایت</div>
+  </div>
+</div>
+
+<!-- ================= F. MOTION + STATES STORYBOARD ================= -->
+<div class="caption"><b>F · Motion and states: one system, four rules</b>Motion explains what changed: it is never decoration, it always follows real progress, it stays short, and it switches off with reduced motion.</div>
+<div class="screen" id="f">
+  <div class="sb">
+    <div style="font-size:22px;font-weight:650">Background-work pill: four states (morphs in place, 250 ms)</div>
+    <div class="sbrow">
+      <div class="sbcell"><span class="lbl">1 · Idle</span><span class="t2" style="font-size:14px">Hidden. Nothing running, nothing shown.</span></div>
+      <div class="sbcell"><span class="lbl">2 · Working</span><div class="pill static"><div class="spin" style="--p:40%"></div>Tailoring 2 of 3</div><span class="t2" style="font-size:13.5px">Ring fills from real engine progress events.</span></div>
+      <div class="sbcell"><span class="lbl">3 · Needs you</span><div class="pill static" style="border-color:rgba(243,184,75,.5)"><div class="warnc" style="width:24px;height:24px">!</div>1 job needs your phone</div><span class="t2" style="font-size:13.5px">Gentle pulse, once. Click opens the fix.</span></div>
+      <div class="sbcell"><span class="lbl">4 · Done</span><div class="pill static" style="border-color:rgba(63,196,143,.5)"><div class="okc">✓</div>3 ready to review · Open</div><span class="t2" style="font-size:13.5px">Check draws in 300 ms, auto-hides after 8 s.</span></div>
+    </div>
+    <div class="sbrow">
+      <div class="sbcell" style="flex:1.2">
+        <span class="lbl">Error message rule</span>
+        <div class="toast"><div class="warnc">!</div><div class="col" style="flex:1;gap:8px"><b>We couldn’t start the Lemon.io application</b><span class="t2" style="font-size:14px">Some profile details are missing a source. Confirm your profile and we’ll try again.</span><div class="row" style="gap:8px"><span class="btn primary sm">Review profile</span><span class="btn ghost sm">Try again</span><div class="sp"></div><span class="muted" style="font-size:13px">Copy details</span></div></div></div>
+        <span class="t2" style="font-size:13.5px">What happened → why, in one sentence → one fix button. The raw error goes to the log and "Copy details" only.</span>
+      </div>
+      <div class="sbcell" style="flex:1">
+        <span class="lbl">Motion tokens</span>
+        <table class="m">
+          <tr><td>fast · 150 ms</td><td>hover, press, toggles</td></tr>
+          <tr><td>base · 250 ms</td><td>pill morph, cards in and out, tabs</td></tr>
+          <tr><td>slow · 400 ms</td><td>drawer, card → detail (shared element)</td></tr>
+          <tr><td>ease</td><td>cubic-bezier(.2,.8,.2,1); spring for card swipe</td></tr>
+          <tr><td>stagger</td><td>30 ms, at most 6 items</td></tr>
+          <tr><td>reduced motion</td><td>fades only, no movement</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="sbrow">
+      <div class="sbcell"><span class="lbl">Résumé upload</span><span class="t2" style="font-size:14px">flash-rive scanner line sweeps the page; each found fact flies into its field (shared element). Driven by real parse stages.</span></div>
+      <div class="sbcell"><span class="lbl">Keep / Skip</span><span class="t2" style="font-size:14px">Card slides out with a slight tilt; the next card rises from the stack. Undo for 5 s.</span></div>
+      <div class="sbcell"><span class="lbl">Send</span><span class="t2" style="font-size:14px">Button → spinner → green check; the card flies to “Sent” in the rail with a short count bump.</span></div>
+      <div class="sbcell"><span class="lbl">Never</span><span class="t2" style="font-size:14px">Fake timers, endless shimmer, motion on every hover, numbers counting up from 0 on each visit.</span></div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

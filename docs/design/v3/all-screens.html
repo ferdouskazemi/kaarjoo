@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kaarjoo all screens v3</title>
+<link rel="stylesheet" href="_base.css">
+<link rel="stylesheet" href="_extra.css">
+</head>
+<body>
+
+<!-- ===================== 01 WELCOME / UPLOAD ===================== -->
+<div class="caption"><b>01 · First run: upload your résumé</b>Replaces the Profile empty state and the "Load Candidate Golden Profile" button. One job on screen: drop the file. The privacy line is written once, in plain words.</div>
+<div class="screen" id="s01">
+  <div class="page" style="align-items:center;justify-content:center">
+    <div class="col" style="width:640px;gap:26px;align-items:center;text-align:center">
+      <div class="logo" style="width:56px;height:56px;font-size:26px;border-radius:16px;margin:0">K</div>
+      <div class="col g8"><div style="font-size:32px;font-weight:700;letter-spacing:-.01em">Let’s find your next job</div><div class="sub">Start with your résumé. Kaarjoo reads it on this computer and never uploads it.</div></div>
+      <div class="dz" style="width:100%">
+        <div class="docicon"><i style="top:18px;width:40px;right:auto"></i><i style="top:34px"></i><i style="top:48px"></i><i style="top:62px"></i><i style="top:76px;right:30px"></i></div>
+        <div style="font-size:18px;font-weight:600">Drop your résumé here</div>
+        <div class="muted" style="font-size:14px">PDF, Word, ODT, RTF or a photo of a printed résumé</div>
+        <span class="btn primary">Choose file…</span>
+      </div>
+      <div class="row muted" style="font-size:13.5px;gap:18px"><span>🔒 Stays on your computer</span><span>·</span><span>English &amp; فارسی</span><span>·</span><span>Takes about 20 seconds</span></div>
+    </div>
+    <div class="row" style="position:absolute;top:22px;inset-inline-end:28px;gap:8px"><span class="seg2"><span class="on">English</span><span>فارسی</span></span></div>
+  </div>
+</div>
+
+<!-- ===================== 02 READING RESUME ===================== -->
+<div class="caption"><b>02 · Reading your résumé (real progress)</b>Replaces the 4 fake extraction steps. Each stage ticks only when the engine reports it. The flash-rive scanner sweeps the page and found facts fly into the list on the right.</div>
+<div class="screen" id="s02">
+  <div class="page" style="align-items:center;justify-content:center">
+    <div class="row" style="gap:56px;align-items:center">
+      <div class="paper" style="width:400px;height:520px">
+        <div style="font-size:20px;font-weight:700">FERDOUS KAZEMI</div>
+        <div><span class="hl">ferdous.k@example.com</span> · Herat</div>
+        <div style="margin-top:14px;font-weight:700;font-size:11px;letter-spacing:.08em">TECHNICAL SKILLS</div>
+        <div class="ln" style="width:92%"></div><div class="ln" style="width:70%"></div>
+        <div style="margin-top:14px;font-weight:700;font-size:11px;letter-spacing:.08em">WORK EXPERIENCE</div>
+        <div><b>INOLITIX</b>, CA, United States</div><div class="ln" style="width:80%"></div><div class="ln" style="width:86%"></div><div class="ln" style="width:60%"></div>
+        <div style="margin-top:8px"><b>True Tale</b>, LA</div><div class="ln" style="width:84%"></div><div class="ln" style="width:66%"></div>
+        <div class="ln" style="width:90%;margin-top:16px"></div><div class="ln" style="width:72%"></div><div class="ln" style="width:80%"></div>
+        <div class="scan" style="top:250px"></div>
+      </div>
+      <div class="col" style="width:380px;gap:22px">
+        <div class="col g6"><div style="font-size:26px;font-weight:700">Reading your résumé…</div><div class="t2">Page 1 of 2</div></div>
+        <div class="col g14">
+          <div class="stage"><div class="okc">✓</div>Opened the document</div>
+          <div class="stage"><div class="okc">✓</div>Found your name and email</div>
+          <div class="stage"><div class="spin" style="--p:55%"></div><b>Reading work experience</b></div>
+          <div class="stage muted"><div class="radio"></div>Skills and education</div>
+          <div class="stage muted"><div class="radio"></div>Checking what’s missing</div>
+        </div>
+        <div class="card" style="padding:14px 16px"><div class="lbl" style="margin-bottom:8px">Found so far</div><div class="row g8" style="flex-wrap:wrap"><span class="tag">Ferdous Kazemi</span><span class="tag">ferdous.k@example.com</span><span class="tag">INOLITIX</span><span class="tag">True Tale</span><span class="tag">React</span><span class="tag">Shopify</span></div></div>
+        <span class="btn ghost" style="align-self:flex-start;padding:0">Cancel</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 03 PROFILE REVIEW ===================== -->
+<div class="caption"><b>03 · Check your profile (one-time setup, step 2 of 3)</b>Replaces "Profile &amp; Résumé" (Candidate Identity, Contact, Summary, Experience, Education, Skills, Source viewer, Raw text). Problems first, sections as calm cards, and "where did this come from?" opens the original page on demand instead of always taking half the screen.</div>
+<div class="screen" id="s03">
+  <div class="page">
+    <div class="ph" style="height:84px"><div class="logo" style="margin:0;width:32px;height:32px;font-size:15px">K</div><div class="col"><h1 style="font-size:21px">Check your profile</h1><span class="s">Step 2 of 3 · from Ferdous_Kazemi_Resume.pdf</span></div><div class="sp"></div><div class="row g6"><i style="width:56px;height:5px;border-radius:5px;background:var(--success)"></i><i style="width:56px;height:5px;border-radius:5px;background:var(--accent)"></i><i style="width:56px;height:5px;border-radius:5px;background:var(--surface-3)"></i></div><div class="sp"></div><span class="btn ghost">Use a different file</span><span class="btn primary" style="opacity:.45">Continue</span></div>
+    <div class="body" style="justify-content:center">
+      <div class="col g14" style="width:820px">
+        <div class="card" style="border-color:rgba(242,107,94,.35);padding:16px 18px">
+          <div class="row g10"><div class="warnc" style="background:var(--danger-weak);color:var(--danger)">1</div><b style="flex:1">Add your phone number to continue</b><span class="muted" style="font-size:13.5px">It wasn’t in your résumé. We never guess it.</span></div>
+          <div class="row g10" style="margin-top:12px;padding-inline-start:36px"><div class="in fc" style="width:120px">+93 ▾</div><div class="in fc" style="flex:1">70 309 37|</div><span class="btn primary">Save</span></div>
+        </div>
+        <div class="card" style="padding:6px 22px">
+          <div class="setrow"><div class="col" style="flex:1"><span class="lbl">Name</span><b>Ferdous Kazemi</b></div><span class="chip ok">✓ Looks right</span></div>
+          <div class="setrow"><div class="col" style="flex:1"><span class="lbl">Email</span><b>ferdous.k@example.com</b></div><span class="lk">Where’s this from?</span><span class="chip ok">✓ Looks right</span></div>
+          <div class="setrow"><div class="col" style="flex:1"><span class="lbl">Location</span><b>Herat, Afghanistan</b></div><span class="btn sm">Confirm</span><span class="btn sm ghost">Edit</span></div>
+                  </div>
+        <div class="card">
+          <div class="row" style="margin-bottom:12px"><span class="h3">Experience</span><span class="chip">6</span><div class="sp"></div><span class="chip warn">2 need a company name</span></div>
+          <div class="listrow"><div class="co sm" style="background:#3A6FD8">I</div><div class="col" style="flex:1"><b>Front-End Developer, UI &amp; UX</b><span class="t2" style="font-size:14px">INOLITIX · Aug 2022 – now</span></div><span class="btn sm ghost">Edit</span></div>
+          <div class="listrow" style="background:var(--warning-weak);border-radius:10px"><div class="co sm" style="background:var(--surface-3);color:var(--muted)">?</div><div class="col" style="flex:1"><b>Front-End WordPress Designer</b><span style="font-size:14px;color:var(--warning)">Which company? · Aug 2022 – Jul 2024</span></div><div class="in" style="width:200px;height:36px;font-size:14px">True Tale</div><span class="btn sm primary">Save</span></div>
+          <span class="lk" style="display:block;margin-top:6px;padding-inline-start:16px">Show 4 more</span>
+        </div>
+        <div class="row g16" style="align-items:stretch">
+          <div class="card" style="flex:1"><div class="row" style="margin-bottom:10px"><span class="h3">Skills</span><span class="chip">19</span><div class="sp"></div><span class="lk">Edit</span></div><div class="row g6" style="flex-wrap:wrap"><span class="tag">React</span><span class="tag">TypeScript</span><span class="tag">Next.js</span><span class="tag">Shopify</span><span class="tag">+15</span></div></div>
+          <div class="card" style="flex:1"><div class="row" style="margin-bottom:10px"><span class="h3">Summary</span><div class="sp"></div><span class="chip warn">Empty</span></div><div class="t2" style="font-size:14px;margin-bottom:10px">We can draft one from your experience.</div><span class="btn sm">Draft a summary</span></div>
+          <div class="card" style="flex:.8"><div class="row" style="margin-bottom:10px"><span class="h3">Education</span><div class="sp"></div><span class="lk">Edit</span></div><b style="font-size:14.5px">BSc Computer Science</b><div class="t2" style="font-size:14px">Herat University · 2021</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 04 PREFERENCES ===================== -->
+<div class="caption"><b>04 · What are you looking for? (step 3 of 3)</b>Uses PreferencesPanel data. These answers drive matching and fill common form questions, so the app stops guessing. Suggestions come from the résumé and are added with one click.</div>
+<div class="screen" id="s04">
+  <div class="page">
+    <div class="ph" style="height:84px"><div class="logo" style="margin:0;width:32px;height:32px;font-size:15px">K</div><div class="col"><h1 style="font-size:21px">What are you looking for?</h1><span class="s">Step 3 of 3 · you can change this any time</span></div><div class="sp"></div><div class="row g6"><i style="width:56px;height:5px;border-radius:5px;background:var(--success)"></i><i style="width:56px;height:5px;border-radius:5px;background:var(--success)"></i><i style="width:56px;height:5px;border-radius:5px;background:var(--accent)"></i></div><div class="sp"></div><span class="btn ghost">Back</span><span class="btn primary">Find my jobs →</span></div>
+    <div class="body" style="justify-content:center">
+      <div class="col g18" style="width:820px">
+        <div class="card col g16">
+          <div class="fld"><span class="h3">Job titles</span><div class="tagin"><span class="tag">Front-End Developer <i>✕</i></span><span class="tag">Shopify Developer <i>✕</i></span><span class="tag">WordPress Developer <i>✕</i></span><span class="muted" style="font-size:14px;padding:0 6px">Add a title…</span></div><div class="row g6"><span class="lbl">From your résumé:</span><span class="tag sug">+ UI Engineer</span><span class="tag sug">+ React Developer</span></div></div>
+          <div class="row g16" style="align-items:flex-start">
+            <div class="fld" style="flex:1"><span class="h3">Where</span><div class="row g8"><div class="opt on" style="flex:1"><div class="radio on"></div>Remote only</div><div class="opt" style="flex:1"><div class="radio"></div>Remote or Herat</div></div></div>
+            <div class="fld" style="width:250px"><span class="h3">Seniority</span><div class="seg2"><span>Junior</span><span class="on">Mid</span><span>Senior</span></div></div>
+          </div>
+          <div class="row g16">
+            <div class="fld" style="flex:1"><span class="h3">Work type</span><div class="row g6"><span class="tag">Full-time ✓</span><span class="tag">Contract ✓</span><span class="tag sug">Part-time</span></div></div>
+            <div class="fld" style="flex:1"><span class="h3">Lowest pay you’d accept <span class="muted" style="font-weight:400;font-size:13px">(optional)</span></span><div class="row g8"><div class="in" style="width:90px">USD</div><div class="in" style="flex:1">2,000</div><div class="in" style="width:120px">per month</div></div></div>
+          </div>
+        </div>
+        <div class="card col g14">
+          <span class="h3">Questions most job forms ask</span>
+          <div class="setrow" style="padding:10px 0"><span style="flex:1">Can you legally work in the US or EU without sponsorship?</span><div class="seg2"><span>Yes</span><span class="on">No</span><span>Ask me</span></div></div>
+          <div class="setrow" style="padding:10px 0"><span style="flex:1">When can you start?</span><div class="in" style="width:220px;height:38px">2 weeks notice</div></div>
+          <div class="setrow" style="padding:10px 0"><span style="flex:1">Languages</span><div class="row g6"><span class="tag">English · fluent</span><span class="tag">Persian · native</span><span class="tag sug">+ Add</span></div></div>
+          <span class="lk">More answers in your Answer bank →</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 05 ANSWER BANK ===================== -->
+<div class="caption"><b>05 · Answer bank (avatar menu → Answers)</b>New. Every answer the user typed once is reused next time, with where it was used. Replaces the hidden screening-answer logic in TailoredDocumentsModal.</div>
+<div class="screen" id="s05">
+  <nav class="rail" data-on="none"></nav>
+  <div class="page">
+    <div class="ph"><h1>Your answers</h1><span class="s">Reused when a job form asks the same question</span><div class="sp"></div><div class="in ph-t" style="width:260px;height:38px">⌕ Search answers</div><span class="btn primary sm">+ Add answer</span></div>
+    <div class="body">
+      <div class="col" style="flex:1">
+        <div class="row g8" style="margin-bottom:8px"><span class="seg2"><span class="on">All 14</span><span>Work &amp; visa 3</span><span>Experience 6</span><span>Personal 5</span></span></div>
+        <div class="card" style="padding:6px 8px">
+          <div class="listrow sel"><div class="col" style="flex:1;gap:2px"><b>How many years of React experience do you have?</b><span class="t2" style="font-size:14px">3 years</span></div><span class="muted" style="font-size:13px">Used 4×</span><span class="chip">Experience</span></div>
+          <div class="listrow"><div class="col" style="flex:1;gap:2px"><b>Are you authorized to work in the United States?</b><span class="t2" style="font-size:14px">No, I’m applying for remote contract work</span></div><span class="muted" style="font-size:13px">Used 3×</span><span class="chip">Work &amp; visa</span></div>
+          <div class="listrow"><div class="col" style="flex:1;gap:2px"><b>Expected salary</b><span class="t2" style="font-size:14px">USD 2,000–2,800 per month, negotiable</span></div><span class="muted" style="font-size:13px">Used 2×</span><span class="chip">Personal</span></div>
+          <div class="listrow"><div class="col" style="flex:1;gap:2px"><b>Why do you want to work with us?</b><span class="t2" style="font-size:14px">Written per company · we draft it from the job, you approve</span></div><span class="muted" style="font-size:13px">Per job</span><span class="chip">Experience</span></div>
+          <div class="listrow"><div class="col" style="flex:1;gap:2px"><b>Gender / ethnicity (voluntary)</b><span class="t2" style="font-size:14px">Prefer not to say</span></div><span class="muted" style="font-size:13px">Used 5×</span><span class="chip">Personal</span></div>
+          <div class="listrow"><div class="col" style="flex:1;gap:2px"><b>Years of Liquid (Shopify) experience</b><span style="font-size:14px;color:var(--warning)">Not answered yet · asked by Storetasker</span></div><span class="btn sm">Answer</span></div>
+        </div>
+      </div>
+      <div class="card col g14" style="width:400px;align-self:flex-start">
+        <span class="lbl">Editing</span>
+        <b style="font-size:17px">How many years of React experience do you have?</b>
+        <div class="in fc">3 years</div>
+        <div class="fld"><span class="lbl">Also match questions like</span><div class="row g6" style="flex-wrap:wrap"><span class="tag">React.js experience</span><span class="tag">Years with React</span><span class="tag sug">+ Add</span></div></div>
+        <div class="fld"><span class="lbl">Used in</span><span class="t2" style="font-size:14px">Storetasker · Lemon.io · Yooli · Proxify AB</span></div>
+        <div class="row"><span class="btn ghost sm" style="color:var(--danger);padding:0">Delete</span><div class="sp"></div><span class="btn primary sm">Save</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 06 JOBS ALL + DETAIL ===================== -->
+<div class="caption"><b>06 · Jobs → All jobs, with the job opened</b>Replaces "Live Opportunities" list + JobDetailDrawer. A clean list (search, 3 filters, sort). The job opens in a side sheet: why it fits, what's missing, description, and the two actions. Feedback is a reason picker, not thumbs.</div>
+<div class="screen" id="s06">
+  <nav class="rail" data-on="jobs"></nav>
+  <div class="page">
+    <div class="ph"><h1>Jobs</h1><span class="seg2" style="margin-inline-start:12px"><span>For you · 5</span><span>Kept · 2</span><span class="on">All jobs · 214</span><span>Sources</span></span><div class="sp"></div><span class="muted" style="font-size:13.5px">Updated 9 min ago</span><span class="btn sm">↻ Refresh</span></div>
+    <div class="body" style="flex-direction:column;gap:12px;padding-inline-end:600px">
+      <div class="row g8"><div class="in ph-t" style="flex:1;height:40px">⌕ Search title, company or skill</div><span class="chip" style="height:32px;padding:0 12px">Remote ▾</span><span class="chip" style="height:32px;padding:0 12px">Good match ▾</span><span class="chip" style="height:32px;padding:0 12px">Last 14 days ▾</span></div>
+      <div class="card" style="padding:4px 8px;flex:1">
+        <div class="listrow sel"><div class="co sm" style="background:#2E9E6A">L</div><div class="col" style="flex:1;min-width:0"><b>Senior React Developer</b><span class="t2" style="font-size:13.5px">Lemon.io · Remote · 1d</span></div><span class="chip ok">88%</span></div>
+        <div class="listrow"><div class="co sm" style="background:#7C5CFF">S</div><div class="col" style="flex:1"><b>Senior Shopify Developer</b><span class="t2" style="font-size:13.5px">Storetasker · Remote · 2d</span></div><span class="chip ok">91%</span></div>
+        <div class="listrow"><div class="co sm" style="background:#D08A1E">Y</div><div class="col" style="flex:1"><b>Software Engineer, React</b><span class="t2" style="font-size:13.5px">Yooli · Remote EMEA · 1d</span></div><span class="chip warn">72%</span></div>
+        <div class="listrow"><div class="co sm" style="background:#2A7DE1">P</div><div class="col" style="flex:1"><b>Fullstack Developer (React/Node)</b><span class="t2" style="font-size:13.5px">Proxify AB · Remote · 3d</span></div><span class="chip warn">69%</span></div>
+        <div class="listrow"><div class="co sm" style="background:#C2410C">S</div><div class="col" style="flex:1"><b>WordPress &amp; HubSpot Developer</b><span class="t2" style="font-size:13.5px">SimpleTiger · Remote US · 5d</span></div><span class="chip ok">84%</span></div>
+        <div class="listrow"><div class="co sm" style="background:#475569">R</div><div class="col" style="flex:1"><b>Front-End Engineer</b><span class="t2" style="font-size:13.5px">Remotive · Remote · 6d</span></div><span class="chip">58%</span></div>
+        <div class="listrow"><div class="co sm" style="background:#0F766E">J</div><div class="col" style="flex:1"><b>Web Developer</b><span class="t2" style="font-size:13.5px">Jobs.af · Herat · 2d</span></div><span class="chip">55%</span></div>
+      </div>
+    </div>
+    <div class="sheet">
+      <div class="row"><span class="muted">✕</span><div class="sp"></div><span class="lk">Open on company site ↗</span></div>
+      <div class="row g14"><div class="co" style="background:#2E9E6A;width:52px;height:52px;font-size:20px;border-radius:14px">L</div><div class="col" style="flex:1"><div style="font-size:22px;font-weight:650">Senior React Developer</div><div class="t2">Lemon.io · Remote worldwide · Contract · $40–60/hr</div></div><div class="ring" style="background:conic-gradient(var(--success) 88%,var(--surface-3) 0)"><span>88</span></div></div>
+      <div class="row g10"><span class="btn primary" style="flex:1.4">Keep &amp; prepare</span><span class="btn" style="flex:1">Not for me ▾</span></div>
+      <div class="card col g10" style="padding:16px 18px">
+        <span class="h3">Why it fits</span>
+        <div class="reason"><div class="okc">✓</div><span><b>7 of 8 skills:</b> React, TypeScript, Next.js, Redux, Git, CI/CD, Tailwind</span></div>
+        <div class="reason"><div class="okc">✓</div><span><b>Remote contract</b>, like your past work</span></div>
+        <div class="reason"><div class="warnc">?</div><span><b>Node.js</b> is asked for and isn’t on your résumé</span></div>
+        <span class="lk">Score details</span>
+      </div>
+      <div class="col g8"><span class="h3">About the job</span><div class="t2" style="font-size:14.5px;line-height:1.65">Lemon.io matches vetted developers with startups. You’ll build React front-ends for early-stage products, own features end to end and work directly with founders…</div><span class="lk">Read full description</span></div>
+      <div class="col g8"><span class="h3">They ask for</span><div class="row g6" style="flex-wrap:wrap"><span class="chip ok">React</span><span class="chip ok">TypeScript</span><span class="chip ok">Next.js</span><span class="chip ok">Redux</span><span class="chip bad">Node.js</span><span class="chip">4+ years</span><span class="chip">English B2</span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 07 SOURCES ===================== -->
+<div class="caption"><b>07 · Jobs → Sources</b>Replaces "Monitored Boards", "Global Directory (5,000+)" and CompanyBoardsModal. Followed companies at the top, the directory as a searchable list below, and "Add a company" by pasting its careers link (ATS is detected automatically, no dropdown).</div>
+<div class="screen" id="s07">
+  <nav class="rail" data-on="jobs"></nav>
+  <div class="page">
+    <div class="ph"><h1>Jobs</h1><span class="seg2" style="margin-inline-start:12px"><span>For you · 5</span><span>Kept · 2</span><span>All jobs · 214</span><span class="on">Sources</span></span><div class="sp"></div><span class="btn primary sm">+ Add a company</span></div>
+    <div class="body" style="flex-direction:column;gap:18px">
+      <div class="card" style="padding:16px 20px">
+        <div class="row" style="margin-bottom:12px"><span class="h3">Companies you follow</span><span class="chip">6</span><div class="sp"></div><span class="muted" style="font-size:13.5px">Checked every 6 hours · all working</span></div>
+        <div class="row g10" style="flex-wrap:wrap">
+          <span class="tag" style="padding:8px 12px"><span class="co sm" style="background:#2E9E6A;width:22px;height:22px;font-size:11px;border-radius:6px">L</span>Lemon.io · 4 jobs</span>
+          <span class="tag" style="padding:8px 12px"><span class="co sm" style="background:#7C5CFF;width:22px;height:22px;font-size:11px;border-radius:6px">S</span>Storetasker · 2 jobs</span>
+          <span class="tag" style="padding:8px 12px"><span class="co sm" style="background:#2A7DE1;width:22px;height:22px;font-size:11px;border-radius:6px">P</span>Proxify AB · 7 jobs</span>
+          <span class="tag" style="padding:8px 12px"><span class="co sm" style="background:#0F766E;width:22px;height:22px;font-size:11px;border-radius:6px">J</span>Jobs.af · 31 jobs</span>
+          <span class="tag" style="padding:8px 12px"><span class="co sm" style="background:#B45309;width:22px;height:22px;font-size:11px;border-radius:6px">A</span>ACBAR · 18 jobs</span>
+          <span class="tag" style="padding:8px 12px;color:var(--warning)"><span class="co sm" style="background:#475569;width:22px;height:22px;font-size:11px;border-radius:6px">R</span>Remotive · paused (site busy)</span>
+        </div>
+      </div>
+      <div class="row g16" style="flex:1;min-height:0;align-items:stretch">
+        <div class="card" style="flex:1;padding:16px 12px">
+          <div class="row g8" style="padding:0 8px 10px"><span class="h3">Company directory</span><span class="chip">5,650</span><div class="sp"></div><div class="in ph-t" style="width:280px;height:36px;font-size:14px">⌕ Search companies</div><span class="chip" style="height:30px;padding:0 12px">Remote-friendly ▾</span><span class="chip" style="height:30px;padding:0 12px">Country ▾</span></div>
+          <div class="listrow"><div class="co sm" style="background:#111827">G</div><div class="col" style="flex:1"><b>GitLab</b><span class="t2" style="font-size:13.5px">Software · Remote-first · 38 open jobs</span></div><span class="btn sm">Follow</span></div>
+          <div class="listrow"><div class="co sm" style="background:#635BFF">S</div><div class="col" style="flex:1"><b>Stripe</b><span class="t2" style="font-size:13.5px">Payments · Hybrid · 112 open jobs</span></div><span class="btn sm">Follow</span></div>
+          <div class="listrow"><div class="co sm" style="background:#E2574C">A</div><div class="col" style="flex:1"><b>A.Team</b><span class="t2" style="font-size:13.5px">Talent network · Remote · 9 open jobs</span></div><span class="btn sm">Follow</span></div>
+          <div class="listrow"><div class="co sm" style="background:#2E9E6A">L</div><div class="col" style="flex:1"><b>Lemon.io</b><span class="t2" style="font-size:13.5px">Talent network · Remote · 4 open jobs</span></div><span class="chip ok">Following</span></div>
+        </div>
+        <div class="card col g14" style="width:420px;align-self:flex-start;border-color:var(--accent)">
+          <span class="h3">Add a company</span>
+          <span class="t2" style="font-size:14px">Paste the company’s careers page. We’ll work out the rest.</span>
+          <div class="in fc">boards.greenhouse.io/storetasker</div>
+          <div class="row g10" style="padding:12px;border-radius:12px;background:var(--surface-2)"><div class="okc">✓</div><div class="col" style="flex:1"><b>Storetasker</b><span class="t2" style="font-size:13.5px">Greenhouse · 2 open jobs · forms supported</span></div></div>
+          <div class="row"><span class="btn ghost sm">Cancel</span><div class="sp"></div><span class="btn primary sm">Follow company</span></div>
+          <div class="msep"></div>
+          <span class="t2" style="font-size:13.5px">Found a single job somewhere else? <span class="lk">Add one job by link</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 08 APPLICATION KIT ===================== -->
+<div class="caption"><b>08 · Prepare application (after "Keep &amp; prepare")</b>Replaces TailoredDocumentsModal (template, tailored bullets, cover letter, screening answers, truthfulness, PDF/DOCX). Three tabs, the document big, a one-line truth check. Advanced options (template, download) live in a small menu.</div>
+<div class="screen" id="s08">
+  <nav class="rail" data-on="apps"></nav>
+  <div class="page">
+    <div class="ph"><span class="muted">←</span><div class="co sm" style="background:#2E9E6A">L</div><div class="col"><h1 style="font-size:20px">Senior React Developer · Lemon.io</h1><span class="s">Your documents for this job</span></div><div class="sp"></div><span class="chip ok">✓ Every line is from your profile</span><span class="btn sm ghost">⋯</span><span class="btn primary">Fill the form →</span></div>
+    <div class="body" style="flex-direction:column;gap:14px">
+      <div class="row"><span class="seg2"><span class="on">Résumé</span><span>Cover letter</span><span>Questions · 1</span></span><div class="sp"></div><span class="seg2"><span class="on">Show changes</span><span>Final</span></span></div>
+      <div class="row g20" style="flex:1;min-height:0;align-items:stretch">
+        <div class="paper" style="flex:1">
+          <div style="font-size:21px;font-weight:700">FERDOUS KAZEMI</div>
+          <div style="color:#555;margin-bottom:12px">Front-End &amp; React Developer · ferdous.k@example.com · +93 70 309 3770 · Remote</div>
+          <b style="font-size:11px;letter-spacing:.08em">SUMMARY</b>
+          <p style="margin:4px 0 12px"><span style="background:rgba(63,196,143,.18);color:#0c5a3c">React and TypeScript developer with 3 years building product front-ends for remote clients.</span> Comfortable owning features from Figma to production.</p>
+          <b style="font-size:11px;letter-spacing:.08em">SKILLS</b>
+          <p style="margin:4px 0 12px"><span style="background:rgba(63,196,143,.18);color:#0c5a3c">React · TypeScript · Next.js · Redux ·</span> Tailwind · Git · CI/CD · Figma · WordPress · <span style="text-decoration:line-through;color:#8a2b22">HubSpot · Chart.js</span></p>
+          <b style="font-size:11px;letter-spacing:.08em">EXPERIENCE</b>
+          <p style="margin:4px 0 2px"><b>Front-End Developer, UI &amp; UX</b> · INOLITIX · Aug 2022 – Present</p>
+          <ul style="margin:0 0 10px 18px"><li><span style="background:rgba(63,196,143,.18);color:#0c5a3c">↑</span> Built React and Next.js interfaces for client dashboards</li><li>Designed responsive WordPress sites from Figma</li></ul>
+          <p style="margin:4px 0 2px"><b>Front-End WordPress Designer</b> · True Tale · Aug 2022 – Jul 2024</p>
+          <ul style="margin:0 0 0 18px"><li>Delivered landing pages and CMS templates</li></ul>
+        </div>
+        <div class="col g14" style="width:340px">
+          <div class="card col g10"><span class="h3">What we changed</span><div class="t2" style="font-size:14px;line-height:1.7">• Summary focused on React<br>• 4 matching skills moved first<br>• 2 unrelated skills hidden<br>• React work moved to the top</div><span class="muted" style="font-size:13px">Nothing new was added. Click any green text to undo it.</span></div>
+          <div class="card col g10" style="border-color:rgba(243,184,75,.4)"><span class="h3">1 question for you</span><span class="t2" style="font-size:14px">“Do you have experience with Node.js?”</span><div class="seg2"><span>Yes</span><span>A little</span><span>No</span></div></div>
+          <div class="card col g8"><span class="lbl">Files that will be sent</span><span style="font-size:14px">📄 Ferdous_Kazemi_LemonIO.pdf</span><span style="font-size:14px">✉️ Cover letter (in the form)</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 09 APPLICATIONS LIST ===================== -->
+<div class="caption"><b>09 · Applications</b>Replaces both "Apply Queue" and "Application Tracker". One list, grouped by what happens next. Board view (Kanban) and Insights are a toggle away. Raw states like kit_ready never appear.</div>
+<div class="screen" id="s09">
+  <nav class="rail" data-on="apps"></nav>
+  <div class="page">
+    <div class="ph"><h1>Applications</h1><span class="seg2" style="margin-inline-start:12px"><span class="on">List</span><span>Board</span><span>Insights</span></span><div class="sp"></div><div class="in ph-t" style="width:240px;height:38px;font-size:14px">⌕ Search</div><span class="btn sm ghost">Export CSV</span></div>
+    <div class="body" style="justify-content:center">
+      <div class="col" style="width:900px">
+        <div class="sec"><span class="dot" style="background:var(--danger)"></span>Needs you · 2</div>
+        <div class="card" style="padding:4px 8px">
+          <div class="listrow"><div class="co sm" style="background:#7C5CFF">S</div><div class="col" style="flex:1"><b>Senior Shopify Developer</b><span class="t2" style="font-size:13.5px">Storetasker</span></div><span class="chip warn">1 question to answer</span><span class="btn sm primary">Open</span></div>
+          <div class="listrow"><div class="co sm" style="background:#2A7DE1">P</div><div class="col" style="flex:1"><b>Fullstack Developer</b><span class="t2" style="font-size:13.5px">Proxify AB</span></div><span class="chip bad">Sign in needed</span><span class="btn sm primary">Open</span></div>
+        </div>
+        <div class="sec"><span class="dot" style="background:var(--accent)"></span>Ready to send · 1 &nbsp;<span class="muted" style="font-weight:400">· Preparing · 1</span></div>
+        <div class="card" style="padding:4px 8px">
+          <div class="listrow"><div class="co sm" style="background:#2E9E6A">L</div><div class="col" style="flex:1"><b>Senior React Developer</b><span class="t2" style="font-size:13.5px">Lemon.io · form filled, nothing missing</span></div><span class="btn sm">Review &amp; send</span></div>
+          <div class="listrow"><div class="co sm" style="background:#D08A1E">Y</div><div class="col" style="flex:1"><b>Software Engineer, React</b><span class="t2" style="font-size:13.5px">Yooli · writing cover letter…</span></div><div class="bar" style="width:120px"><i style="width:60%"></i></div></div>
+        </div>
+        <div class="sec"><span class="dot" style="background:var(--success)"></span>Sent · 4 &nbsp;<span class="muted" style="font-weight:400">· 1 interview</span></div>
+        <div class="card" style="padding:4px 8px">
+          <div class="listrow"><div class="co sm" style="background:#3A6FD8">J</div><div class="col" style="flex:1"><b>Front-End Developer</b><span class="t2" style="font-size:13.5px">JAPCO · sent 25 Nov</span></div><span class="chip info">Interview 2 Dec</span><span class="muted">›</span></div>
+          <div class="listrow"><div class="co sm" style="background:#C2410C">S</div><div class="col" style="flex:1"><b>WordPress &amp; HubSpot Developer</b><span class="t2" style="font-size:13.5px">SimpleTiger · sent 24 Nov</span></div><span class="chip ok">✓ Confirmed by site</span><span class="muted">›</span></div>
+          <div class="listrow"><div class="co sm" style="background:#475569">R</div><div class="col" style="flex:1"><b>Front-End Engineer</b><span class="t2" style="font-size:13.5px">Remotive · sent 22 Nov · follow up on 29 Nov</span></div><span class="chip warn">? Not confirmed</span><span class="muted">›</span></div>
+        </div>
+        <span class="lk" style="padding:12px 4px">Show 3 closed (rejected or withdrawn)</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 10 APPLICATION DETAIL (SENT) ===================== -->
+<div class="caption"><b>10 · A sent application</b>Replaces ApplicationDetailDrawer (Documents &amp; Snapshot, Screenshots, Notes &amp; Interview, Timeline). One readable page: status and next action at the top, timeline, what was sent, proof, notes.</div>
+<div class="screen" id="s10">
+  <nav class="rail" data-on="apps"></nav>
+  <div class="page">
+    <div class="ph"><span class="muted">← Applications</span></div>
+    <div class="body" style="justify-content:center">
+      <div class="col g18" style="width:960px">
+        <div class="row g16"><div class="co" style="background:#3A6FD8;width:56px;height:56px;font-size:22px;border-radius:15px">J</div><div class="col" style="flex:1"><div style="font-size:26px;font-weight:650">Front-End Developer · JAPCO</div><div class="t2">Sent 25 Nov · confirmed by the site</div></div><span class="seg2"><span>Sent</span><span class="on">Interview</span><span>Offer</span><span>Closed</span></span></div>
+        <div class="card row g14" style="border-color:rgba(91,147,255,.4);padding:16px 20px"><div style="font-size:24px">📅</div><div class="col" style="flex:1"><b>Interview on Tue 2 Dec, 3:00 PM (Kabul)</b><span class="t2" style="font-size:14px">Technical round with the team lead · reminder 1 hour before</span></div><span class="btn sm">Change</span><span class="btn sm">Add to calendar</span></div>
+        <div class="row g18" style="align-items:flex-start">
+          <div class="card col g14" style="flex:1">
+            <span class="h3">Timeline</span>
+            <div class="tl"><div class="d"></div><div class="col"><b>Interview scheduled</b><span class="muted" style="font-size:13px">27 Nov</span></div></div>
+            <div class="tl"><div class="d g"></div><div class="col"><b>Sent · site showed “Application received”</b><span class="muted" style="font-size:13px">25 Nov, 11:42 AM</span></div></div>
+            <div class="tl"><div class="d m"></div><div class="col"><b>You reviewed 9 fields and pressed Send</b><span class="muted" style="font-size:13px">25 Nov, 11:41 AM</span></div></div>
+            <div class="tl"><div class="d m"></div><div class="col"><b>Résumé tailored for this job</b><span class="muted" style="font-size:13px">25 Nov, 11:30 AM</span></div></div>
+          </div>
+          <div class="col g18" style="width:400px">
+            <div class="card col g10"><span class="h3">What you sent</span><span style="font-size:14px">📄 Ferdous_Kazemi_JAPCO.pdf <span class="lk">Open</span></span><span style="font-size:14px">✉️ Cover letter <span class="lk">Read</span></span><span style="font-size:14px">📝 9 form answers <span class="lk">Show</span></span></div>
+            <div class="card col g10"><span class="h3">Proof</span><div class="row g10"><div class="shot" style="flex:1;height:90px"><b>Thank you!</b><br>We’ve received your application.</div><div class="shot" style="flex:1;height:90px;opacity:.85">Form before sending</div></div></div>
+            <div class="card col g10"><span class="h3">Notes</span><div class="in ta" style="min-height:70px;font-size:14px;color:var(--text-2)">Ask about team size and code review process…</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 11 INSIGHTS ===================== -->
+<div class="caption"><b>11 · Applications → Insights</b>Replaces DashboardKpisWidget and the 4 KPI tiles on the old Home. Only numbers that help a decision, each with one sentence of meaning. Hidden from Today.</div>
+<div class="screen" id="s11">
+  <nav class="rail" data-on="apps"></nav>
+  <div class="page">
+    <div class="ph"><h1>Applications</h1><span class="seg2" style="margin-inline-start:12px"><span>List</span><span>Board</span><span class="on">Insights</span></span><div class="sp"></div><span class="seg2"><span>This week</span><span class="on">Last 30 days</span><span>All</span></span></div>
+    <div class="body" style="flex-direction:column;gap:20px">
+      <div class="row g20">
+        <div class="card stat" style="flex:1"><span class="lbl">Sent</span><span class="v">14</span><span class="t2" style="font-size:13.5px">Goal 10 a week · on track</span></div>
+        <div class="card stat" style="flex:1"><span class="lbl">Replies</span><span class="v">4</span><span class="t2" style="font-size:13.5px">29% of sent · good for remote roles</span></div>
+        <div class="card stat" style="flex:1"><span class="lbl">Interviews</span><span class="v">2</span><span class="t2" style="font-size:13.5px">Both from React jobs</span></div>
+        <div class="card stat" style="flex:1"><span class="lbl">Typical match</span><span class="v">81%</span><span class="t2" style="font-size:13.5px">for jobs you kept</span></div>
+      </div>
+      <div class="row g20" style="height:300px;align-items:stretch">
+        <div class="card col" style="flex:1.4"><span class="h3">Sent per week</span><div class="bars"><div style="height:30%"></div><div style="height:45%"></div><div style="height:40%"></div><div style="height:70%"></div><div style="height:55%"></div><div style="height:90%"></div><div style="height:65%;opacity:.5"></div></div><div class="row muted" style="font-size:12.5px;justify-content:space-between;padding-top:6px"><span>Oct 13</span><span>Oct 27</span><span>Nov 10</span><span>Nov 24</span></div></div>
+        <div class="card col g14" style="flex:1"><span class="h3">Skills employers asked for that you don’t list</span>
+          <div class="row g10"><span style="width:110px">Node.js</span><div class="meter"><i style="width:80%;background:var(--warning)"></i></div><span class="muted" style="font-size:13px">8 jobs</span></div>
+          <div class="row g10"><span style="width:110px">Liquid</span><div class="meter"><i style="width:45%;background:var(--warning)"></i></div><span class="muted" style="font-size:13px">4 jobs</span></div>
+          <div class="row g10"><span style="width:110px">PostgreSQL</span><div class="meter"><i style="width:35%;background:var(--warning)"></i></div><span class="muted" style="font-size:13px">3 jobs</span></div>
+          <span class="t2" style="font-size:13.5px">If you know any of these, add them to your profile. We never add skills for you.</span>
+        </div>
+        <div class="card col g12" style="flex:.9"><span class="h3">Where jobs came from</span>
+          <div class="row g10"><span style="width:110px">Greenhouse</span><div class="meter"><i style="width:60%;background:var(--accent)"></i></div><span class="muted" style="font-size:13px">6</span></div>
+          <div class="row g10"><span style="width:110px">Lever</span><div class="meter"><i style="width:30%;background:var(--accent)"></i></div><span class="muted" style="font-size:13px">3</span></div>
+          <div class="row g10"><span style="width:110px">Jobs.af</span><div class="meter"><i style="width:30%;background:var(--accent)"></i></div><span class="muted" style="font-size:13px">3</span></div>
+          <div class="row g10"><span style="width:110px">Other</span><div class="meter"><i style="width:20%;background:var(--accent)"></i></div><span class="muted" style="font-size:13px">2</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 12 SETTINGS GENERAL & AI ===================== -->
+<div class="caption"><b>12 · Settings → General and Smart features</b>Replaces "Settings &amp; Local Configuration" (Appearance, Language, Local AI &amp; Engine Runtime, Hardware Profile Tier, Models). Plain words: "Smart features" instead of "Local AI runtime"; the tier is picked automatically, with a manual override.</div>
+<div class="screen" id="s12">
+  <nav class="rail" data-on="none"></nav>
+  <div class="page">
+    <div class="ph"><h1>Settings</h1></div>
+    <div class="body">
+      <div class="subnav"><div class="sn on">General</div><div class="sn">Smart features</div><div class="sn">Applying</div><div class="sn">Data &amp; privacy</div><div class="sn">Updates</div><div class="sn">About</div></div>
+      <div class="col g18" style="flex:1;max-width:820px">
+        <div class="card" style="padding:4px 22px">
+          <div class="setrow"><div class="col" style="flex:1"><b>Language</b><span class="t2" style="font-size:14px">Also sets dates (Solar Hijri for فارسی)</span></div><span class="seg2"><span class="on">English</span><span>فارسی</span></span></div>
+          <div class="setrow"><div class="col" style="flex:1"><b>Appearance</b></div><span class="seg2"><span>Light</span><span class="on">Dark</span><span>System</span></span></div>
+          <div class="setrow"><div class="col" style="flex:1"><b>Look for new jobs</b><span class="t2" style="font-size:14px">While Kaarjoo is open</span></div><span class="seg2"><span>Manually</span><span class="on">Every 6 hours</span><span>Daily</span></span></div>
+          <div class="setrow"><div class="col" style="flex:1"><b>Notifications</b><span class="t2" style="font-size:14px">When something needs you or an application is sent</span></div><div class="toggle on"></div></div>
+        </div>
+        <div class="card col g14">
+          <div class="row"><div class="col" style="flex:1"><span class="h3">Smart features</span><span class="t2" style="font-size:14px">Better matching and cover letters, running on this computer.</span></div><span class="chip ok">On · Balanced</span></div>
+          <div class="row g10">
+            <div class="opt" style="flex:1"><div class="radio"></div><div class="col"><b>Light</b><span class="muted" style="font-size:13px">For 8 GB laptops</span></div></div>
+            <div class="opt on" style="flex:1"><div class="radio on"></div><div class="col"><b>Balanced</b><span class="muted" style="font-size:13px">Recommended for you</span></div></div>
+            <div class="opt" style="flex:1"><div class="radio"></div><div class="col"><b>Best quality</b><span class="muted" style="font-size:13px">32 GB+ with GPU</span></div></div>
+          </div>
+          <div class="row g12" style="padding:12px 14px;border-radius:12px;background:var(--surface-2)"><div style="font-size:20px">🧠</div><div class="col" style="flex:1;gap:6px"><div class="row"><b style="font-size:14.5px">Writing model · 2.1 GB</b><div class="sp"></div><span class="muted" style="font-size:13px">64% · 3 min left</span></div><div class="bar"><i style="width:64%"></i></div></div><span class="btn sm ghost">Pause</span></div>
+          <span class="t2" style="font-size:13.5px">Without the model Kaarjoo still works; matching uses simpler rules.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 13 SETTINGS DATA ===================== -->
+<div class="caption"><b>13 · Settings → Applying, Data &amp; privacy, Updates</b>Replaces Browser Automation Settings, Local SQLite Persistence, Backup, Wipe, Signed App &amp; Directory Updates, Demo mode. Developer details (engine, DB path, IPC) move to About → "Technical details".</div>
+<div class="screen" id="s13">
+  <nav class="rail" data-on="none"></nav>
+  <div class="page">
+    <div class="ph"><h1>Settings</h1></div>
+    <div class="body">
+      <div class="subnav"><div class="sn">General</div><div class="sn">Smart features</div><div class="sn on">Applying</div><div class="sn">Data &amp; privacy</div><div class="sn">Updates</div><div class="sn">About</div></div>
+      <div class="col g18" style="flex:1;max-width:820px">
+        <div class="card" style="padding:4px 22px">
+          <div class="setrow"><div class="col" style="flex:1"><b>Browser for filling forms</b><span class="t2" style="font-size:14px">Opens in its own window; your normal browsing is untouched</span></div><div class="in" style="width:220px;height:38px">Google Chrome ▾</div></div>
+          <div class="setrow"><div class="col" style="flex:1"><b>Ask me before sending</b><span class="t2" style="font-size:14px">Always on. Kaarjoo never sends an application without your click.</span></div><div class="toggle on" style="opacity:.6"></div></div>
+          <div class="setrow"><div class="col" style="flex:1"><b>Applications at the same time</b></div><span class="seg2"><span>1</span><span class="on">2</span><span>3</span></span></div>
+        </div>
+        <div class="card" style="padding:4px 22px">
+          <div class="setrow"><div class="col" style="flex:1"><b>Your data stays on this computer</b><span class="t2" style="font-size:14px">Profile, jobs, applications and documents · 182 MB</span></div><span class="btn sm">Open folder</span></div>
+          <div class="setrow"><div class="col" style="flex:1"><b>Backup</b><span class="t2" style="font-size:14px">Last backup 20 Nov</span></div><span class="btn sm">Create backup</span><span class="btn sm ghost">Restore…</span></div>
+          <div class="setrow"><div class="col" style="flex:1"><b>Sample data</b><span class="t2" style="font-size:14px">Try Kaarjoo with a fake profile. Clearly marked while on.</span></div><div class="toggle"></div></div>
+          <div class="setrow"><div class="col" style="flex:1"><b style="color:var(--danger)">Delete everything</b><span class="t2" style="font-size:14px">Profile, jobs, applications, documents, screenshots and logs</span></div><span class="btn sm" style="color:var(--danger);border-color:rgba(242,107,94,.4)">Delete…</span></div>
+        </div>
+        <div class="card row g14"><div class="okc" style="width:32px;height:32px">✓</div><div class="col" style="flex:1"><b>Kaarjoo is up to date</b><span class="t2" style="font-size:14px">Version 1.0.0 · company list updated 26 Nov</span></div><span class="btn sm">Check now</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 14 AVATAR MENU + PALETTE ===================== -->
+<div class="caption"><b>14 · Avatar menu and quick search (⌘K)</b>Everything that is not a daily destination lives here: Profile, Preferences, Answers, Settings, language and theme. ⌘K finds any job, company, application or action.</div>
+<div class="screen" id="s14">
+  <nav class="rail" data-on="today"></nav>
+  <div class="page">
+    <div class="wrap dim" style="align-self:center"><div class="hello">Good afternoon, Ferdous</div><div class="hero" style="height:300px"></div></div>
+    <div class="scrim" style="background:rgba(5,7,10,.45)"></div>
+    <div class="menu">
+      <div class="row g10" style="padding:10px 12px 12px"><div class="avatar">FK</div><div class="col"><b>Ferdous Kazemi</b><span class="muted" style="font-size:13px">Front-End Developer</span></div></div>
+      <div class="msep"></div>
+      <div class="mi on">👤 Profile<span class="r">1 to fix</span></div>
+      <div class="mi">🎯 What I’m looking for</div>
+      <div class="mi">💬 Answers</div>
+      <div class="mi">⚙️ Settings<span class="r">⌘,</span></div>
+      <div class="msep"></div>
+      <div class="mi">🌐 Language<span class="r">English</span></div>
+      <div class="mi">🌙 Theme<span class="r">Dark</span></div>
+      <div class="msep"></div>
+      <div class="mi">❓ Help &amp; shortcuts<span class="r">?</span></div>
+    </div>
+    <div class="palette">
+      <div class="q"><span class="muted">⌕</span>react<span style="width:2px;height:22px;background:var(--accent)"></span><div class="sp"></div><span class="kbd">esc</span></div>
+      <div style="padding:8px">
+        <div class="lbl" style="padding:8px 12px 4px">Jobs</div>
+        <div class="mi on"><span class="co sm" style="background:#2E9E6A;width:24px;height:24px;font-size:11px;border-radius:6px">L</span>Senior <b>React</b> Developer · Lemon.io<span class="r">88%</span></div>
+        <div class="mi"><span class="co sm" style="background:#D08A1E;width:24px;height:24px;font-size:11px;border-radius:6px">Y</span>Software Engineer, <b>React</b> · Yooli<span class="r">72%</span></div>
+        <div class="lbl" style="padding:8px 12px 4px">Actions</div>
+        <div class="mi">↻ Look for new jobs now</div>
+        <div class="mi">＋ Add a company by link</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 15 EMPTY & ERROR STATES ===================== -->
+<div class="caption"><b>15 · Empty and problem states</b>Every page has a designed empty state with the next action, and every problem is a sentence with a fix. Technical text only behind "Copy details".</div>
+<div class="screen" id="s15">
+  <div class="grid4" style="width:100%">
+    <div class="card es"><div class="esic">🎉</div><b style="font-size:19px">You’re all caught up</b><span class="t2" style="max-width:380px">No new jobs right now. We’ll look again at 6 PM, or you can follow more companies.</span><div class="row g8"><span class="btn primary sm">Follow companies</span><span class="btn sm ghost">Look now</span></div></div>
+    <div class="card es"><div class="esic">🔍</div><b style="font-size:19px">No jobs match these filters</b><span class="t2" style="max-width:380px">Try “Remote or Herat”, or add another job title like “React Developer”.</span><div class="row g8"><span class="btn sm">Clear filters</span><span class="btn sm ghost">Edit what I’m looking for</span></div></div>
+    <div class="card es"><div class="esic" style="background:var(--warning-weak)">⏳</div><b style="font-size:19px">Restarting Kaarjoo’s engine…</b><span class="t2" style="max-width:380px">It stopped responding. Your work is saved and will continue in a moment.</span><div class="bar" style="width:220px"><i style="width:40%"></i></div><span class="muted" style="font-size:13px">Copy details</span></div>
+    <div class="card es"><div class="esic" style="background:var(--danger-weak)">📶</div><b style="font-size:19px">You’re offline</b><span class="t2" style="max-width:380px">Your profile, documents and applications still work. New jobs will load when you’re back online.</span><span class="btn sm">Try again</span></div>
+  </div>
+</div>
+
+<!-- ===================== 16 APPLICATIONS (FA) ===================== -->
+<div class="caption"><b>16 · Applications in Persian (RTL)</b>Same structure mirrored, Persian digits and Solar Hijri dates; company names and file names stay left-to-right inside.</div>
+<div class="screen" id="s16" dir="rtl" lang="fa">
+  <nav class="rail" data-on="apps" data-lang="fa"></nav>
+  <div class="page">
+    <div class="ph"><h1>درخواست‌ها</h1><span class="seg2" style="margin-inline-start:12px"><span class="on">فهرست</span><span>تابلو</span><span>آمار</span></span><div class="sp"></div><div class="in ph-t" style="width:240px;height:38px;font-size:14px">⌕ جست‌وجو</div></div>
+    <div class="body" style="justify-content:center">
+      <div class="col" style="width:900px">
+        <div class="sec"><span class="dot" style="background:var(--danger)"></span>نیاز به شما · ۲</div>
+        <div class="card" style="padding:4px 8px">
+          <div class="listrow"><div class="co sm" style="background:#7C5CFF">S</div><div class="col" style="flex:1"><b>توسعه‌دهنده‌ی ارشد Shopify</b><span class="t2" style="font-size:13.5px">Storetasker</span></div><span class="chip warn">۱ سؤال بی‌جواب</span><span class="btn sm primary">باز کردن</span></div>
+          <div class="listrow"><div class="co sm" style="background:#2A7DE1">P</div><div class="col" style="flex:1"><b>توسعه‌دهنده‌ی فول‌استک</b><span class="t2" style="font-size:13.5px">Proxify AB</span></div><span class="chip bad">ورود به حساب لازم است</span><span class="btn sm primary">باز کردن</span></div>
+        </div>
+        <div class="sec"><span class="dot" style="background:var(--accent)"></span>آماده‌ی ارسال · ۱</div>
+        <div class="card" style="padding:4px 8px">
+          <div class="listrow"><div class="co sm" style="background:#2E9E6A">L</div><div class="col" style="flex:1"><b>توسعه‌دهنده‌ی ارشد React</b><span class="t2" style="font-size:13.5px">Lemon.io · فرم پر شد، چیزی کم نیست</span></div><span class="btn sm">بازبینی و ارسال</span></div>
+        </div>
+        <div class="sec"><span class="dot" style="background:var(--success)"></span>ارسال‌شده · ۴</div>
+        <div class="card" style="padding:4px 8px">
+          <div class="listrow"><div class="co sm" style="background:#3A6FD8">J</div><div class="col" style="flex:1"><b>توسعه‌دهنده‌ی فرانت‌اند</b><span class="t2" style="font-size:13.5px">JAPCO · ارسال ۴ قوس</span></div><span class="chip info">مصاحبه ۱۱ قوس</span><span class="muted">‹</span></div>
+          <div class="listrow"><div class="co sm" style="background:#C2410C">S</div><div class="col" style="flex:1"><b>توسعه‌دهنده‌ی WordPress</b><span class="t2" style="font-size:13.5px">SimpleTiger · ارسال ۳ قوس</span></div><span class="chip ok">✓ سایت تأیید کرد</span><span class="muted">‹</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const ICONS={today:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',jobs:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',apps:'<path d="M4 4h16v16H4z"/><path d="M4 13h5l1.5 2h3L15 13h5"/>'};
+const L={en:{today:'Today',jobs:'Jobs',apps:'Applied',logo:'K',av:'FK'},fa:{today:'امروز',jobs:'شغل‌ها',apps:'درخواست‌ها',logo:'ک',av:'ف'}};
+document.querySelectorAll('nav.rail').forEach(n=>{const l=L[n.dataset.lang||'en'];const on=n.dataset.on;
+ n.innerHTML=`<div class="logo">${l.logo}</div>`+['today','jobs','apps'].map(k=>`<div class="ri ${on===k?'on':''}">${k==='apps'?'<span class="b"></span>':''}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">${ICONS[k]}</svg>${l[k]}</div>`).join('')+`<div class="grow"></div><div class="avatar" ${on==='none'?'style="box-shadow:0 0 0 2px var(--accent)"':''}>${l.av}</div>`;});
+</script>
+</body>
+</html>
