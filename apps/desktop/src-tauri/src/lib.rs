@@ -51,6 +51,7 @@ pub fn specta_builder() -> Builder<tauri::Wry> {
         commands::applications_resume,
         commands::applications_submit_reviewed,
         commands::pipeline_start_discovery,
+        commands::pipeline_cancel,
         commands::applications_prepare,
         commands::applications_fill,
         commands::settings_get_all,
@@ -151,7 +152,11 @@ pub fn run() {
             });
 
             // Manage app state
-            app.manage(AppState { pool, engine });
+            app.manage(AppState {
+                pool,
+                engine,
+                pipeline_cancelled: std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
+            });
 
             Ok(())
         })

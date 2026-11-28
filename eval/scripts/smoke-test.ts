@@ -170,10 +170,15 @@ async function startMockAtsServer(): Promise<{ url: string; getSubmitCount: () =
   return {
     url: `http://127.0.0.1:${addr.port}/acme/jobs/9001`,
     getSubmitCount: () => submitCount,
-    close: () => new Promise((r) => server.close(() => r())),
+    close: () =>
+      new Promise((r) => {
+        server.closeAllConnections?.();
+        server.close(() => r());
+      }),
   };
 }
 
+// Linux CI usage: `xvfb-run -a pnpm smoke:test`
 async function runSmokeTest() {
   console.log(`\n=== KAARJOO CROSS-PLATFORM SMOKE TEST (${process.platform}/${process.arch}) ===\n`);
 

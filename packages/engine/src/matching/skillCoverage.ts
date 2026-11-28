@@ -52,7 +52,13 @@ export function extractSkillsFromText(text: string): CanonicalSkill[] {
     for (const alias of skill.aliases) {
       const escaped = alias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const regex = new RegExp(`(?:^|[^a-zA-Z0-9_\u0600-\u06FF])${escaped}(?:$|[^a-zA-Z0-9_\u0600-\u06FF])`, 'i');
-      if (regex.test(lower) || lower.includes(alias)) {
+      if (regex.test(lower)) {
+        // Guard ambiguous English verbs like "react quickly" / "react to" when lowercase
+        if (alias === 'react') {
+          const isTechReact = /\bReact(?:\.js|JS)?\b|\breact\.js\b|\breactjs\b/.test(text);
+          const isVerbUsage = /\breact\s+(?:quickly|fast|slowly|calmly|appropriately|well|to|against)\b/i.test(text);
+          if (isVerbUsage && !isTechReact) continue;
+        }
         if (!seenIds.has(skill.escoId)) {
           seenIds.add(skill.escoId);
           matched.push(skill);

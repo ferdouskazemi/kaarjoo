@@ -53,7 +53,7 @@ async profileClear() : Promise<Result<null, string>> {
     else return { status: "error", error: e  as any };
 }
 },
-async jobsSearch(query: JobsSearchQueryDto) : Promise<Result<JobPostingDto[], string>> {
+async jobsSearch(query: JobsSearchQueryDto) : Promise<Result<JobsSearchResponseDto, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("jobs_search", { query }) };
 } catch (e) {
@@ -229,6 +229,14 @@ async pipelineStartDiscovery() : Promise<Result<JobPostingDto[], string>> {
     else return { status: "error", error: e  as any };
 }
 },
+async pipelineCancel() : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("pipeline_cancel") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
 async applicationsPrepare(jobIds: string[]) : Promise<Result<ApplicationRecordDto[], string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("applications_prepare", { jobIds }) };
@@ -327,6 +335,8 @@ export type FactProvenanceDto = { sourceFileId: string; page: number; textSpan: 
 export type FilledFieldDto = { fieldId: string; label: string; value: string; displayValue: string; confidence: number; isRequired: boolean }
 export type JobPostingDto = { id: string; sourceId: string; sourceName: string; canonicalUrl: string; applyUrl: string; title: string; company: string; location: string | null; remoteType: string; employmentType: string | null; salary: SalaryRangeDto | null; descriptionMarkdown: string; requirements?: string[]; postedAt: string | null; expiresAt: string | null; atsType: string; contentHash: string; simHash: string | null; matchScore: number | null }
 export type JobsSearchQueryDto = { keywords: string[] | null; locations: string[] | null; remoteOnly: boolean | null; company: string | null; atsType: string | null; limit: number | null }
+export type SourceSearchStatusDto = { id: string; status: string; error: string | null }
+export type JobsSearchResponseDto = { jobs: JobPostingDto[]; sources: SourceSearchStatusDto[] }
 export type MatchBreakdownDto = { hardFilter: number; semantic: number; skillCoverage: number; rerank: number }
 export type MatchResultDto = { jobId: string; profileId: string; score: number; breakdown: MatchBreakdownDto; topReasons: string[]; matchedSkills: string[]; missingSkills: string[]; whyNotHigher: string | null; userFeedback: string | null }
 export type ModelStatusDto = { id: string; name: string; role: string; tier: string; license: string; sha256: string; fileName: string; modelsDir: string; localPath: string; installed: boolean; partialBytes: number; bundledInApp: boolean; sizeBytes: number; downloadUrl: string }

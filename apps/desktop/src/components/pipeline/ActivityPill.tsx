@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
+import { useQueryClient } from '@tanstack/react-query';
 import { usePipelineStore } from '../../stores/pipelineStore.js';
 import { useAppStore } from '../../stores/appStore.js';
 import { drawerVariants, pillVariants, staggerDelay } from '../../styles/motion.js';
@@ -11,7 +12,8 @@ import { AlertTriangle, Check, Pause, X } from 'lucide-react';
 
 export const ActivityPill: React.FC = () => {
   const { i18n } = useTranslation();
-  const { setCurrentView } = useAppStore();
+  const queryClient = useQueryClient();
+  const { setCurrentView, demoMode } = useAppStore();
   const {
     isVisible,
     isRunning,
@@ -21,11 +23,23 @@ export const ActivityPill: React.FC = () => {
     currentItemIndex,
     totalItems,
     errorMessage,
+    startApplyStage,
     cancelPipeline,
     dismissPipeline,
   } = usePipelineStore();
 
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    setSelectedIds(discoveredJobs.map((j) => j.id));
+  }, [discoveredJobs]);
+
+  const toggleJobSelection = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
 
   // Auto-hide done pill after 8s when drawer is closed
   useEffect(() => {
@@ -61,6 +75,8 @@ export const ActivityPill: React.FC = () => {
     ? 'Action needed'
     : status === 'completed'
     ? `${formatNumber(doneCount || discoveredJobs.length, i18n.language)} ready to review · Open`
+    : status === 'discovered'
+    ? `${formatNumber(discoveredJobs.length, i18n.language)} matching jobs · Prepare & fill`
     : status === 'discovering'
     ? 'Finding matching jobs…'
     : `Preparing ${formatNumber(Math.min(currentItemIndex + 1, total), i18n.language)} of ${formatNumber(total, i18n.language)}`;
@@ -147,9 +163,20 @@ export const ActivityPill: React.FC = () => {
                       className="p-2.5 rounded-[var(--radius-md)] bg-surface-2 flex flex-col gap-1.5"
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <div className="min-w-0">
-                          <div className="text-sm font-medium text-text truncate">{job.title}</div>
-                          <div className="text-xs text-muted truncate">{job.company}</div>
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          {status === 'discovered' && (
+                            <input
+                              type="checkbox"
+                              checked={selectedIds.includes(job.id)}
+                              onChange={() => toggleJobSelection(job.id)}
+                              aria-label={`Select ${job.title}`}
+                              className="h-4 w-4 accent-[var(--accent)] shrink-0 cursor-pointer"
+                            />
+                          )}
+                          <div className="min-w-0">
+                            <div className="text-sm font-medium text-text truncate">{job.title}</div>
+                            <div className="text-xs text-muted truncate">{job.company}</div>
+                          </div>
                         </div>
                         <Badge
                           tone={
@@ -208,16 +235,42 @@ export const ActivityPill: React.FC = () => {
                   </Button>
                 )}
 
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => {
-                    setDrawerOpen(false);
-                    setCurrentView('queue');
-                  }}
-                >
-                  <span>Open Applications</span>
-                </Button>
+                {status === 'discovered' && discoveredJobs.length > 0 ? (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    disabled={selectedIds.length === 0 || isRunning}
+                    onClick={() => {
+                      void startApplyStage({
+                        demoMode,
+                        lang: i18n.language,
+                        selectedJobIds: selectedIds,
+                        onInvalidate: async () => {
+                          await queryClient.invalidateQueries();
+                        },
+                        onNavigateQueue: () => {
+                          setDrawerOpen(false);
+                          setCurrentView('queue');
+                        },
+                      });
+                    }}
+                  >
+                    <span>
+                      Prepare &amp; fill ({formatNumber(selectedIds.length, i18n.language)})
+                    </span>
+                  </Button>
+                ) : (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => {
+                      setDrawerOpen(false);
+                      setCurrentView('queue');
+                    }}
+                  >
+                    <span>Open Applications</span>
+                  </Button>
+                )}
               </div>
             </motion.aside>
           </div>

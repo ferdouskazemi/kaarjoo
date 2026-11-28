@@ -245,6 +245,10 @@
     "syncingTitle": "Discovering and scoring live opportunities...",
     "syncingDesc": "Connecting to boards and calculating true semantic and requirement match scores.",
     "noJobsYet": "No jobs in database yet",
+    "noMatchingJobs": "No matching jobs yet",
+    "editPreferences": "Edit preferences",
+    "networkErrorTitle": "Could not reach job sources",
+    "networkErrorDesc": "All job sources failed to respond. Check your internet connection and try again.",
     "noJobsYetDesc": "Click \"Sync Live Feed\" above to discover openings matching your profile.",
     "noJobsFoundDesc": "Adjust your filters or sync again.",
     "liveBadge": "LIVE",
@@ -536,7 +540,8 @@
     "unknownError": "An unexpected error occurred. Please consult the local application log.",
     "fieldRequired": "This field is required.",
     "emailInvalid": "Please provide a valid email address.",
-    "fileNotFound": "The specified file was not found on the local filesystem."
+    "fileNotFound": "The specified file was not found on the local filesystem.",
+    "browserLaunchFailed": "Could not launch Chrome or Microsoft Edge for form automation. Ensure the browser is installed and not blocked."
   },
   "pipeline": {
     "title": "Automated Sequential Pipeline",

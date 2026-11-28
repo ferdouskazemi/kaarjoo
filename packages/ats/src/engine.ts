@@ -242,12 +242,21 @@ export class ApplicationEngine {
 
     let browserContext: BrowserContext | null = null;
     try {
-      browserContext = await chromium.launchPersistentContext(tempDir, {
-        executablePath: browserExe,
-        headless,
-        args: launchArgs,
-        viewport: { width: 1280, height: 900 },
-      });
+      try {
+        browserContext = await chromium.launchPersistentContext(tempDir, {
+          executablePath: browserExe,
+          headless,
+          args: launchArgs,
+          viewport: { width: 1280, height: 900 },
+        });
+      } catch (launchErr: any) {
+        record.status = 'failed';
+        record.stopReason = 'browser_launch_failed';
+        record.stopMessage = `Failed to launch Chrome/Edge browser: ${sanitizeAutomationError(launchErr)}`;
+        record.updatedAt = new Date().toISOString();
+        await this.cleanupSession(id);
+        return record;
+      }
 
       const page = await browserContext.newPage();
       const userEditedSelectors = new Set<string>();

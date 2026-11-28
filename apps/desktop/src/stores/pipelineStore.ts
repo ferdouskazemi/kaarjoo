@@ -43,6 +43,7 @@ export interface PipelineState {
   startApplyStage: (params: {
     demoMode: boolean;
     lang: string;
+    selectedJobIds?: string[];
     onInvalidate: () => Promise<void>;
     onNavigateQueue: () => void;
   }) => Promise<void>;
@@ -50,29 +51,45 @@ export interface PipelineState {
   dismissPipeline: () => void;
 }
 
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function hasWholeWord(text: string, term: string): boolean {
+  if (!text || !term) return false;
+  const rx = new RegExp(`(?:^|[^a-zA-Z0-9_\\u0600-\\u06FF])${escapeRegex(term)}(?:$|[^a-zA-Z0-9_\\u0600-\\u06FF])`, 'i');
+  return rx.test(text);
+}
+
+const OFF_FAMILY_PATTERN =
+  /\b(registered nurse|nurse|nursing|physician|doctor|medical|clinical|accountant|accounting|auditor|cpa|sales development|sdr|bdr|account executive|teacher|lecturer|programme officer|program officer)\b/i;
+
 function matchesCvProfile(
   job: { title: string; descriptionMarkdown?: string; requirements?: string[]; matchScore?: number | null },
   profile: UserProfile
 ): { matched: boolean; matchedSkills: string[]; score: number } {
   const skills = (profile.skills || []).map((s) => s.name.trim()).filter(Boolean);
   const titles = (profile.targetTitles || []).map((t) => t.trim().toLowerCase()).filter(Boolean);
-  const haystack = `${job.title} ${job.descriptionMarkdown || ''} ${(job.requirements || []).join(' ')}`.toLowerCase();
+  const titleLower = job.title.toLowerCase();
+  const bodyLower = `${job.descriptionMarkdown || ''} ${(job.requirements || []).join(' ')}`.toLowerCase();
 
-  const matchedSkills = skills.filter((s) => haystack.includes(s.toLowerCase()));
+  // Exclude obvious off-family titles when profile targets engineering/tech
+  const profileIsTech = titles.some((t) => /\b(engineer|developer|software|frontend|backend|fullstack|devops)\b/i.test(t));
+  if (profileIsTech && OFF_FAMILY_PATTERN.test(titleLower)) {
+    return { matched: false, matchedSkills: [], score: 15 };
+  }
+
+  const matchedSkills = skills.filter((s) => hasWholeWord(titleLower, s) || hasWholeWord(bodyLower, s));
   const titleMatch = titles.some((t) =>
     t
       .split(/\s+/)
       .filter((w) => w.length > 2)
-      .some((w) => job.title.toLowerCase().includes(w))
+      .some((w) => hasWholeWord(titleLower, w))
   );
 
   const rawScore = typeof job.matchScore === 'number' ? Math.round(job.matchScore) : 0;
-  const computedScore = rawScore > 0 ? rawScore : Math.min(96, matchedSkills.length * 18 + (titleMatch ? 28 : 0));
-  // Require role-family title match (when targetTitles exist) OR strong skill coverage
-  const hasTargetTitles = titles.length > 0;
-  const matched = hasTargetTitles
-    ? (titleMatch && matchedSkills.length >= 1) || (matchedSkills.length >= 2 && computedScore >= 55)
-    : matchedSkills.length >= 2 || rawScore >= 55;
+  const computedScore = rawScore > 0 ? rawScore : Math.min(96, matchedSkills.length * 16 + (titleMatch ? 42 : 0));
+  const matched = computedScore >= 55 && (titleMatch || matchedSkills.length >= 2 || rawScore >= 55);
   return { matched, matchedSkills: matchedSkills.slice(0, 5), score: computedScore };
 }
 
@@ -93,7 +110,15 @@ export const usePipelineStore = create<PipelineState>((set, get) => ({
   errorMessage: null,
 
   cancelPipeline: () => {
-    set({ isCancelled: true, isRunning: false, status: 'cancelled' });
+    set({ isCancelled: true });
+    void commands
+      .pipelineCancel()
+      .catch((err) => {
+        console.warn('[pipelineStore] pipelineCancel failed:', err);
+      })
+      .finally(() => {
+        set({ isRunning: false, status: 'cancelled' });
+      });
   },
 
   dismissPipeline: () => {
@@ -117,7 +142,6 @@ export const usePipelineStore = create<PipelineState>((set, get) => ({
     });
 
     try {
-      const keywords = (profile.skills || []).map((s) => s.name).slice(0, 6);
       const rawJobs: Array<{
         id: string;
         title: string;
@@ -136,7 +160,8 @@ export const usePipelineStore = create<PipelineState>((set, get) => ({
           throw new Error(discRes.error);
         }
         const seenIds = new Set<string>();
-        const matchedItems: PipelineJobItem[] = discRes.data
+        const matchedItems: PipelineJobItem[] = [...discRes.data]
+          .sort((a, b) => (b.matchScore ?? 0) - (a.matchScore ?? 0))
           .filter((j) => {
             if (seenIds.has(j.id)) return false;
             seenIds.add(j.id);
@@ -248,8 +273,13 @@ export const usePipelineStore = create<PipelineState>((set, get) => ({
     }
   },
 
-  startApplyStage: async ({ demoMode, lang: _lang, onInvalidate, onNavigateQueue }) => {
-    const jobs = get().discoveredJobs;
+  startApplyStage: async ({ demoMode, lang: _lang, selectedJobIds, onInvalidate, onNavigateQueue }) => {
+    if (get().isRunning) return;
+    const allJobs = get().discoveredJobs;
+    const jobs =
+      selectedJobIds && selectedJobIds.length > 0
+        ? allJobs.filter((j) => selectedJobIds.includes(j.id))
+        : allJobs;
     if (jobs.length === 0) return;
 
     set({

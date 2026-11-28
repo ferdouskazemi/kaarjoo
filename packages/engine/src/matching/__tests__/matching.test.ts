@@ -141,5 +141,74 @@ describe('Phase 3: Matching and Ranking Engine', () => {
       expect(match.breakdown.semanticScore).toBeGreaterThan(0);
       expect(match.breakdown.skillCoverageScore).toBeGreaterThan(0);
     });
+
+    it('P0-3: matches skills as whole words (react must not match "react quickly") and excludes off-family jobs', () => {
+      const quickReactJob: JobPosting = {
+        ...sampleJob,
+        id: 'job_nurse',
+        title: 'Registered Nurse',
+        company: 'City Hospital',
+        descriptionMarkdown: 'Must react quickly in emergency situations and triage patients.',
+        requirements: ['Nursing', 'Patient Care'],
+      };
+      const skillRes = evaluateSkillCoverage(sampleProfile, quickReactJob);
+      expect(skillRes.matchedSkills).not.toContain('React');
+
+      const candidates: JobPosting[] = [
+        {
+          ...sampleJob,
+          id: 'job_fe',
+          title: 'Frontend Engineer',
+          descriptionMarkdown: 'Build React and TypeScript web apps with Tailwind CSS.',
+          requirements: ['React', 'TypeScript', 'Tailwind CSS'],
+        },
+        quickReactJob,
+        {
+          ...sampleJob,
+          id: 'job_acct',
+          title: 'Staff Accountant',
+          company: 'LedgerCo',
+          descriptionMarkdown: 'Manage general ledger, payroll, and quarterly tax filings.',
+          requirements: ['Accounting', 'CPA'],
+        },
+        {
+          ...sampleJob,
+          id: 'job_sdr',
+          title: 'Sales Development Representative',
+          company: 'QuotaCRM',
+          descriptionMarkdown: 'Outbound cold calling, lead qualification, and pipeline generation.',
+          requirements: ['Sales', 'CRM'],
+        },
+        {
+          ...sampleJob,
+          id: 'job_be_go',
+          title: 'Backend Engineer (Go)',
+          company: 'CloudInfra',
+          descriptionMarkdown: 'Build distributed Go microservices with Docker and PostgreSQL.',
+          requirements: ['Go', 'Docker', 'PostgreSQL'],
+        },
+      ];
+
+      const ranked = candidates
+        .map((j) => ({ job: j, result: rankJob(sampleProfile, j) }))
+        .sort((a, b) => b.result.overallScore - a.result.overallScore);
+
+      // Frontend Engineer must rank first and pass >= 55
+      expect(ranked[0].job.id).toBe('job_fe');
+      expect(ranked[0].result.overallScore).toBeGreaterThanOrEqual(55);
+
+      // Backend Engineer (Go) stays in engineering family and ranks above all off-family roles
+      const beIdx = ranked.findIndex((r) => r.job.id === 'job_be_go');
+      const offFamily = ranked.filter((r) =>
+        ['job_nurse', 'job_acct', 'job_sdr'].includes(r.job.id)
+      );
+      for (const off of offFamily) {
+        expect(off.result.overallScore).toBeLessThan(55);
+        expect(ranked.indexOf(off)).toBeGreaterThan(beIdx);
+      }
+      expect(ranked.filter((r) => r.result.overallScore >= 55).map((r) => r.job.id)).not.toContain('job_nurse');
+      expect(ranked.filter((r) => r.result.overallScore >= 55).map((r) => r.job.id)).not.toContain('job_acct');
+      expect(ranked.filter((r) => r.result.overallScore >= 55).map((r) => r.job.id)).not.toContain('job_sdr');
+    });
   });
 });

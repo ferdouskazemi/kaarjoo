@@ -2,6 +2,21 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct SourceSearchStatusDto {
+    pub id: String,
+    pub status: String,
+    pub error: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct JobsSearchResponseDto {
+    pub jobs: Vec<JobPostingDto>,
+    pub sources: Vec<SourceSearchStatusDto>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
 pub struct BoundingBoxDto {
     pub x: f64,
     pub y: f64,

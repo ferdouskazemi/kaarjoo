@@ -43,6 +43,8 @@ export const StopReasonSchema = z.enum([
   'unknown_required_field',
   'upload_failed',
   'unrecognized_page',
+  'browser_launch_failed',
+  'tailoring_failed',
 ]);
 export type StopReason = z.infer<typeof StopReasonSchema>;
 

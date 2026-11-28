@@ -863,6 +863,17 @@ pub async fn get_application_by_id(pool: &DbPool, id: &str) -> Result<Option<App
     Ok(apps.into_iter().find(|a| a.id == id))
 }
 
+pub async fn get_application_by_job_and_profile(
+    pool: &DbPool,
+    job_id: &str,
+    profile_id: &str,
+) -> Result<Option<ApplicationRecordDto>, sqlx::Error> {
+    let apps = get_all_applications(pool).await?;
+    Ok(apps
+        .into_iter()
+        .find(|a| a.job_id == job_id && a.profile_id == profile_id))
+}
+
 pub async fn create_or_update_application(pool: &DbPool, app: &ApplicationRecordDto) -> Result<(), sqlx::Error> {
     let missing_json = serde_json::to_string(&app.missing_required_fields).unwrap_or_else(|_| "[]".to_string());
     sqlx::query(
@@ -1142,5 +1153,48 @@ mod tests {
         assert_eq!(apps.len(), 1);
         assert_eq!(apps[0].id, "a1");
         assert_eq!(apps[0].match_score, None);
+    }
+
+    #[tokio::test]
+    async fn test_unique_application_per_job_and_profile() {
+        let pool = SqlitePoolOptions::new()
+            .connect("sqlite::memory:")
+            .await
+            .unwrap();
+        sqlx::migrate!("./migrations").run(&pool).await.unwrap();
+
+        sqlx::query(
+            "INSERT INTO profiles (id, version, full_name, email, phone, location, summary, created_at, updated_at) VALUES ('p1', 1, 'Test User', 'test@example.com', '', '', '', '2026-01-01T00:00:00Z', '2026-01-01T00:00:00Z')"
+        )
+        .execute(&pool)
+        .await
+        .unwrap();
+
+        sqlx::query(
+            "INSERT INTO jobs (id, source_id, canonical_url, apply_url, title, company, remote_type, employment_type, description_markdown, requirements_json, ats_type, content_hash, sim_hash, first_seen, last_seen, status) VALUES ('j1', 'src1', 'https://example.com', 'https://example.com', 'Engineer', 'Acme', 'remote', 'full-time', 'desc', '[]', 'greenhouse', 'h1', 's1', '2026-01-01T00:00:00Z', '2026-01-01T00:00:00Z', 'active')"
+        )
+        .execute(&pool)
+        .await
+        .unwrap();
+
+        sqlx::query(
+            "INSERT INTO applications (id, job_id, profile_id, status, mode, created_at, updated_at) VALUES ('a1', 'j1', 'p1', 'saved', 'review', '2026-01-01T00:00:00Z', '2026-01-01T00:00:00Z')"
+        )
+        .execute(&pool)
+        .await
+        .unwrap();
+
+        // Duplicate (j1, p1) must be rejected by UNIQUE index
+        let dup_res = sqlx::query(
+            "INSERT INTO applications (id, job_id, profile_id, status, mode, created_at, updated_at) VALUES ('a2', 'j1', 'p1', 'saved', 'review', '2026-01-01T00:00:00Z', '2026-01-01T00:00:00Z')"
+        )
+        .execute(&pool)
+        .await;
+        assert!(dup_res.is_err());
+
+        let found = get_application_by_job_and_profile(&pool, "j1", "p1")
+            .await
+            .unwrap();
+        assert_eq!(found.unwrap().id, "a1");
     }
 }

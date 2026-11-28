@@ -33,6 +33,9 @@ export function formatUserFriendlyError(err: unknown, t: TFunction): string {
   if (/ERR_TIMED_OUT|Timeout\s+\d+ms\s+exceeded|took too long to load|timed out/i.test(cleaned)) {
     return t('applyErrors.timeout');
   }
+  if (/Failed to launch Chrome\/Edge|browserType\.launchPersistentContext|Executable doesn't exist/i.test(cleaned)) {
+    return t('errors.browserLaunchFailed');
+  }
   if (/Target page, context or browser has been closed|browser window was closed/i.test(cleaned)) {
     return t('applyErrors.browserClosed');
   }
@@ -72,6 +75,9 @@ export function formatStopReason(
   stopMessage: string | undefined,
   t: TFunction
 ): string {
+  if (stopReason === 'browser_launch_failed') {
+    return t('errors.browserLaunchFailed');
+  }
   if (stopReason === 'captcha_detected') {
     return t('queue.stopReasons.captcha_detected');
   }

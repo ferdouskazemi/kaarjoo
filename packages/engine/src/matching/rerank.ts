@@ -124,11 +124,15 @@ export function rankJob(
   let overallScore = 0;
   if (!hardFilter.passed) {
     // Penalize gated failures heavily
-    overallScore = Math.min(45, Math.round(hardFilter.score * 0.4));
+    overallScore = Math.min(25, Math.round(hardFilter.score * 0.4));
   } else {
+    const weightedSemantic = Math.max(
+      semantic.overallSemanticScore,
+      Math.round(semantic.titleSimilarity * 0.65 + semantic.contentSimilarity * 0.35)
+    );
     overallScore = Math.round(
       hardFilter.score * weights.hardFilter +
-      semantic.overallSemanticScore * weights.semantic +
+      weightedSemantic * weights.semantic +
       skillCoverage.score * weights.skillCoverage +
       rerank.score * weights.rerank
     );
@@ -185,11 +189,15 @@ export async function rankJobAsync(
 
   let overallScore = 0;
   if (!hardFilter.passed) {
-    overallScore = Math.min(45, Math.round(hardFilter.score * 0.4));
+    overallScore = Math.min(25, Math.round(hardFilter.score * 0.4));
   } else {
+    const weightedSemantic = Math.max(
+      semantic.overallSemanticScore,
+      Math.round(semantic.titleSimilarity * 0.65 + semantic.contentSimilarity * 0.35)
+    );
     overallScore = Math.round(
       hardFilter.score * weights.hardFilter +
-        semantic.overallSemanticScore * weights.semantic +
+        weightedSemantic * weights.semantic +
         skillCoverage.score * weights.skillCoverage +
         rerank.score * weights.rerank
     );

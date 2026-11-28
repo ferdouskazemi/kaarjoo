@@ -297,13 +297,41 @@ pub async fn profile_clear(state: State<'_, AppState>) -> Result<(), String> {
 #[specta::specta]
 pub async fn jobs_search(
     state: State<'_, AppState>,
-    query: JobsSearchQueryDto,
-) -> Result<Vec<JobPostingDto>, String> {
+    mut query: JobsSearchQueryDto,
+) -> Result<JobsSearchResponseDto, String> {
+    // P1-7: Automatically include profile/preferences locations (e.g., Afghanistan/Kabul) when query.locations is empty
+    let profile_opt = db::get_profile(&state.pool).await.ok().flatten();
+    if query.locations.as_ref().map_or(true, |l| l.is_empty()) {
+        if let Some(ref prof) = profile_opt {
+            let mut locs = Vec::new();
+            if let Some(ref loc) = prof.contact.location {
+                if !loc.is_empty() {
+                    locs.push(loc.clone());
+                }
+            }
+            if !locs.is_empty() {
+                query.locations = Some(locs);
+            }
+        }
+    }
+
     let params = serde_json::to_value(&query).unwrap_or(json!({}));
     let res = state.engine.request("jobs.search", params).await?;
 
-    let jobs: Vec<JobPostingDto> = serde_json::from_value(res)
-        .map_err(|e| format!("Failed to parse jobs search response: {}", e))?;
+    let (jobs, sources): (Vec<JobPostingDto>, Vec<SourceSearchStatusDto>) =
+        if let Some(jobs_val) = res.get("jobs") {
+            let j: Vec<JobPostingDto> = serde_json::from_value(jobs_val.clone())
+                .map_err(|e| format!("Failed to parse jobs list: {}", e))?;
+            let s: Vec<SourceSearchStatusDto> = res
+                .get("sources")
+                .and_then(|v| serde_json::from_value(v.clone()).ok())
+                .unwrap_or_default();
+            (j, s)
+        } else {
+            let j: Vec<JobPostingDto> = serde_json::from_value(res)
+                .map_err(|e| format!("Failed to parse jobs search response: {}", e))?;
+            (j, Vec::new())
+        };
 
     // Persist discovered jobs into SQLite
     let _ = db::save_jobs_batch(&state.pool, &jobs).await;
@@ -320,7 +348,7 @@ pub async fn jobs_search(
     .map_err(|e| format!("Database error querying jobs: {}", e))?;
 
     // Score and rank against candidate profile so only CV-relevant jobs surface
-    if let Ok(Some(profile)) = db::get_profile(&state.pool).await {
+    if let Some(profile) = profile_opt {
         if !stored.is_empty() {
             if let Ok(rank_res) = state
                 .engine
@@ -349,37 +377,18 @@ pub async fn jobs_search(
             }
         }
 
-        // Filter to CV-matched jobs when keywords or skills are present
-        let kw_terms: Vec<String> = profile
-            .skills
-            .iter()
-            .map(|s| s.name.to_lowercase())
-            .chain(profile.target_titles.iter().map(|t| t.to_lowercase()))
+        // Strictly filter to CV-matched jobs (score >= 55); never fall back to unfiltered list
+        let filtered: Vec<JobPostingDto> = stored
+            .into_iter()
+            .filter(|j| j.match_score.unwrap_or(0.0) >= 55.0)
             .collect();
-
-        if !kw_terms.is_empty() {
-            let filtered: Vec<JobPostingDto> = stored
-                .iter()
-                .filter(|j| {
-                    let score_ok = j.match_score.unwrap_or(0.0) >= 35.0;
-                    let hay = format!(
-                        "{} {} {}",
-                        j.title.to_lowercase(),
-                        j.description_markdown.to_lowercase(),
-                        j.requirements.join(" ").to_lowercase()
-                    );
-                    let kw_ok = kw_terms.iter().any(|k| !k.is_empty() && hay.contains(k));
-                    score_ok || kw_ok
-                })
-                .cloned()
-                .collect();
-            if !filtered.is_empty() {
-                stored = filtered;
-            }
-        }
+        stored = filtered;
     }
 
-    Ok(stored)
+    Ok(JobsSearchResponseDto {
+        jobs: stored,
+        sources,
+    })
 }
 
 #[tauri::command]
@@ -493,6 +502,7 @@ pub async fn matching_score_job(
         .map_err(|e| format!("DB error: {}", e))?
         .ok_or_else(|| format!("Job '{}' not found", job_id))?;
 
+    // P1-4: Return existing application row for (job_id, profile_id) instead of duplicating
     let params = json!({
         "profile": profile,
         "job": job
@@ -693,6 +703,24 @@ pub async fn applications_create(
         .map_err(|e| format!("DB error: {}", e))?
         .ok_or_else(|| format!("Job '{}' not found", job_id))?;
 
+    // P1-4: Return existing application row for (job_id, profile_id) instead of duplicating
+    if let Ok(Some(mut existing)) = db::get_application_by_job_and_profile(&state.pool, &job.id, &profile.id).await {
+        let mut changed = false;
+        if existing.tailored_resume_path.is_none() && resume_path.is_some() {
+            existing.tailored_resume_path = resume_path;
+            changed = true;
+        }
+        if existing.cover_letter_text.is_none() && cover_letter.is_some() {
+            existing.cover_letter_text = cover_letter;
+            changed = true;
+        }
+        if changed {
+            existing.updated_at = chrono_lite_iso();
+            let _ = db::create_or_update_application(&state.pool, &existing).await;
+        }
+        return Ok(existing);
+    }
+
     let app_id = format!("app_{}_{}", job.id, uuid::Uuid::new_v4().simple());
     let now = chrono_lite_iso();
 
@@ -783,7 +811,7 @@ pub async fn pipeline_start_discovery(
         .ok_or_else(|| "No candidate profile found.".to_string())?;
 
     let keywords: Vec<String> = profile.skills.iter().map(|s| s.name.clone()).take(6).collect();
-    let jobs = jobs_search(
+    let search_res = jobs_search(
         state.clone(),
         JobsSearchQueryDto {
             keywords: if keywords.is_empty() { None } else { Some(keywords) },
@@ -796,12 +824,40 @@ pub async fn pipeline_start_discovery(
     )
     .await?;
 
+    if !search_res.sources.is_empty()
+        && search_res.sources.iter().all(|s| s.status == "failed")
+        && search_res.jobs.is_empty()
+    {
+        let err_msg = "All job sources failed to respond. Check your internet connection and try again.";
+        let _ = db::update_task_status(&state.pool, &task_id, "failed", None, Some(err_msg)).await;
+        return Err(err_msg.to_string());
+    }
+
     let _ = db::update_task_status(&state.pool, &task_id, "done", None, None).await;
     let _ = app_handle.emit(
         "task:progress",
         json!({ "taskId": task_id, "stage": "discover", "pct": 100, "message": "Discovery complete" }),
     );
-    Ok(jobs)
+    Ok(search_res.jobs)
+}
+
+pub(crate) fn extract_export_pdf_path(pdf_val: &serde_json::Value) -> Option<String> {
+    pdf_val
+        .get("outputPath")
+        .and_then(|v| v.as_str())
+        .or_else(|| pdf_val.get("filePath").and_then(|v| v.as_str()))
+        .or_else(|| pdf_val.as_str())
+        .map(|s| s.to_string())
+        .filter(|s| !s.is_empty())
+}
+
+#[tauri::command]
+#[specta::specta]
+pub async fn pipeline_cancel(state: State<'_, AppState>) -> Result<(), String> {
+    state
+        .pipeline_cancelled
+        .store(true, std::sync::atomic::Ordering::SeqCst);
+    Ok(())
 }
 
 #[tauri::command]
@@ -811,6 +867,9 @@ pub async fn applications_prepare(
     state: State<'_, AppState>,
     job_ids: Vec<String>,
 ) -> Result<Vec<ApplicationRecordDto>, String> {
+    state
+        .pipeline_cancelled
+        .store(false, std::sync::atomic::Ordering::SeqCst);
     let profile = db::get_profile(&state.pool)
         .await
         .map_err(|e| format!("DB error: {}", e))?
@@ -820,8 +879,13 @@ pub async fn applications_prepare(
     let total = job_ids.len().max(1);
 
     for (idx, job_id) in job_ids.iter().enumerate() {
+        if state.pipeline_cancelled.load(std::sync::atomic::Ordering::SeqCst) {
+            break;
+        }
         let task_id = format!("task_prep_{}", uuid::Uuid::new_v4().simple());
-        let _ = db::create_task(&state.pool, &task_id, "tailor", &json!({ "jobId": job_id }).to_string()).await;
+        if let Err(e) = db::create_task(&state.pool, &task_id, "tailor", &json!({ "jobId": job_id }).to_string()).await {
+            tracing::warn!(job_id = %job_id, error = %e, "Failed to persist tailor task row");
+        }
         let pct = ((idx + 1) * 100) / total;
         let _ = app_handle.emit(
             "task:progress",
@@ -830,33 +894,61 @@ pub async fn applications_prepare(
 
         let mut cover_letter: Option<String> = None;
         let mut resume_path: Option<String> = None;
-        if let Ok(job_opt) = db::get_job_by_id(&state.pool, job_id).await {
-            if let Some(job) = job_opt {
-                if let Ok(tailor_res) = state
+        let mut prep_error: Option<String> = None;
+
+        match db::get_job_by_id(&state.pool, job_id).await {
+            Ok(Some(job)) => {
+                let doc_lang = if job.description_markdown.chars().any(|c| ('\u{0600}'..='\u{06FF}').contains(&c)) {
+                    "fa"
+                } else {
+                    "en"
+                };
+                match state
                     .engine
                     .request(
                         "documents.tailor",
-                        json!({ "profile": profile, "job": job, "templateId": "ats-clean", "language": "en" }),
+                        json!({ "profile": profile, "job": job, "templateId": "ats-clean", "language": doc_lang }),
                     )
                     .await
                 {
-                    cover_letter = tailor_res
-                        .get("coverLetterText")
-                        .and_then(|v| v.as_str())
-                        .map(|s| s.to_string());
-                    if let Some(html) = tailor_res.get("resumeHtml").and_then(|v| v.as_str()) {
-                        if let Ok(pdf_val) = state
-                            .engine
-                            .request(
-                                "documents.exportPdf",
-                                json!({ "html": html, "filename": format!("tailored_{}.pdf", job_id) }),
-                            )
-                            .await
-                        {
-                            resume_path = pdf_val.as_str().map(|s| s.to_string());
+                    Ok(tailor_res) => {
+                        cover_letter = tailor_res
+                            .get("coverLetterText")
+                            .and_then(|v| v.as_str())
+                            .map(|s| s.to_string());
+                        if let Some(html) = tailor_res.get("resumeHtml").and_then(|v| v.as_str()) {
+                            match state
+                                .engine
+                                .request(
+                                    "documents.exportPdf",
+                                    json!({ "html": html, "filename": format!("tailored_{}.pdf", job_id) }),
+                                )
+                                .await
+                            {
+                                Ok(pdf_val) => {
+                                    resume_path = extract_export_pdf_path(&pdf_val);
+                                    if resume_path.is_none() {
+                                        prep_error = Some("Tailored résumé PDF export returned no output path.".to_string());
+                                    }
+                                }
+                                Err(e) => {
+                                    prep_error = Some(format!("Tailored résumé PDF export failed: {}", e));
+                                }
+                            }
+                        } else {
+                            prep_error = Some("Tailored résumé HTML was empty.".to_string());
                         }
                     }
+                    Err(e) => {
+                        prep_error = Some(format!("Document tailoring failed: {}", e));
+                    }
                 }
+            }
+            Ok(None) => {
+                prep_error = Some(format!("Job '{}' not found in local database.", job_id));
+            }
+            Err(e) => {
+                prep_error = Some(format!("Database error loading job '{}': {}", job_id, e));
             }
         }
 
@@ -868,15 +960,39 @@ pub async fn applications_prepare(
             cover_letter,
         )
         .await?;
-        let _ = application_fsm::transition_application(
-            &state.pool,
-            &created.id,
-            application_fsm::AppTransitionEvent::PrepareKit,
-            Some(&app_handle),
-        )
-        .await;
-        let _ = db::update_task_status(&state.pool, &task_id, "done", None, None).await;
-        prepared.push(created);
+
+        if let Some(ref err_msg) = prep_error {
+            tracing::error!(job_id = %job_id, error = %err_msg, "applications_prepare failed tailoring/PDF export");
+            let _ = app_handle.emit(
+                "task:progress",
+                json!({ "taskId": task_id, "appId": created.id, "stage": "error", "pct": pct, "message": err_msg, "error": err_msg }),
+            );
+            let _ = db::update_application_review_outcome(
+                &state.pool,
+                &created.id,
+                "needs_user",
+                Some("tailoring_failed"),
+                Some(err_msg),
+                "[]",
+            )
+            .await;
+            let _ = db::update_task_status(&state.pool, &task_id, "failed", None, Some(err_msg)).await;
+            let updated = db::get_application_by_id(&state.pool, &created.id)
+                .await
+                .map_err(|e| format!("DB error: {}", e))?
+                .unwrap_or(created);
+            prepared.push(updated);
+        } else {
+            let _ = application_fsm::transition_application(
+                &state.pool,
+                &created.id,
+                application_fsm::AppTransitionEvent::PrepareKit,
+                Some(&app_handle),
+            )
+            .await;
+            let _ = db::update_task_status(&state.pool, &task_id, "done", None, None).await;
+            prepared.push(created);
+        }
     }
 
     Ok(prepared)
@@ -892,6 +1008,10 @@ pub async fn applications_fill(
     let mut results = Vec::new();
     let total = app_ids.len().max(1);
     for (idx, app_id) in app_ids.iter().enumerate() {
+        if state.pipeline_cancelled.load(std::sync::atomic::Ordering::SeqCst) {
+            let _ = state.engine.request("application.cancel", json!({ "id": app_id })).await;
+            break;
+        }
         let pct = ((idx + 1) * 100) / total;
         let _ = app_handle.emit(
             "task:progress",
@@ -899,6 +1019,10 @@ pub async fn applications_fill(
         );
         let updated = applications_execute_review(app_handle.clone(), state.clone(), app_id.clone()).await?;
         results.push(updated);
+        if state.pipeline_cancelled.load(std::sync::atomic::Ordering::SeqCst) {
+            let _ = state.engine.request("application.cancel", json!({ "id": app_id })).await;
+            break;
+        }
     }
     Ok(results)
 }
@@ -998,7 +1122,19 @@ pub async fn applications_execute_review(
         .map(|s| s.to_string());
     let screenshot = save_screenshot_to_disk(&app_handle, &app.id, "before_submit", raw_screenshot);
 
-    let checklist_val = res.get("reviewChecklist").cloned().unwrap_or(json!([]));
+    let mut checklist_val = res.get("reviewChecklist").cloned().unwrap_or(json!([]));
+    if app.tailored_resume_path.is_none() && resolved_resume_path.is_some() {
+        if let Some(arr) = checklist_val.as_array_mut() {
+            arr.push(json!({
+                "id": "fallback_original_cv",
+                "label": "Résumé file",
+                "value": resolved_resume_path.as_deref().unwrap_or("original_cv"),
+                "status": "mismatch",
+                "source": "profile",
+                "note": "Tailored résumé PDF was unavailable; original uploaded CV was attached instead."
+            }));
+        }
+    }
     let checklist_json = serde_json::to_string(&checklist_val).unwrap_or_else(|_| "[]".to_string());
 
     let mapped_status = map_execute_status(&res);
@@ -1441,5 +1577,22 @@ mod tests {
         assert!(size > 0);
 
         let _ = std::fs::remove_dir_all(&base);
+    }
+
+    #[test]
+    fn test_extract_export_pdf_path_reads_object_output_path() {
+        let engine_obj = json!({
+            "success": true,
+            "size": 12450,
+            "outputPath": "C:\\Users\\Test\\AppData\\Local\\Kaarjoo\\exports\\tailored_job1.pdf",
+            "filePath": "C:\\Users\\Test\\AppData\\Local\\Kaarjoo\\exports\\tailored_job1.pdf"
+        });
+        assert_eq!(
+            extract_export_pdf_path(&engine_obj),
+            Some("C:\\Users\\Test\\AppData\\Local\\Kaarjoo\\exports\\tailored_job1.pdf".to_string())
+        );
+
+        let missing_obj = json!({ "success": false });
+        assert_eq!(extract_export_pdf_path(&missing_obj), None);
     }
 }

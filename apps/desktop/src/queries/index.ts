@@ -80,7 +80,14 @@ export function useJobs(query?: JobsSearchQueryDto) {
         limit: 50,
       });
       if (res.status === 'error') throw new Error(res.error);
-      return res.data;
+      if (
+        res.data.sources.length > 0 &&
+        res.data.sources.every((s) => s.status === 'failed') &&
+        res.data.jobs.length === 0
+      ) {
+        throw new Error('ALL_SOURCES_FAILED');
+      }
+      return res.data.jobs;
     },
   });
 }

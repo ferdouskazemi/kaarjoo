@@ -222,9 +222,7 @@ describe('Prompt 5 Browser Co-Pilot (Playwright)', () => {
     expect(session).toBeTruthy();
 
     await session.page.fill('#first_name', 'Sara Edited');
-    await session.page.waitForTimeout(250);
-
-    expect(notifications.length).toBeGreaterThan(0);
+    await expect.poll(() => notifications.length, { timeout: 3000 }).toBeGreaterThan(0);
     const latest = notifications[notifications.length - 1].checklist;
     const firstName = latest.find((i) => i.id === 'first_name');
     expect(firstName?.status).toBe('user_edited');

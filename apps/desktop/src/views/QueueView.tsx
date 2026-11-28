@@ -126,7 +126,7 @@ export const QueueView: React.FC = () => {
       }
     : undefined;
 
-  const isUsingDb = dbApplications.length > 0;
+  const isUsingDb = !demoMode;
   const isExecuting = executeReviewMutation.isPending || storeIsExecuting;
 
   const handleResume = async (id: string) => {

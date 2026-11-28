@@ -14,6 +14,17 @@ import {
   AssistJobAdapter,
 } from '@kaarjoo/adapters';
 
+export interface SourceSearchStatus {
+  id: string;
+  status: 'ok' | 'failed';
+  error?: string;
+}
+
+export interface SearchJobsWithStatusResult {
+  jobs: JobStub[];
+  sources: SourceSearchStatus[];
+}
+
 export class JobSourcesManager {
   private customBoards: CompanyBoard[] = [];
 
@@ -41,26 +52,69 @@ export class JobSourcesManager {
     adapterId?: string;
     companySlug?: string;
   }): Promise<JobStub[]> {
+    const res = await this.searchJobsWithStatus(params);
+    return res.jobs;
+  }
+
+  public async searchJobsWithStatus(params: {
+    query?: Partial<SearchQuery>;
+    adapterId?: string;
+    companySlug?: string;
+  }): Promise<SearchJobsWithStatusResult> {
     const query: SearchQuery = {
       limit: 50,
       ...params.query,
     };
     const limit = query.limit;
     const results: JobStub[] = [];
+    const sources: SourceSearchStatus[] = [];
 
     // If specific adapter requested
     if (params.adapterId) {
       const adapter = defaultAdapterRegistry.get(params.adapterId);
       if (adapter) {
-        for await (const stub of adapter.search(query, {
-          httpClient: defaultPoliteClient,
-          companySlug: params.companySlug,
-        })) {
-          results.push(stub);
-          if (results.length >= limit) break;
+        try {
+          for await (const stub of adapter.search(query, {
+            httpClient: defaultPoliteClient,
+            companySlug: params.companySlug,
+          })) {
+            results.push(stub);
+            if (results.length >= limit) break;
+          }
+          sources.push({ id: params.adapterId, status: 'ok' });
+        } catch (err) {
+          sources.push({
+            id: params.adapterId,
+            status: 'failed',
+            error: err instanceof Error ? err.message : String(err),
+          });
         }
       }
-      return results;
+      return { jobs: results, sources };
+    }
+
+    // P1-7: Include Afghanistan local adapters (ACBAR + Jobs.af) when location targets Afghanistan/Kabul
+    const wantsAfghanistan = (query.locations || []).some((loc) =>
+      /\b(afghanistan|kabul)\b/i.test(loc)
+    );
+    if (wantsAfghanistan) {
+      for (const localId of ['acbar', 'jobs_af']) {
+        const localAdapter = defaultAdapterRegistry.get(localId);
+        if (!localAdapter) continue;
+        try {
+          for await (const stub of localAdapter.search(query, { httpClient: defaultPoliteClient })) {
+            results.push(stub);
+            if (results.length >= limit) break;
+          }
+          sources.push({ id: localId, status: 'ok' });
+        } catch (err) {
+          sources.push({
+            id: localId,
+            status: 'failed',
+            error: err instanceof Error ? err.message : String(err),
+          });
+        }
+      }
     }
 
     // Default multi-source search: WeWorkRemotely RSS + top active seeded boards
@@ -71,8 +125,13 @@ export class JobSourcesManager {
           results.push(stub);
           if (results.length >= Math.floor(limit / 2)) break;
         }
-      } catch {
-        // Continue if one source fails
+        sources.push({ id: 'weworkremotely', status: 'ok' });
+      } catch (err) {
+        sources.push({
+          id: 'weworkremotely',
+          status: 'failed',
+          error: err instanceof Error ? err.message : String(err),
+        });
       }
     }
 
@@ -96,12 +155,17 @@ export class JobSourcesManager {
           results.push(stub);
           if (results.length >= limit) break;
         }
-      } catch {
-        // Polite: ignore single board failures
+        sources.push({ id: `${board.atsType}:${board.boardSlug}`, status: 'ok' });
+      } catch (err) {
+        sources.push({
+          id: `${board.atsType}:${board.boardSlug}`,
+          status: 'failed',
+          error: err instanceof Error ? err.message : String(err),
+        });
       }
     }
 
-    return results;
+    return { jobs: results, sources };
   }
 
   public async fetchDetail(stub: JobStub): Promise<JobPosting> {

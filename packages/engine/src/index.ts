@@ -256,8 +256,11 @@ server.register('jobs.search', {
             limit: params?.limit ?? 50,
           },
         };
-    const jobs = await defaultJobSourcesManager.searchJobs(normalized as any);
-    return jobs.map(toJobPostingDto);
+    const res = await defaultJobSourcesManager.searchJobsWithStatus(normalized as any);
+    return {
+      jobs: res.jobs.map(toJobPostingDto),
+      sources: res.sources,
+    };
   },
 });
 

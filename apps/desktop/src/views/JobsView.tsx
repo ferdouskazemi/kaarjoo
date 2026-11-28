@@ -40,7 +40,7 @@ export const JobsView: React.FC = () => {
 
   const { data: dbProfile, isLoading: isProfileLoading } = useProfile();
   const profile = dbProfile ?? (demoMode ? demoProfile : null);
-  const { data: dbJobs = [], refetch: refetchJobs } = useJobs();
+  const { data: dbJobs = [], isError: isJobsError, refetch: refetchJobs } = useJobs();
   const createApplication = useCreateApplication();
 
   const [isSyncing, setIsSyncing] = useState(false);
@@ -143,12 +143,15 @@ export const JobsView: React.FC = () => {
     }
   };
 
+  const [syncError, setSyncError] = useState<string | null>(null);
+
   // Live crawl via Node engine sidecar & Rust core
   const handleSync = async () => {
     setIsSyncing(true);
+    setSyncError(null);
     try {
       const keywords = profile?.skills?.map((s) => s.name).slice(0, 5) || null;
-      await commands.jobsSearch({
+      const res = await commands.jobsSearch({
         keywords,
         locations: null,
         remoteOnly: null,
@@ -156,8 +159,18 @@ export const JobsView: React.FC = () => {
         atsType: null,
         limit: 50,
       });
+      if (res.status === 'error') {
+        setSyncError(res.error);
+      } else if (
+        res.data.sources.length > 0 &&
+        res.data.sources.every((s) => s.status === 'failed') &&
+        res.data.jobs.length === 0
+      ) {
+        setSyncError(t('jobs.networkErrorDesc'));
+      }
       await refetchJobs();
     } catch (err) {
+      setSyncError(err instanceof Error ? err.message : t('jobs.networkErrorDesc'));
       console.error('Failed to sync live jobs:', err);
     } finally {
       setIsSyncing(false);
@@ -627,19 +640,37 @@ export const JobsView: React.FC = () => {
             </div>
           ))}
         </div>
+      ) : (syncError || isJobsError) && displayJobs.length === 0 ? (
+        <div className="rounded-2xl border border-danger/30 bg-surface p-12 text-center flex flex-col items-center justify-center gap-3">
+          <Briefcase className="w-10 h-10 text-danger" />
+          <h3 className="text-base font-semibold text-text">{t('jobs.networkErrorTitle')}</h3>
+          <p className="text-xs text-muted max-w-sm">
+            {syncError || t('jobs.networkErrorDesc')}
+          </p>
+          <Button variant="primary" size="sm" onClick={() => void handleSync()} loading={isSyncing}>
+            <span>{t('common.retry')}</span>
+          </Button>
+        </div>
       ) : (
-        <div className="rounded-2xl border border-slate-800/80 bg-slate-900/30 p-16 text-center flex flex-col items-center justify-center">
-          <Briefcase className="w-12 h-12 text-slate-600 mb-4" />
+        <div className="rounded-2xl border border-slate-800/80 bg-slate-900/30 p-16 text-center flex flex-col items-center justify-center gap-3">
+          <Briefcase className="w-12 h-12 text-slate-600 mb-1" />
           <h3 className="text-base font-semibold text-slate-200">
             {displayJobs.length === 0
-              ? t('jobs.noJobsYet')
+              ? t('jobs.noMatchingJobs')
               : t('jobs.noJobsFound')}
           </h3>
-          <p className="text-xs text-slate-400 mt-1 max-w-sm">
+          <p className="text-xs text-slate-400 max-w-sm">
             {displayJobs.length === 0
               ? t('jobs.noJobsYetDesc')
               : t('jobs.noJobsFoundDesc')}
           </p>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setCurrentView('preferences')}
+          >
+            <span>{t('jobs.editPreferences')}</span>
+          </Button>
         </div>
       )}
 

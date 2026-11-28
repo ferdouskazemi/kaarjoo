@@ -231,3 +231,13 @@
   - **v3 Tokens & Flash-Rive Motion (`apps/desktop/src/styles/tokens.css`, `motion.ts`):** Aligned color tokens to `docs/design/v3/_base.css` (`#0E1013`/`#15191E`/`#5B93FF`/`#3FC48F`/`#F3B84B`/`#F26B5E`) with WCAG AA contrast (`>= 4.5:1`), 16px Persian / 15px English body, and `flash-rive` spring/swipe/drawer/pill motion presets.
   - **v3 Shell & Floating Activity Pill (`Sidebar.tsx`, `AppShell.tsx`, `ActivityPill.tsx`):** Replaced 232px sidebar and page-top `AutoPipelineBar` with a 76px 3-item icon rail (`Today`, `Jobs`, `Apps`) + bottom avatar menu + floating bottom-end `ActivityPill` and 440px drawer.
   - **v3 Views (`HomeView.tsx`, `JobsView.tsx`, `QueueView.tsx`):** Rebuilt Today with one priority hero card + 2 quiet cards; Jobs with default "For you" 620px Focus Card (spring swipe, 3 reasons, 5s Undo, Sources modal); Review Inbox with collapsed 3-line summary, expanded blockers only, and Send gate.
+
+### Pipeline Reliability & Matching Hardening (`fix/pipeline-p0-p2`)
+- **Status:** COMPLETED & VERIFIED
+- **Evidence:**
+  - `P0-1`: Reconnected `startApplyStage` to `ActivityPill.tsx` with per-job selection checkboxes and `Prepare & fill (N)` button; deleted unused `AutoPipelineBar.tsx`; added `ActivityPill.test.tsx`.
+  - `P0-2`: Fixed `applications_prepare` in `commands.rs` to read `outputPath`/`filePath` from `documents.exportPdf` object, replaced silent `if let Ok` chains with explicit `needs_user` + `stopMessage` + `task:progress` error events, added Rust unit test (`test_extract_export_pdf_path_reads_object_output_path`) and `exportPdf` contract test in `rpc.test.ts`.
+  - `P0-3`: Added `roleFamily.ts` role-family classifier, whole-word skill matching (`\breact\b` ignores `"react quickly"`), minimum score `55` filter with empty-state `Edit preferences` link, and 5-job regression test in `matching.test.ts`.
+  - `P1-4`..`P1-8`: Added `20260901_unique_job_profile_applications.sql` migration + `applications_create` dedup, real `pipeline_cancel` token in Rust `AppState`, `{ jobs, sources }` status reporting in `jobs.search` + network retry UI, default `acbar`/`jobs_af` inclusion for Afghanistan/Kabul, and honest `browser_launch_failed` error mapping (`errors.browserLaunchFailed`).
+  - `P2`: Explicit `!demoMode` flag in `QueueView.tsx`, sorted `startDiscoveryStage` before `slice(0, 5)`, language detection for `documents.tailor`, lazy-loaded views in `AppShell.tsx` (`709.91 kB` main bundle), and `server.closeAllConnections()` in `eval/scripts/smoke-test.ts`.
+  - Verified: `pnpm build` (exit 0), `pnpm test` (**34/34 files, 140/140 tests**), `pnpm lint` (exit 0), `pnpm smoke:test` (7/7 stages, `SMOKE TEST PASSED 100%!`), `cargo test` (**13/13 tests**), and `pipeline_e2e.test.ts` (uploads tailored PDF, not original CV).

@@ -1,4 +1,5 @@
 import type { JobPosting, UserPreferences, UserProfile } from '@kaarjoo/shared';
+import { isRoleFamilyCompatible } from './roleFamily.js';
 
 export interface HardFilterResult {
   passed: boolean;
@@ -77,6 +78,25 @@ export function evaluateHardFilters(
   const redFlags: string[] = [];
   const passedFilters: string[] = [];
   let score = 100;
+
+  // 0. Check Role-Family Compatibility
+  const targetTitles =
+    prefs?.targetTitles && prefs.targetTitles.length > 0
+      ? prefs.targetTitles
+      : profile.targetTitles;
+  const familyCheck = isRoleFamilyCompatible(targetTitles, job.title);
+  if (!familyCheck.compatible) {
+    redFlags.push(
+      `Role family mismatch: "${job.title}" (${familyCheck.jobFamily}) does not match target role family (${familyCheck.profileFamilies.join(', ')})`
+    );
+    return {
+      passed: false,
+      score: 15,
+      reasons: ['Job role belongs to a different career family'],
+      redFlags,
+      passedFilters,
+    };
+  }
 
   // 1. Check Expiration
   if (job.expiresAt) {

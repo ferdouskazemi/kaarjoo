@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { Suspense, lazy, useEffect, useRef } from 'react';
 import { MotionConfig } from 'motion/react';
 import { TitleBar } from './TitleBar.js';
 import { Sidebar } from './Sidebar.js';
@@ -7,13 +7,14 @@ import { ActivityPill } from '../pipeline/ActivityPill.js';
 import { useAppStore, type AppView } from '../../stores/appStore.js';
 import { commands } from '../../bindings.js';
 import { useProfile } from '../../queries/index.js';
-import { HomeView } from '../../views/HomeView.js';
-import { ProfileView } from '../../views/ProfileView.js';
-import { JobsView } from '../../views/JobsView.js';
-import { QueueView } from '../../views/QueueView.js';
-import { ApplicationsView } from '../../views/ApplicationsView.js';
-import { SettingsView } from '../../views/SettingsView.js';
-import { PreferencesPanel } from '../profile/PreferencesPanel.js';
+
+const HomeView = lazy(() => import('../../views/HomeView.js').then((m) => ({ default: m.HomeView })));
+const ProfileView = lazy(() => import('../../views/ProfileView.js').then((m) => ({ default: m.ProfileView })));
+const JobsView = lazy(() => import('../../views/JobsView.js').then((m) => ({ default: m.JobsView })));
+const QueueView = lazy(() => import('../../views/QueueView.js').then((m) => ({ default: m.QueueView })));
+const ApplicationsView = lazy(() => import('../../views/ApplicationsView.js').then((m) => ({ default: m.ApplicationsView })));
+const SettingsView = lazy(() => import('../../views/SettingsView.js').then((m) => ({ default: m.SettingsView })));
+const PreferencesPanel = lazy(() => import('../profile/PreferencesPanel.js').then((m) => ({ default: m.PreferencesPanel })));
 
 const G_SHORTCUTS: Record<string, AppView> = {
   h: 'home',
@@ -119,7 +120,9 @@ export const AppShell: React.FC = () => {
         <div className="flex flex-1 overflow-hidden relative">
           <Sidebar />
           <main className="flex-1 overflow-y-auto flex flex-col bg-bg relative">
-            {renderCurrentView()}
+            <Suspense fallback={<div className="flex-1 flex items-center justify-center text-sm text-muted">Loading…</div>}>
+              {renderCurrentView()}
+            </Suspense>
           </main>
           <ActivityPill />
         </div>

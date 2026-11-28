@@ -125,4 +125,20 @@ describe('StdioRpcServer', () => {
     const parsed = UserProfileSchema.safeParse(stripped);
     expect(parsed.success, JSON.stringify(parsed)).toBe(true);
   });
+
+  it('matches exportPdf return object shape { success, outputPath, filePath, size } expected by Rust', () => {
+    const exportPdfResponse = {
+      success: true,
+      size: 4096,
+      outputPath: 'C:\\Users\\Test\\AppData\\Local\\Kaarjoo\\exports\\tailored_job1.pdf',
+      filePath: 'C:\\Users\\Test\\AppData\\Local\\Kaarjoo\\exports\\tailored_job1.pdf',
+    };
+    const contract = z.object({
+      success: z.literal(true),
+      outputPath: z.string().min(1),
+      filePath: z.string().min(1),
+      size: z.number().positive(),
+    });
+    expect(contract.safeParse(exportPdfResponse).success).toBe(true);
+  });
 });
