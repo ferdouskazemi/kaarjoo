@@ -195,3 +195,12 @@
   - `packages/engine/src/ingestion/provenance.ts` & `pipeline.ts`: Built per-field provenance spans and `issues[]` blockers/warnings; streamed `profile.progress` notifications (`reading`, `ocr`, `sections`, `facts`, `llm`) in `packages/engine/src/index.ts`.
   - `packages/engine/src/ingestion/extractors/{contact,experience,education}.ts`: Added international fallback phone parsing, ` - ` hyphenated title/company splitting, Persian `شرکت:`/`سمت:` labels, `"تاکنون"` Jalali end dates, two-line header preservation across multi-job sections, and removed `'University'`/`'Degree'`/`'2020'` placeholders.
   - `packages/engine/src/ingestion/__tests__/provenance_issues.test.ts`: Added provenance span, `profile.progress`, and `issues[]` tests.
+
+### Prompt 7: Design System & App Shell (`feat/p7-design-system-shell`)
+- **Status:** COMPLETED & VERIFIED
+- **Changes:**
+  - `docs/design/`: Saved reference mockups (`0-flow.png`, `1-profile-review.jpg`, `3-application-kit.jpg`, `5-review-inbox.jpg`).
+  - `apps/desktop/src/styles/tokens.css` & `index.css`: Created token-based dark/light CSS variables mapped to Tailwind v4 `@theme` (radii `6/10/14px`, WCAG AA contrast pairs, `15px` minimum Persian body, `prefers-reduced-motion`).
+  - `apps/desktop/src/components/ui/`: Added shadcn-style primitives (`Button`, `Badge`/`Chip`, `Card`, `Input`, `Textarea`, `SegmentedControl`, `Tabs`, `Table`, `Stepper`, `ScoreRing`, `Meter`, `EmptyState`, `ErrorState`, `Skeleton`, `Dialog`, `KeyboardHint`, `FieldRow`) with `focus-visible` rings and `40px` min hit area.
+  - `apps/desktop/src/components/layout/{TitleBar,Sidebar,AppShell,CommandPalette}.tsx`: Rebuilt `232px` sidebar with red "needs you" badge, plain-language footer status, jargon-free title bar, `<MotionConfig reducedMotion="user">`, and global `G` + `H/P/O/R/T/S` + `⌘K`/`Esc` shortcuts.
+  - `apps/desktop/src/styles/__tests__/design_system.test.ts`: Added WCAG AA contrast verification across all dark/light token pairs and raw-hex / `<12px` lint tests for `components/ui/` and `components/layout/`.

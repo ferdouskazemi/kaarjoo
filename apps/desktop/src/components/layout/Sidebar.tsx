@@ -1,20 +1,23 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAppStore, AppView } from '../../stores/appStore';
-import { useApplicationStore } from '../../stores/applicationStore';
+import { useAppStore, AppView } from '../../stores/appStore.js';
 import { useApplications } from '../../queries/index.js';
+import { TARGET_LANGUAGE_LABELS } from '../../i18n/constants.js';
+import { formatNumber } from '../../utils/formatters.js';
+import { cn } from '../ui/cn.js';
+import { Badge } from '../ui/Badge.js';
+import { KeyboardHint } from '../ui/KeyboardHint.js';
 import {
   LayoutDashboard,
   User,
   Briefcase,
-  ListTodo,
+  Inbox,
   CheckCircle2,
   Settings,
   Search,
   Languages,
   Moon,
   Sun,
-  ShieldCheck,
 } from 'lucide-react';
 
 interface NavItem {
@@ -26,82 +29,90 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { id: 'home', labelKey: 'nav.home', icon: LayoutDashboard, shortcut: '1' },
-  { id: 'profile', labelKey: 'nav.profile', icon: User, shortcut: '2' },
-  { id: 'jobs', labelKey: 'nav.jobs', icon: Briefcase, shortcut: '3' },
-  { id: 'queue', labelKey: 'nav.queue', icon: ListTodo, badgeKey: 'queue', shortcut: '4' },
-  { id: 'applications', labelKey: 'nav.applications', icon: CheckCircle2, shortcut: '5' },
-  { id: 'settings', labelKey: 'nav.settings', icon: Settings, shortcut: '6' },
+  { id: 'home', labelKey: 'nav.home', icon: LayoutDashboard, shortcut: 'G H' },
+  { id: 'profile', labelKey: 'nav.profile', icon: User, shortcut: 'G P' },
+  { id: 'jobs', labelKey: 'nav.jobs', icon: Briefcase, shortcut: 'G O' },
+  { id: 'queue', labelKey: 'nav.queue', icon: Inbox, badgeKey: 'queue', shortcut: 'G R' },
+  { id: 'applications', labelKey: 'nav.applications', icon: CheckCircle2, shortcut: 'G T' },
+  { id: 'settings', labelKey: 'nav.settings', icon: Settings, shortcut: 'G S' },
 ];
-
-import { TARGET_LANGUAGE_LABELS } from '../../i18n/constants.js';
 
 export const Sidebar: React.FC = () => {
   const { t } = useTranslation();
-  const { currentView, setCurrentView, language, setLanguage, theme, setTheme, setCommandPaletteOpen } = useAppStore();
-  const { applications } = useApplicationStore();
+  const {
+    currentView,
+    setCurrentView,
+    language,
+    setLanguage,
+    theme,
+    setTheme,
+    setCommandPaletteOpen,
+    engineConnected,
+  } = useAppStore();
   const { data: dbApplications = [] } = useApplications();
-  const queueCount = dbApplications.length > 0 ? dbApplications.length : applications.length;
 
-  const toggleLanguage = () => {
-    setLanguage(language === 'fa' ? 'en' : 'fa');
-  };
+  const needsYouCount = dbApplications.filter(
+    (a) => a.status === 'needs_user' || a.status === 'needs_review'
+  ).length;
+  const hasChromeOpen = dbApplications.some((a) => a.status === 'needs_user' || a.status === 'submitting');
 
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
-  };
+  const footerStatusText = !engineConnected
+    ? 'Restarting engine…'
+    : hasChromeOpen
+    ? 'Chrome window open'
+    : 'Ready · works offline';
 
   return (
-    <aside className="w-60 border-e border-[#242424] bg-[#141414] flex flex-col justify-between p-3 select-none shrink-0 text-[#f4f4f5]">
+    <aside className="w-[232px] border-e border-border bg-surface flex flex-col justify-between p-3 select-none shrink-0 text-text">
       <div className="flex flex-col gap-2">
-        {/* Search / Command Bar Trigger (Flash-Rive Field Style) */}
         <button
+          type="button"
           onClick={() => setCommandPaletteOpen(true)}
-          className="flex items-center justify-between px-3 py-2 rounded-lg bg-[#1a1a1a] border border-[#282828] hover:border-[#383838] text-[#a1a1aa] hover:text-[#f4f4f5] transition-all text-xs cursor-pointer group"
+          aria-label={t('command.placeholder')}
+          className="min-h-[40px] flex items-center justify-between px-3 py-2 rounded-[var(--radius-md)] bg-surface-2 border border-border hover:border-border-strong text-muted hover:text-text transition-colors text-xs cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
         >
           <div className="flex items-center gap-2 min-w-0">
-            <Search className="w-3.5 h-3.5 text-[#71717a] group-hover:text-sky-400 transition-colors shrink-0" />
+            <Search className="w-3.5 h-3.5 text-muted group-hover:text-accent shrink-0" aria-hidden="true" />
             <span className="truncate">{t('command.placeholder')}</span>
           </div>
-          <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-[#222222] text-[#a1a1aa] rounded border border-[#2f2f2f]">
-            Ctrl+K
-          </kbd>
+          <KeyboardHint keys="⌘K" />
         </button>
 
-        {/* Navigation List */}
-        <nav className="mt-2 flex flex-col gap-1" aria-label="Main navigation">
+        <nav className="mt-1 flex flex-col gap-1" aria-label="Main navigation">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentView === item.id;
-            const badgeCount = item.badgeKey === 'queue' ? queueCount : undefined;
+            const showRedBadge = item.badgeKey === 'queue' && needsYouCount > 0;
 
             return (
               <button
                 key={item.id}
+                type="button"
                 onClick={() => setCurrentView(item.id)}
                 aria-current={isActive ? 'page' : undefined}
-                className={`group flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all cursor-pointer relative ${
+                className={cn(
+                  'group min-h-[40px] flex items-center justify-between px-3 py-2 rounded-[var(--radius-md)] text-sm font-medium transition-colors cursor-pointer',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
                   isActive
-                    ? 'bg-[#202020] text-[#f4f4f5] border border-[#333333] shadow-sm font-semibold active-ring'
-                    : 'text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#1a1a1a] border border-transparent'
-                }`}
+                    ? 'bg-surface-3 text-text border border-border-strong font-semibold'
+                    : 'text-text-2 hover:text-text hover:bg-surface-2 border border-transparent'
+                )}
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2.5 min-w-0">
                   <Icon
-                    className={`w-4 h-4 transition-colors ${
-                      isActive ? 'text-sky-400' : 'text-[#a1a1aa]'
-                    }`}
+                    className={cn('w-4 h-4 shrink-0', isActive ? 'text-accent' : 'text-muted')}
+                    aria-hidden="true"
                   />
-                  <span>{t(item.labelKey)}</span>
+                  <span className="truncate">{t(item.labelKey)}</span>
                 </div>
 
-                <div className="flex items-center gap-1.5">
-                  {badgeCount !== undefined && badgeCount > 0 && (
-                    <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono font-semibold tabular-nums bg-sky-500/20 text-sky-400 border border-sky-500/30">
-                      {badgeCount}
-                    </span>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {showRedBadge && (
+                    <Badge tone="bad" className="tabular-nums">
+                      {formatNumber(needsYouCount, language)}
+                    </Badge>
                   )}
-                  <span className="text-[10px] font-mono text-[#a1a1aa] opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span className="text-xs font-mono text-muted opacity-0 group-hover:opacity-100 transition-opacity">
                     {item.shortcut}
                   </span>
                 </div>
@@ -111,35 +122,43 @@ export const Sidebar: React.FC = () => {
         </nav>
       </div>
 
-      {/* Footer Controls & System Status */}
-      <div className="flex flex-col gap-2 pt-3 border-t border-[#242424]">
+      <div className="flex flex-col gap-2 pt-3 border-t border-border">
         <div className="flex items-center justify-between px-1">
           <button
-            onClick={toggleLanguage}
-            className="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-medium text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#202020] transition-colors cursor-pointer"
+            type="button"
+            onClick={() => setLanguage(language === 'fa' ? 'en' : 'fa')}
+            className="min-h-[40px] flex items-center gap-1.5 px-2.5 py-1.5 rounded-[var(--radius-sm)] text-xs font-medium text-text-2 hover:text-text hover:bg-surface-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             title={t('common.language')}
+            aria-label={t('common.language')}
           >
-            <Languages className="w-3.5 h-3.5" />
+            <Languages className="w-4 h-4" aria-hidden="true" />
             <span>{TARGET_LANGUAGE_LABELS[language]}</span>
           </button>
 
           <button
-            onClick={toggleTheme}
-            className="p-1.5 rounded-md text-[#a1a1aa] hover:text-[#f4f4f5] hover:bg-[#202020] transition-colors cursor-pointer"
+            type="button"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className="min-h-[40px] min-w-[40px] flex items-center justify-center rounded-[var(--radius-sm)] text-text-2 hover:text-text hover:bg-surface-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             title={t('common.theme')}
             aria-label={t('common.theme')}
           >
-            {theme === 'dark' ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
+            {theme === 'dark' ? (
+              <Moon className="w-4 h-4" aria-hidden="true" />
+            ) : (
+              <Sun className="w-4 h-4" aria-hidden="true" />
+            )}
           </button>
         </div>
 
-        {/* Local Verification Shield */}
-        <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-[#161616] border border-[#242424] text-[10px] text-[#71717a] font-mono">
-          <span className="flex items-center gap-1 text-emerald-400">
-            <ShieldCheck className="w-3 h-3" />
-            <span>100% LOCAL</span>
-          </span>
-          <span>ATS v1.0.0</span>
+        <div className="flex items-center gap-2 px-3 py-2 rounded-[var(--radius-md)] bg-surface-2 border border-border text-xs text-muted">
+          <span
+            className={cn(
+              'w-2 h-2 rounded-full shrink-0',
+              !engineConnected ? 'bg-warning' : hasChromeOpen ? 'bg-accent' : 'bg-success'
+            )}
+            aria-hidden="true"
+          />
+          <span className="truncate">{footerStatusText}</span>
         </div>
       </div>
     </aside>

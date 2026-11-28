@@ -3,11 +3,12 @@ import { Command } from 'cmdk';
 import { useTranslation } from 'react-i18next';
 import { useAppStore, AppView } from '../../stores/appStore.js';
 import { TARGET_LANGUAGE_LABELS } from '../../i18n/constants.js';
+import { KeyboardHint } from '../ui/KeyboardHint.js';
 import {
   LayoutDashboard,
   User,
   Briefcase,
-  ListTodo,
+  Inbox,
   CheckCircle2,
   Settings,
   Languages,
@@ -45,7 +46,7 @@ export const CommandPalette: React.FC = () => {
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-start justify-center pt-24 px-4"
+      className="fixed inset-0 z-50 bg-bg/80 backdrop-blur-xs flex items-start justify-center pt-24 px-4"
       role="dialog"
       aria-modal="true"
       aria-label={t('command.placeholder')}
@@ -53,96 +54,112 @@ export const CommandPalette: React.FC = () => {
         if (e.target === e.currentTarget) setCommandPaletteOpen(false);
       }}
     >
-      <div className="w-full max-w-lg rounded-xl border border-slate-800 bg-slate-900 shadow-2xl overflow-hidden animate-in fade-in-0 zoom-in-95 duration-150">
+      <div className="w-full max-w-lg rounded-[var(--radius-lg)] border border-border-strong bg-surface shadow-2xl overflow-hidden">
         <Command label="Command Menu" className="w-full flex flex-col">
-          <div className="flex items-center gap-2 px-3 border-b border-slate-800">
-            <Search className="w-4 h-4 text-slate-400 shrink-0" />
+          <div className="flex items-center gap-2 px-3 border-b border-border">
+            <Search className="w-4 h-4 text-muted shrink-0" aria-hidden="true" />
             <Command.Input
               autoFocus
               placeholder={t('command.placeholder')}
-              className="w-full py-3 bg-transparent text-sm text-slate-100 placeholder:text-slate-500 outline-none"
+              className="w-full py-3 bg-transparent text-sm text-text placeholder:text-muted outline-none"
             />
+            <KeyboardHint keys="Esc" />
           </div>
 
           <Command.List className="max-h-[420px] overflow-y-auto p-2 flex flex-col gap-1">
-            <Command.Empty className="py-6 text-center text-xs text-slate-500">
+            <Command.Empty className="py-6 text-center text-xs text-muted">
               {t('command.noResults')}
             </Command.Empty>
 
-            <Command.Group heading={t('command.navigate')} className="text-[11px] font-semibold text-slate-500 px-2 py-1">
+            <Command.Group heading={t('command.navigate')} className="text-xs font-semibold text-muted px-2 py-1">
               <Command.Item
                 onSelect={() => navigateTo('home')}
-                className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-slate-800/80 cursor-pointer"
+                className="flex items-center justify-between px-2.5 py-2 rounded-[var(--radius-md)] text-sm text-text-2 hover:text-text hover:bg-surface-2 cursor-pointer"
               >
-                <LayoutDashboard className="w-4 h-4 text-sky-400" />
-                <span>{t('nav.home')}</span>
+                <span className="flex items-center gap-2">
+                  <LayoutDashboard className="w-4 h-4 text-accent" aria-hidden="true" />
+                  <span>{t('nav.home')}</span>
+                </span>
+                <KeyboardHint keys="G H" />
               </Command.Item>
               <Command.Item
                 onSelect={() => navigateTo('profile')}
-                className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-slate-800/80 cursor-pointer"
+                className="flex items-center justify-between px-2.5 py-2 rounded-[var(--radius-md)] text-sm text-text-2 hover:text-text hover:bg-surface-2 cursor-pointer"
               >
-                <User className="w-4 h-4 text-sky-400" />
-                <span>{t('nav.profile')}</span>
+                <span className="flex items-center gap-2">
+                  <User className="w-4 h-4 text-accent" aria-hidden="true" />
+                  <span>{t('nav.profile')}</span>
+                </span>
+                <KeyboardHint keys="G P" />
               </Command.Item>
               <Command.Item
                 onSelect={() => navigateTo('jobs')}
-                className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-slate-800/80 cursor-pointer"
+                className="flex items-center justify-between px-2.5 py-2 rounded-[var(--radius-md)] text-sm text-text-2 hover:text-text hover:bg-surface-2 cursor-pointer"
               >
-                <Briefcase className="w-4 h-4 text-sky-400" />
-                <span>{t('nav.jobs')}</span>
+                <span className="flex items-center gap-2">
+                  <Briefcase className="w-4 h-4 text-accent" aria-hidden="true" />
+                  <span>{t('nav.jobs')}</span>
+                </span>
+                <KeyboardHint keys="G O" />
               </Command.Item>
               <Command.Item
                 onSelect={() => navigateTo('queue')}
-                className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-slate-800/80 cursor-pointer"
+                className="flex items-center justify-between px-2.5 py-2 rounded-[var(--radius-md)] text-sm text-text-2 hover:text-text hover:bg-surface-2 cursor-pointer"
               >
-                <ListTodo className="w-4 h-4 text-sky-400" />
-                <span>{t('nav.queue')}</span>
+                <span className="flex items-center gap-2">
+                  <Inbox className="w-4 h-4 text-accent" aria-hidden="true" />
+                  <span>{t('nav.queue')}</span>
+                </span>
+                <KeyboardHint keys="G R" />
               </Command.Item>
               <Command.Item
                 onSelect={() => navigateTo('applications')}
-                className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-slate-800/80 cursor-pointer"
+                className="flex items-center justify-between px-2.5 py-2 rounded-[var(--radius-md)] text-sm text-text-2 hover:text-text hover:bg-surface-2 cursor-pointer"
               >
-                <CheckCircle2 className="w-4 h-4 text-sky-400" />
-                <span>{t('nav.applications')}</span>
+                <span className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-accent" aria-hidden="true" />
+                  <span>{t('nav.applications')}</span>
+                </span>
+                <KeyboardHint keys="G T" />
               </Command.Item>
               <Command.Item
                 onSelect={() => navigateTo('settings')}
-                className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-slate-800/80 cursor-pointer"
+                className="flex items-center justify-between px-2.5 py-2 rounded-[var(--radius-md)] text-sm text-text-2 hover:text-text hover:bg-surface-2 cursor-pointer"
               >
-                <Settings className="w-4 h-4 text-sky-400" />
-                <span>{t('nav.settings')}</span>
+                <span className="flex items-center gap-2">
+                  <Settings className="w-4 h-4 text-accent" aria-hidden="true" />
+                  <span>{t('nav.settings')}</span>
+                </span>
+                <KeyboardHint keys="G S" />
               </Command.Item>
             </Command.Group>
 
-            <Command.Group heading={t('command.actions')} className="text-[11px] font-semibold text-slate-500 px-2 py-1 mt-1 border-t border-slate-800/60 pt-1">
+            <Command.Group heading={t('command.actions')} className="text-xs font-semibold text-muted px-2 py-1 mt-1 border-t border-border pt-1">
               <Command.Item
                 onSelect={() => {
                   setLanguage(language === 'fa' ? 'en' : 'fa');
                   setCommandPaletteOpen(false);
                 }}
-                className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-slate-800/80 cursor-pointer"
+                className="flex items-center gap-2 px-2.5 py-2 rounded-[var(--radius-md)] text-sm text-text-2 hover:text-text hover:bg-surface-2 cursor-pointer"
               >
-                <Languages className="w-4 h-4 text-emerald-400" />
-                <span>{TARGET_LANGUAGE_LABELS[language]}</span>
+                <Languages className="w-4 h-4 text-accent" aria-hidden="true" />
+                <span>
+                  {t('common.language')}: {TARGET_LANGUAGE_LABELS[language === 'fa' ? 'en' : 'fa']}
+                </span>
               </Command.Item>
               <Command.Item
                 onSelect={() => {
                   setTheme(theme === 'dark' ? 'light' : 'dark');
                   setCommandPaletteOpen(false);
                 }}
-                className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-slate-800/80 cursor-pointer"
+                className="flex items-center gap-2 px-2.5 py-2 rounded-[var(--radius-md)] text-sm text-text-2 hover:text-text hover:bg-surface-2 cursor-pointer"
               >
                 {theme === 'dark' ? (
-                  <>
-                    <Sun className="w-4 h-4 text-amber-400" />
-                    <span>{t('common.light')}</span>
-                  </>
+                  <Sun className="w-4 h-4 text-warning" aria-hidden="true" />
                 ) : (
-                  <>
-                    <Moon className="w-4 h-4 text-indigo-400" />
-                    <span>{t('common.dark')}</span>
-                  </>
+                  <Moon className="w-4 h-4 text-accent" aria-hidden="true" />
                 )}
+                <span>{t('common.theme')}: {theme === 'dark' ? 'Light' : 'Dark'}</span>
               </Command.Item>
             </Command.Group>
           </Command.List>

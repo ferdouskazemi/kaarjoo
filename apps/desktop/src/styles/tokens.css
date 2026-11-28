@@ -1,0 +1,118 @@
+/* Kaarjoo Design System Tokens (Dark + Light, RTL + LTR) */
+
+:root,
+.dark {
+  --bg: #111111;
+  --surface: #171717;
+  --surface-2: #1e1e1e;
+  --surface-3: #262626;
+  --border: #2e2e2e;
+  --border-strong: #424242;
+
+  --text: #f4f4f5;
+  --text-2: #d4d4d8;
+  --muted: #a1a1aa;
+
+  --accent: #38bdf8;
+  --accent-weak: rgba(56, 189, 248, 0.14);
+  --accent-text: #7dd3fc;
+
+  --success: #34d399;
+  --success-weak: rgba(52, 211, 153, 0.14);
+
+  --warning: #fbbf24;
+  --warning-weak: rgba(251, 191, 36, 0.14);
+
+  --danger: #fb7185;
+  --danger-weak: rgba(251, 113, 133, 0.14);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+}
+
+.light {
+  --bg: #f7f7f5;
+  --surface: #ffffff;
+  --surface-2: #f1f1ee;
+  --surface-3: #e6e6e1;
+  --border: #e0e0da;
+  --border-strong: #c5c5bc;
+
+  --text: #15181c;
+  --text-2: #374151;
+  --muted: #52525b;
+
+  --accent: #0369a1;
+  --accent-weak: rgba(3, 105, 161, 0.1);
+  --accent-text: #075985;
+
+  --success: #047857;
+  --success-weak: rgba(4, 120, 87, 0.1);
+
+  --warning: #92400e;
+  --warning-weak: rgba(146, 64, 14, 0.1);
+
+  --danger: #be123c;
+  --danger-weak: rgba(190, 18, 60, 0.1);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+}
+
+@theme {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  --color-text: var(--text);
+  --color-text-2: var(--text-2);
+  --color-muted: var(--muted);
+
+  --color-accent: var(--accent);
+  --color-accent-weak: var(--accent-weak);
+  --color-accent-text: var(--accent-text);
+
+  --color-success: var(--success);
+  --color-success-weak: var(--success-weak);
+
+  --color-warning: var(--warning);
+  --color-warning-weak: var(--warning-weak);
+
+  --color-danger: var(--danger);
+  --color-danger-weak: var(--danger-weak);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+
+  --font-sans: 'Inter', 'Vazirmatn', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+/* Persian body minimum 15px for crisp readability */
+html[lang='fa'] body {
+  font-family: 'Vazirmatn', 'Inter', system-ui, sans-serif;
+  font-size: 15px;
+}
+
+html[lang='en'] body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+}
+
+/* Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
