@@ -137,6 +137,18 @@ export async function detectFieldsFromPage(page: Page): Promise<FormField[]> {
           label = prev.textContent || '';
         }
       }
+      if (!label) {
+        // Walk up to nearest field/question wrapper (handles Greenhouse/Ashby React comboboxes & nested wrappers)
+        const container = el.closest(
+          '.field, .form-group, .application-question, fieldset, [class*="field"], [class*="question"], [class*="Question"]'
+        );
+        if (container) {
+          const innerLabel = container.querySelector('label, legend, [class*="label"], [class*="Label"], [class*="title"], p');
+          if (innerLabel && !innerLabel.contains(el)) {
+            label = innerLabel.textContent || '';
+          }
+        }
+      }
 
       label = label.replace(/\s+/g, ' ').replace(/\*/g, '').trim();
 

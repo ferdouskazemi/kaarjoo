@@ -184,10 +184,13 @@ async function runSmokeTest() {
   const unicodeUserDir = path.join(os.tmpdir(), `Kaarjoo Smoke Test فردوس کاظمی ${Date.now()}`);
   const appDataDir = path.join(unicodeUserDir, 'App Data');
   const dbPath = path.join(appDataDir, 'kaarjoo.db');
-  const resumePath = path.join(unicodeUserDir, 'رزومه فردوس کاظمی Resume.txt');
-  const exportedDocxPath = path.join(unicodeUserDir, 'Tailored Output فردوس.docx');
+  const sourcesDir = path.join(appDataDir, 'sources');
+  const exportsDir = path.join(appDataDir, 'exports');
+  const resumePath = path.join(sourcesDir, 'رزومه فردوس کاظمی Resume.txt');
+  const exportedDocxPath = path.join(exportsDir, 'Tailored Output فردوس.docx');
 
-  fs.mkdirSync(appDataDir, { recursive: true });
+  fs.mkdirSync(sourcesDir, { recursive: true });
+  fs.mkdirSync(exportsDir, { recursive: true });
   fs.writeFileSync(
     resumePath,
     `Ferdous Kazemi
@@ -313,9 +316,10 @@ TypeScript, Rust, React, Node.js, PostgreSQL, SQLite, Playwright, Docker
   });
   const docxRes = await engine.call('documents.exportDocx', {
     resume: tailoredResumeObj.tailored,
-    outputPath: exportedDocxPath,
+    filename: path.basename(exportedDocxPath),
   });
-  assert.ok(docxRes.success && fs.existsSync(exportedDocxPath) && fs.statSync(exportedDocxPath).size > 1000);
+  const actualDocxPath = docxRes.outputPath || exportedDocxPath;
+  assert.ok(docxRes.success && fs.existsSync(actualDocxPath) && fs.statSync(actualDocxPath).size > 1000);
   console.log(`[5/7] Tailored resume + exported DOCX to Unicode+space path (${docxRes.size} bytes)`);
 
   // 6. Review mode on mock Greenhouse form via Playwright (pauses before submit!)

@@ -946,13 +946,30 @@ pub async fn applications_execute_review(
         }))
     });
 
+    // Fall back to the most recent staged CV (.pdf / .docx) in sources/ if no tailored resume is attached yet
+    let resolved_resume_path: Option<String> = app.tailored_resume_path.clone().or_else(|| {
+        let sources_dir = app_handle.path().app_data_dir().ok()?.join("sources");
+        let entries = std::fs::read_dir(sources_dir).ok()?;
+        entries
+            .filter_map(|e| e.ok())
+            .filter(|e| {
+                e.path()
+                    .extension()
+                    .and_then(|ext| ext.to_str())
+                    .map(|ext| matches!(ext.to_ascii_lowercase().as_str(), "pdf" | "docx"))
+                    .unwrap_or(false)
+            })
+            .max_by_key(|e| e.metadata().and_then(|m| m.modified()).ok())
+            .map(|e| e.path().to_string_lossy().to_string())
+    });
+
     // Call engine sidecar RPC application.execute (which runs Playwright in Review mode)
     let mut params = json!({
         "id": app.id,
         "job": job,
         "profile": profile,
         "mode": "review",
-        "resumePath": app.tailored_resume_path
+        "resumePath": resolved_resume_path
     });
     if let Some(bounds) = window_bounds {
         params["windowBounds"] = bounds;

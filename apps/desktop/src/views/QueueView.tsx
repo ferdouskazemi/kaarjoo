@@ -27,6 +27,7 @@ import { useAppStore } from '../stores/appStore.js';
 import { commands } from '../bindings.js';
 import { formatNumber } from '../utils/formatters.js';
 import { formatStopReason, formatUserFriendlyError } from '../utils/errorMessages.js';
+import { resolveSnapshotSrc } from '../utils/media.js';
 import { Badge } from '../components/ui/Badge.js';
 import { Button } from '../components/ui/Button.js';
 import type { ApplicationRecord, AtsType, ReviewChecklistItem } from '@kaarjoo/shared';
@@ -532,7 +533,7 @@ export const QueueView: React.FC = () => {
                     {activeApp.screenshotBeforeSubmit ? (
                       <>
                         <img
-                          src={activeApp.screenshotBeforeSubmit}
+                          src={resolveSnapshotSrc(activeApp.screenshotBeforeSubmit)}
                           alt="Browser snapshot"
                           className="w-full h-full object-cover object-top opacity-90 group-hover:opacity-100 transition-opacity"
                         />
@@ -704,7 +705,7 @@ export const QueueView: React.FC = () => {
                         </Button>
                         {hasBlockers && (
                           <span className="text-xs text-warning">
-                            Fill the required fields above in Chrome to enable Send.
+                            {t('queue.fillRequiredHint')}
                           </span>
                         )}
                       </>
@@ -727,7 +728,7 @@ export const QueueView: React.FC = () => {
             <X className="w-6 h-6" />
           </button>
           <img
-            src={previewModalImg}
+            src={resolveSnapshotSrc(previewModalImg)}
             alt="Preview"
             className="max-w-full max-h-[90vh] rounded-xl object-contain shadow-2xl border border-slate-800"
           />

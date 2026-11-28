@@ -1,3 +1,5 @@
+import type { Page } from 'playwright-core';
+import type { FormField } from '@kaarjoo/shared';
 import { BaseAtsFiller } from './base.js';
 
 export class AshbyFiller extends BaseAtsFiller {
@@ -33,5 +35,29 @@ export class AshbyFiller extends BaseAtsFiller {
       return true;
     }
     return false;
+  }
+
+  override async detectFields(page: Page): Promise<FormField[]> {
+    let fields = await super.detectFields(page);
+    if (fields.length > 0) return fields;
+
+    // Ashby job pages often open on the Overview tab and require clicking "Apply for this job"
+    const applyTriggers = [
+      'a:has-text("Apply for this job")',
+      'button:has-text("Apply for this job")',
+      '[role="tab"]:has-text("Apply")',
+      'a[href*="#application"]',
+      'button:has-text("Apply")',
+    ];
+    for (const sel of applyTriggers) {
+      const btn = await page.$(sel).catch(() => null);
+      if (btn) {
+        await btn.click().catch(() => {});
+        await page.waitForTimeout(900);
+        fields = await super.detectFields(page);
+        if (fields.length > 0) break;
+      }
+    }
+    return fields;
   }
 }
