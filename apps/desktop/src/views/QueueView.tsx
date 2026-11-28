@@ -26,6 +26,7 @@ import { useProfileStore } from '../stores/profileStore.js';
 import { useAppStore } from '../stores/appStore.js';
 import { commands } from '../bindings.js';
 import { formatNumber } from '../utils/formatters.js';
+import { formatStopReason, formatUserFriendlyError } from '../utils/errorMessages.js';
 import { Badge } from '../components/ui/Badge.js';
 import { Button } from '../components/ui/Button.js';
 import type { ApplicationRecord, AtsType, ReviewChecklistItem } from '@kaarjoo/shared';
@@ -108,7 +109,9 @@ export const QueueView: React.FC = () => {
         filledFields: a.filledFields as any,
         reviewChecklist: a.reviewChecklist as any,
         timeline: a.timeline as any,
-        stopReason: 'none',
+        stopReason: (a.stopReason as any) || 'none',
+        stopMessage: a.stopMessage ?? undefined,
+        missingRequiredFields: a.missingRequiredFields ?? [],
         createdAt: a.createdAt,
         updatedAt: a.updatedAt,
       }))) as ApplicationRecord[];
@@ -131,7 +134,7 @@ export const QueueView: React.FC = () => {
       await commands.applicationsResume(id);
       await refetchApps();
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : String(err));
+      setActionError(formatUserFriendlyError(err, t));
     }
   };
 
@@ -145,8 +148,7 @@ export const QueueView: React.FC = () => {
         await executeApplication(id);
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setActionError(msg);
+      setActionError(formatUserFriendlyError(err, t));
     }
   };
 
@@ -160,8 +162,7 @@ export const QueueView: React.FC = () => {
         await submitReviewed(id);
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setActionError(msg);
+      setActionError(formatUserFriendlyError(err, t));
     }
   };
 
@@ -175,8 +176,7 @@ export const QueueView: React.FC = () => {
         cancelApplication(id);
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setActionError(msg);
+      setActionError(formatUserFriendlyError(err, t));
     }
   };
 
@@ -207,13 +207,13 @@ export const QueueView: React.FC = () => {
         return (
           <Badge tone="ok">
             <CheckCircle2 className="w-3 h-3" aria-hidden="true" />
-            <span>✓ verified</span>
+            <span>✓ {t('queue.verifiedLabel')}</span>
           </Badge>
         );
       case 'submitted_unverified':
         return (
           <Badge tone="warn">
-            <span>? unverified</span>
+            <span>? {t('queue.unverifiedLabel')}</span>
           </Badge>
         );
       case 'submitted':
@@ -435,7 +435,7 @@ export const QueueView: React.FC = () => {
                   {activeApp.status === 'needs_user' && (
                     <Button variant="primary" size="sm" onClick={() => void handleResume(activeApp.id)}>
                       <Play className="w-3.5 h-3.5" aria-hidden="true" />
-                      <span>Resume in Chrome</span>
+                      <span>{t('queue.resumeInBrowser')}</span>
                     </Button>
                   )}
                   <a
@@ -470,6 +470,23 @@ export const QueueView: React.FC = () => {
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
+                </div>
+              )}
+
+              {(activeApp.status === 'failed' || activeApp.status === 'needs_user') && (
+                <div
+                  className={`p-3.5 rounded-xl border flex items-start gap-2.5 text-xs leading-relaxed ${
+                    activeApp.status === 'failed'
+                      ? 'bg-rose-500/10 border-rose-500/30 text-rose-200'
+                      : 'bg-amber-500/10 border-amber-500/30 text-amber-200'
+                  }`}
+                >
+                  <AlertTriangle
+                    className={`w-4 h-4 shrink-0 mt-0.5 ${
+                      activeApp.status === 'failed' ? 'text-rose-400' : 'text-amber-400'
+                    }`}
+                  />
+                  <span>{formatStopReason(activeApp.stopReason, activeApp.stopMessage, t)}</span>
                 </div>
               )}
 
@@ -552,25 +569,35 @@ export const QueueView: React.FC = () => {
                           <div className="flex items-center justify-between gap-2">
                             <span className="flex items-center gap-2 text-text">
                               <CheckCircle2 className="w-4 h-4 text-success shrink-0" aria-hidden="true" />
-                              <span>Profile &amp; contact details</span>
+                              <span>{t('queue.profileAndContact')}</span>
                             </span>
                             <span className="text-xs text-muted" dir="ltr">
-                              {profile?.contact?.email || 'Ready'}
+                              {profile?.contact?.email || t('queue.ready')}
                             </span>
                           </div>
                           <div className="flex items-center justify-between gap-2">
                             <span className="flex items-center gap-2 text-text">
-                              <CheckCircle2 className="w-4 h-4 text-success shrink-0" aria-hidden="true" />
-                              <span>Tailored résumé attached</span>
+                              {activeApp.tailoredResumePath ? (
+                                <CheckCircle2 className="w-4 h-4 text-success shrink-0" aria-hidden="true" />
+                              ) : (
+                                <AlertTriangle className="w-4 h-4 text-warning shrink-0" aria-hidden="true" />
+                              )}
+                              <span>
+                                {activeApp.tailoredResumePath
+                                  ? t('queue.resumeAttached')
+                                  : t('queue.noResumeAttached')}
+                              </span>
                             </span>
-                            <span className="text-xs text-muted truncate max-w-[180px]" dir="ltr">
-                              {activeApp.tailoredResumePath || 'Tailored_Resume.pdf'}
-                            </span>
+                            {activeApp.tailoredResumePath && (
+                              <span className="text-xs text-muted truncate max-w-[180px]" dir="ltr">
+                                {activeApp.tailoredResumePath.split(/[\\/]/).pop()}
+                              </span>
+                            )}
                           </div>
                           <div className="flex items-center justify-between gap-2">
                             <span className="flex items-center gap-2 text-text">
                               <CheckCircle2 className="w-4 h-4 text-success shrink-0" aria-hidden="true" />
-                              <span>Form read-back</span>
+                              <span>{t('queue.formReadBack')}</span>
                             </span>
                             <button
                               type="button"
@@ -578,8 +605,10 @@ export const QueueView: React.FC = () => {
                               className="text-xs font-medium text-accent-text hover:underline cursor-pointer"
                             >
                               {showFullFieldTable
-                                ? 'Hide fields'
-                                : `See all ${formatNumber(checklist.length || okCount, i18n.language)} fields`}
+                                ? t('queue.hideFields')
+                                : t('queue.seeAllFields', {
+                                    total: formatNumber(checklist.length || okCount, i18n.language),
+                                  })}
                             </button>
                           </div>
                         </div>
@@ -589,7 +618,11 @@ export const QueueView: React.FC = () => {
                           <div className="rounded-[14px] border border-warning/40 bg-warning-weak p-4 flex flex-col gap-2">
                             <div className="text-sm font-semibold text-warning flex items-center gap-2">
                               <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden="true" />
-                              <span>{blockingItems.length} item(s) need your attention before sending</span>
+                              <span>
+                                {t('queue.attentionNeeded', {
+                                  total: formatNumber(blockingItems.length, i18n.language),
+                                })}
+                              </span>
                             </div>
                             {blockingItems.map((item) => (
                               <div
@@ -600,7 +633,7 @@ export const QueueView: React.FC = () => {
                                   <div className="font-medium text-text">{item.label}</div>
                                   {item.note && <div className="text-muted">{item.note}</div>}
                                 </div>
-                                <Badge tone="bad">{item.status}</Badge>
+                                <Badge tone="bad">{t(`queue.checklistStatus.${item.status}`, { defaultValue: item.status })}</Badge>
                               </div>
                             ))}
                           </div>
@@ -625,7 +658,7 @@ export const QueueView: React.FC = () => {
                                       : 'warn'
                                   }
                                 >
-                                  {item.status}
+                                  {t(`queue.checklistStatus.${item.status}`, { defaultValue: item.status })}
                                 </Badge>
                               </div>
                             ))}
@@ -639,7 +672,7 @@ export const QueueView: React.FC = () => {
 
               {/* Action Buttons */}
               <div className="flex flex-col items-end gap-2 pt-4 border-t border-border">
-                {activeApp.status === 'queued' || activeApp.status === 'saved' ? (
+                {activeApp.status === 'queued' || activeApp.status === 'saved' || activeApp.status === 'failed' ? (
                   <Button
                     variant="primary"
                     size="lg"
@@ -647,7 +680,7 @@ export const QueueView: React.FC = () => {
                     onClick={() => void handleExecute(activeApp.id)}
                   >
                     <Play className="w-4 h-4" aria-hidden="true" />
-                    <span>{t('queue.startFilling')}</span>
+                    <span>{activeApp.status === 'failed' ? t('queue.retryFill') : t('queue.startFilling')}</span>
                   </Button>
                 ) : activeApp.status === 'needs_review' ? (
                   (() => {
@@ -662,7 +695,7 @@ export const QueueView: React.FC = () => {
                           loading={submitAppMutation.isPending}
                           disabled={hasBlockers}
                           disabledReason={
-                            hasBlockers ? 'Fill required fields in Chrome before sending' : undefined
+                            hasBlockers ? t('queue.fillRequiredHint') : undefined
                           }
                           onClick={() => void handleSubmit(activeApp.id)}
                         >

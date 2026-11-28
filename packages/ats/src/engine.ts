@@ -21,6 +21,35 @@ import { seedChromiumProfile } from './utils/chromiumProfile.js';
 import { detectCaptchaInPage, detectLoginWall } from './detector.js';
 import { mapFields, type MappedFieldInfo } from './mapper.js';
 
+export function sanitizeAutomationError(err: unknown): string {
+  const raw = err instanceof Error ? err.message : String(err ?? 'Unknown automation error');
+  // Strip ANSI escape codes and Playwright verbose Call log blocks
+  const cleaned = raw
+    .replace(/\u001b\[[0-9;]*m/g, '')
+    .split(/\r?\nCall log:/i)[0]
+    .trim();
+
+  if (/ERR_NAME_NOT_RESOLVED/i.test(cleaned)) {
+    return 'Could not reach the job application website (domain could not be resolved). Check your internet connection or verify the job link.';
+  }
+  if (/ERR_CONNECTION_REFUSED|ERR_CONNECTION_RESET|ERR_CONNECTION_CLOSED/i.test(cleaned)) {
+    return 'Connection to the application page was refused or interrupted by the website.';
+  }
+  if (/ERR_INTERNET_DISCONNECTED|ERR_NETWORK_CHANGED/i.test(cleaned)) {
+    return 'No active internet connection detected while opening the application page.';
+  }
+  if (/ERR_TIMED_OUT|Timeout\s+\d+ms\s+exceeded/i.test(cleaned)) {
+    return 'The application page took too long to load. Please check your connection and try again.';
+  }
+  if (/Target page, context or browser has been closed/i.test(cleaned)) {
+    return 'The browser window was closed before form filling completed.';
+  }
+  if (/ERR_FILE_NOT_FOUND/i.test(cleaned)) {
+    return 'The application link or local file could not be found.';
+  }
+  return cleaned.replace(/^page\.goto:\s*/i, '').trim() || 'Form automation failed unexpectedly.';
+}
+
 export interface WindowBounds {
   x: number;
   y: number;
@@ -277,7 +306,7 @@ export class ApplicationEngine {
     } catch (err: any) {
       record.status = 'failed';
       record.stopReason = 'unrecognized_page';
-      record.stopMessage = err?.message || String(err);
+      record.stopMessage = sanitizeAutomationError(err);
       record.updatedAt = new Date().toISOString();
       await this.cleanupSession(id);
       return record;

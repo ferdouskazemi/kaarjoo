@@ -346,7 +346,49 @@
     "ready": "Ready",
     "snapshotPlaceholder": "Snapshot will appear during review execution",
     "expand": "Expand",
-    "loadDemo": "Load Demo Applications"
+    "loadDemo": "Load Demo Applications",
+    "profileAndContact": "Profile & contact details",
+    "resumeAttached": "Tailored résumé attached",
+    "noResumeAttached": "No résumé PDF attached yet",
+    "formReadBack": "Form read-back",
+    "hideFields": "Hide fields",
+    "seeAllFields": "See all {{total}} fields",
+    "attentionNeeded": "{{total}} item(s) need your attention before sending",
+    "fillRequiredHint": "Fill required fields in the browser before sending",
+    "resumeInBrowser": "Resume in Chrome",
+    "retryFill": "Retry Filling Form",
+    "verifiedLabel": "Verified",
+    "unverifiedLabel": "Unverified",
+    "checklistStatus": {
+      "ok": "Filled",
+      "user_edited": "Edited by you",
+      "empty_required": "Required",
+      "failed": "Could not fill",
+      "mismatch": "Needs check"
+    },
+    "stopReasons": {
+      "captcha_detected": "Anti-bot CAPTCHA detected. Complete it in the opened Chrome window, then click Resume in Chrome.",
+      "login_wall": "This site requires signing in first. Sign in inside the opened Chrome window, then click Resume in Chrome.",
+      "unknown_required_field": "Some required fields need your input before the application can be sent.",
+      "unrecognized_page": "Could not detect a standard application form on this page. Check the link or fill it manually in Chrome.",
+      "default": "Action paused and needs your attention."
+    }
+  },
+  "applyErrors": {
+    "dnsFailed": "Could not reach the job application website. Please check your internet connection or verify the job URL.",
+    "connectionRefused": "The website refused or interrupted the connection. Please try again in a moment.",
+    "noInternet": "No active internet connection detected. Connect to the internet and try again.",
+    "timeout": "The application page took too long to load. Please check your connection and try again.",
+    "browserClosed": "The browser window was closed before form filling finished. Click Retry to open it again.",
+    "noBrowser": "No compatible Chrome or Edge browser was found on this Windows PC. Please install Google Chrome or Microsoft Edge.",
+    "maxContexts": "Too many browser review windows are open at once. Finish or close an open review first.",
+    "sessionExpired": "The browser form session expired and was refreshed. Please review the fields again before sending.",
+    "noActiveSession": "The browser session is no longer open. Click Retry Filling Form to reopen the page.",
+    "alreadySubmitted": "This application has already been submitted.",
+    "missingRequired": "Please complete all required fields in the form before sending.",
+    "engineUnavailable": "The local automation engine is still starting or unavailable. Please wait a few seconds and try again.",
+    "invalidParams": "Some required profile or job details are missing. Please check your profile and job link.",
+    "fallback": "Could not complete the form action. Please check the job link and try again."
   },
   "tracker": {
     "title": "Application Tracker",
