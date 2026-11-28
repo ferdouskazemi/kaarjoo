@@ -1,40 +1,37 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { AnimatePresence, motion } from 'motion/react';
 import { useAppStore, AppView } from '../../stores/appStore.js';
-import { useApplications } from '../../queries/index.js';
+import { useApplications, useProfile } from '../../queries/index.js';
 import { TARGET_LANGUAGE_LABELS } from '../../i18n/constants.js';
-import { formatNumber } from '../../utils/formatters.js';
 import { cn } from '../ui/cn.js';
-import { Badge } from '../ui/Badge.js';
-import { KeyboardHint } from '../ui/KeyboardHint.js';
+import { cardEnterVariants } from '../../styles/motion.js';
 import {
-  LayoutDashboard,
-  User,
+  Sun,
+  Moon,
   Briefcase,
   Inbox,
-  CheckCircle2,
+  Home,
+  User,
+  SlidersHorizontal,
+  MessageSquareText,
   Settings,
-  Search,
   Languages,
-  Moon,
-  Sun,
+  Command,
 } from 'lucide-react';
 
-interface NavItem {
+interface RailItem {
   id: AppView;
   labelKey: string;
+  fallback: string;
   icon: React.ElementType;
-  badgeKey?: 'queue';
-  shortcut: string;
+  badgeKey?: 'apps';
 }
 
-const navItems: NavItem[] = [
-  { id: 'home', labelKey: 'nav.home', icon: LayoutDashboard, shortcut: 'G H' },
-  { id: 'profile', labelKey: 'nav.profile', icon: User, shortcut: 'G P' },
-  { id: 'jobs', labelKey: 'nav.jobs', icon: Briefcase, shortcut: 'G O' },
-  { id: 'queue', labelKey: 'nav.queue', icon: Inbox, badgeKey: 'queue', shortcut: 'G R' },
-  { id: 'applications', labelKey: 'nav.applications', icon: CheckCircle2, shortcut: 'G T' },
-  { id: 'settings', labelKey: 'nav.settings', icon: Settings, shortcut: 'G S' },
+const railItems: RailItem[] = [
+  { id: 'home', labelKey: 'nav.today', fallback: 'Today', icon: Home },
+  { id: 'jobs', labelKey: 'nav.jobsShort', fallback: 'Jobs', icon: Briefcase },
+  { id: 'queue', labelKey: 'nav.appsShort', fallback: 'Apps', icon: Inbox, badgeKey: 'apps' },
 ];
 
 export const Sidebar: React.FC = () => {
@@ -47,119 +44,214 @@ export const Sidebar: React.FC = () => {
     theme,
     setTheme,
     setCommandPaletteOpen,
-    engineConnected,
   } = useAppStore();
   const { data: dbApplications = [] } = useApplications();
+  const { data: dbProfile } = useProfile();
+
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const needsYouCount = dbApplications.filter(
     (a) => a.status === 'needs_user' || a.status === 'needs_review'
   ).length;
-  const hasChromeOpen = dbApplications.some((a) => a.status === 'needs_user' || a.status === 'submitting');
 
-  const footerStatusText = !engineConnected
-    ? 'Restarting engine…'
-    : hasChromeOpen
-    ? 'Chrome window open'
-    : 'Ready · works offline';
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onDocClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenuOpen(false);
+    };
+    document.addEventListener('mousedown', onDocClick);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDocClick);
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [menuOpen]);
+
+  const initials = (dbProfile?.contact?.fullName || 'K')
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() || '')
+    .join('') || 'K';
+
+  const navigate = (view: AppView) => {
+    setCurrentView(view);
+    setMenuOpen(false);
+  };
 
   return (
-    <aside className="w-[232px] border-e border-border bg-surface flex flex-col justify-between p-3 select-none shrink-0 text-text">
-      <div className="flex flex-col gap-2">
+    <aside className="w-[76px] border-e border-border bg-surface flex flex-col items-center py-4 gap-2 select-none shrink-0 text-text relative z-30">
+      {/* Brand mark */}
+      <button
+        type="button"
+        onClick={() => navigate('home')}
+        aria-label={t('app.name')}
+        className="w-9 h-9 rounded-[10px] bg-accent text-bg font-extrabold text-base grid place-items-center mb-4 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      >
+        K
+      </button>
+
+      {/* 3 Primary Destinations */}
+      <nav className="flex flex-col items-center gap-1.5 w-full px-2" aria-label="Main navigation">
+        {railItems.map((item) => {
+          const Icon = item.icon;
+          const isActive =
+            item.id === 'queue'
+              ? currentView === 'queue' || currentView === 'applications'
+              : currentView === item.id;
+          const showDot = item.badgeKey === 'apps' && needsYouCount > 0;
+
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => navigate(item.id)}
+              aria-current={isActive ? 'page' : undefined}
+              className={cn(
+                'relative w-[60px] py-2 rounded-[12px] flex flex-col items-center gap-1 text-xs font-medium transition-colors cursor-pointer',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
+                isActive ? 'bg-accent-weak text-text' : 'text-muted hover:text-text hover:bg-surface-2'
+              )}
+            >
+              <Icon className={cn('w-5 h-5', isActive ? 'text-accent-text' : 'text-current')} aria-hidden="true" />
+              <span className="truncate max-w-full px-1">
+                {t(item.labelKey, { defaultValue: item.fallback })}
+              </span>
+              {showDot && (
+                <span
+                  className="absolute top-1.5 end-2.5 w-2 h-2 rounded-full bg-danger"
+                  aria-label={`${needsYouCount} need attention`}
+                />
+              )}
+            </button>
+          );
+        })}
+      </nav>
+
+      <div className="flex-1" />
+
+      {/* Avatar Menu */}
+      <div className="relative" ref={menuRef}>
         <button
           type="button"
-          onClick={() => setCommandPaletteOpen(true)}
-          aria-label={t('command.placeholder')}
-          className="min-h-[40px] flex items-center justify-between px-3 py-2 rounded-[var(--radius-md)] bg-surface-2 border border-border hover:border-border-strong text-muted hover:text-text transition-colors text-xs cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          onClick={() => setMenuOpen((o) => !o)}
+          aria-expanded={menuOpen}
+          aria-label="Account and settings menu"
+          className="w-10 h-10 rounded-full bg-surface-3 hover:bg-border-strong text-text-2 font-bold text-sm grid place-items-center transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
         >
-          <div className="flex items-center gap-2 min-w-0">
-            <Search className="w-3.5 h-3.5 text-muted group-hover:text-accent shrink-0" aria-hidden="true" />
-            <span className="truncate">{t('command.placeholder')}</span>
-          </div>
-          <KeyboardHint keys="⌘K" />
+          {initials}
         </button>
 
-        <nav className="mt-1 flex flex-col gap-1" aria-label="Main navigation">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = currentView === item.id;
-            const showRedBadge = item.badgeKey === 'queue' && needsYouCount > 0;
-
-            return (
+        <AnimatePresence>
+          {menuOpen && (
+            <motion.div
+              variants={cardEnterVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              role="menu"
+              className="absolute bottom-0 start-[68px] w-60 bg-surface border border-border-strong rounded-[14px] shadow-2xl p-1.5 flex flex-col gap-0.5 z-50"
+            >
               <button
-                key={item.id}
                 type="button"
-                onClick={() => setCurrentView(item.id)}
-                aria-current={isActive ? 'page' : undefined}
-                className={cn(
-                  'group min-h-[40px] flex items-center justify-between px-3 py-2 rounded-[var(--radius-md)] text-sm font-medium transition-colors cursor-pointer',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
-                  isActive
-                    ? 'bg-surface-3 text-text border border-border-strong font-semibold'
-                    : 'text-text-2 hover:text-text hover:bg-surface-2 border border-transparent'
-                )}
+                role="menuitem"
+                onClick={() => navigate('profile')}
+                className="min-h-[40px] px-3 py-2 rounded-[var(--radius-sm)] flex items-center gap-2.5 text-sm text-text-2 hover:text-text hover:bg-surface-2 cursor-pointer text-start"
               >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <Icon
-                    className={cn('w-4 h-4 shrink-0', isActive ? 'text-accent' : 'text-muted')}
-                    aria-hidden="true"
-                  />
-                  <span className="truncate">{t(item.labelKey)}</span>
-                </div>
-
-                <div className="flex items-center gap-1.5 shrink-0">
-                  {showRedBadge && (
-                    <Badge tone="bad" className="tabular-nums">
-                      {formatNumber(needsYouCount, language)}
-                    </Badge>
-                  )}
-                  <span className="text-xs font-mono text-muted opacity-0 group-hover:opacity-100 transition-opacity">
-                    {item.shortcut}
-                  </span>
-                </div>
+                <User className="w-4 h-4 text-muted" aria-hidden="true" />
+                <span>{t('nav.profile')}</span>
               </button>
-            );
-          })}
-        </nav>
-      </div>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => navigate('preferences')}
+                className="min-h-[40px] px-3 py-2 rounded-[var(--radius-sm)] flex items-center gap-2.5 text-sm text-text-2 hover:text-text hover:bg-surface-2 cursor-pointer text-start"
+              >
+                <SlidersHorizontal className="w-4 h-4 text-muted" aria-hidden="true" />
+                <span>What I&apos;m looking for</span>
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => navigate('answers')}
+                className="min-h-[40px] px-3 py-2 rounded-[var(--radius-sm)] flex items-center gap-2.5 text-sm text-text-2 hover:text-text hover:bg-surface-2 cursor-pointer text-start"
+              >
+                <MessageSquareText className="w-4 h-4 text-muted" aria-hidden="true" />
+                <span>Answer bank</span>
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => navigate('settings')}
+                className="min-h-[40px] px-3 py-2 rounded-[var(--radius-sm)] flex items-center gap-2.5 text-sm text-text-2 hover:text-text hover:bg-surface-2 cursor-pointer text-start"
+              >
+                <Settings className="w-4 h-4 text-muted" aria-hidden="true" />
+                <span>{t('nav.settings')}</span>
+              </button>
 
-      <div className="flex flex-col gap-2 pt-3 border-t border-border">
-        <div className="flex items-center justify-between px-1">
-          <button
-            type="button"
-            onClick={() => setLanguage(language === 'fa' ? 'en' : 'fa')}
-            className="min-h-[40px] flex items-center gap-1.5 px-2.5 py-1.5 rounded-[var(--radius-sm)] text-xs font-medium text-text-2 hover:text-text hover:bg-surface-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-            title={t('common.language')}
-            aria-label={t('common.language')}
-          >
-            <Languages className="w-4 h-4" aria-hidden="true" />
-            <span>{TARGET_LANGUAGE_LABELS[language]}</span>
-          </button>
+              <div className="my-1 border-t border-border" />
 
-          <button
-            type="button"
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="min-h-[40px] min-w-[40px] flex items-center justify-center rounded-[var(--radius-sm)] text-text-2 hover:text-text hover:bg-surface-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-            title={t('common.theme')}
-            aria-label={t('common.theme')}
-          >
-            {theme === 'dark' ? (
-              <Moon className="w-4 h-4" aria-hidden="true" />
-            ) : (
-              <Sun className="w-4 h-4" aria-hidden="true" />
-            )}
-          </button>
-        </div>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setLanguage(language === 'fa' ? 'en' : 'fa');
+                  setMenuOpen(false);
+                }}
+                className="min-h-[40px] px-3 py-2 rounded-[var(--radius-sm)] flex items-center justify-between text-sm text-text-2 hover:text-text hover:bg-surface-2 cursor-pointer"
+              >
+                <span className="flex items-center gap-2.5">
+                  <Languages className="w-4 h-4 text-muted" aria-hidden="true" />
+                  <span>{t('common.language')}</span>
+                </span>
+                <span className="text-xs text-muted">{TARGET_LANGUAGE_LABELS[language]}</span>
+              </button>
 
-        <div className="flex items-center gap-2 px-3 py-2 rounded-[var(--radius-md)] bg-surface-2 border border-border text-xs text-muted">
-          <span
-            className={cn(
-              'w-2 h-2 rounded-full shrink-0',
-              !engineConnected ? 'bg-warning' : hasChromeOpen ? 'bg-accent' : 'bg-success'
-            )}
-            aria-hidden="true"
-          />
-          <span className="truncate">{footerStatusText}</span>
-        </div>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setTheme(theme === 'dark' ? 'light' : 'dark');
+                  setMenuOpen(false);
+                }}
+                className="min-h-[40px] px-3 py-2 rounded-[var(--radius-sm)] flex items-center justify-between text-sm text-text-2 hover:text-text hover:bg-surface-2 cursor-pointer"
+              >
+                <span className="flex items-center gap-2.5">
+                  {theme === 'dark' ? (
+                    <Moon className="w-4 h-4 text-muted" aria-hidden="true" />
+                  ) : (
+                    <Sun className="w-4 h-4 text-muted" aria-hidden="true" />
+                  )}
+                  <span>{t('common.theme')}</span>
+                </span>
+                <span className="text-xs text-muted">
+                  {theme === 'dark' ? t('common.dark') : t('common.light')}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setMenuOpen(false);
+                  setCommandPaletteOpen(true);
+                }}
+                className="min-h-[40px] px-3 py-2 rounded-[var(--radius-sm)] flex items-center justify-between text-sm text-text-2 hover:text-text hover:bg-surface-2 cursor-pointer"
+              >
+                <span className="flex items-center gap-2.5">
+                  <Command className="w-4 h-4 text-muted" aria-hidden="true" />
+                  <span>Quick search</span>
+                </span>
+                <kbd className="text-xs font-mono text-muted">⌘K</kbd>
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </aside>
   );

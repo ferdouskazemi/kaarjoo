@@ -3,27 +3,32 @@ import { MotionConfig } from 'motion/react';
 import { TitleBar } from './TitleBar.js';
 import { Sidebar } from './Sidebar.js';
 import { CommandPalette } from './CommandPalette.js';
-import { AutoPipelineBar } from '../pipeline/AutoPipelineBar.js';
+import { ActivityPill } from '../pipeline/ActivityPill.js';
 import { useAppStore, type AppView } from '../../stores/appStore.js';
 import { commands } from '../../bindings.js';
+import { useProfile } from '../../queries/index.js';
 import { HomeView } from '../../views/HomeView.js';
 import { ProfileView } from '../../views/ProfileView.js';
 import { JobsView } from '../../views/JobsView.js';
 import { QueueView } from '../../views/QueueView.js';
 import { ApplicationsView } from '../../views/ApplicationsView.js';
 import { SettingsView } from '../../views/SettingsView.js';
+import { PreferencesPanel } from '../profile/PreferencesPanel.js';
 
 const G_SHORTCUTS: Record<string, AppView> = {
   h: 'home',
+  t: 'home',
   p: 'profile',
   o: 'jobs',
+  j: 'jobs',
   r: 'queue',
-  t: 'applications',
+  a: 'applications',
   s: 'settings',
 };
 
 export const AppShell: React.FC = () => {
   const { currentView, setCurrentView, setEngineConnected } = useAppStore();
+  const { data: dbProfile, refetch: refetchProfile } = useProfile();
   const gPressedAtRef = useRef<number>(0);
 
   useEffect(() => {
@@ -46,7 +51,7 @@ export const AppShell: React.FC = () => {
     };
   }, [setEngineConnected]);
 
-  // Global keyboard shortcuts: G then H/P/O/R/T/S
+  // Global keyboard shortcuts: G then T/J/A/P/S
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
@@ -78,6 +83,22 @@ export const AppShell: React.FC = () => {
         return <HomeView />;
       case 'profile':
         return <ProfileView />;
+      case 'preferences':
+      case 'answers':
+        return dbProfile ? (
+          <div className="flex-1 overflow-y-auto">
+            <PreferencesPanel
+              profile={dbProfile}
+              onSaveProfile={async (updated) => {
+                await commands.profileSave(updated);
+                await refetchProfile();
+              }}
+              onContinue={() => setCurrentView('jobs')}
+            />
+          </div>
+        ) : (
+          <ProfileView />
+        );
       case 'jobs':
         return <JobsView />;
       case 'queue':
@@ -95,12 +116,12 @@ export const AppShell: React.FC = () => {
     <MotionConfig reducedMotion="user">
       <div className="flex flex-col h-screen w-screen overflow-hidden bg-bg text-text antialiased">
         <TitleBar />
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-1 overflow-hidden relative">
           <Sidebar />
-          <main className="flex-1 overflow-y-auto flex flex-col bg-bg">
-            <AutoPipelineBar />
+          <main className="flex-1 overflow-y-auto flex flex-col bg-bg relative">
             {renderCurrentView()}
           </main>
+          <ActivityPill />
         </div>
         <CommandPalette />
       </div>

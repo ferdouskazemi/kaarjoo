@@ -1,22 +1,23 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'motion/react';
 import { useAppStore } from '../stores/appStore.js';
 import { useProfileStore } from '../stores/profileStore.js';
 import { useProfile, useApplications, useJobs } from '../queries/index.js';
-import { formatDate, formatNumber } from '../utils/formatters.js';
-import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card.js';
+import { formatNumber } from '../utils/formatters.js';
+import { cardEnterVariants } from '../styles/motion.js';
 import { Button } from '../components/ui/Button.js';
 import { Badge } from '../components/ui/Badge.js';
-import { EmptyState, ErrorState, Skeleton } from '../components/ui/EmptyState.js';
+import { ErrorState, Skeleton } from '../components/ui/EmptyState.js';
 import {
   AlertCircle,
-  ArrowRight,
   ArrowLeft,
+  ArrowRight,
   Briefcase,
   CheckCircle2,
   Inbox,
+  Send,
   UploadCloud,
-  UserCheck,
 } from 'lucide-react';
 
 export const HomeView: React.FC = () => {
@@ -32,207 +33,176 @@ export const HomeView: React.FC = () => {
     error: profileError,
     refetch: refetchProfile,
   } = useProfile();
-  const { data: dbApplications = [], isLoading: appsLoading } = useApplications();
+  const { data: applications = [], isLoading: appsLoading } = useApplications();
   const { data: jobs = [] } = useJobs();
 
   const profile = dbProfile ?? (demoMode ? demoProfile : null);
-  const applications = dbApplications;
+  const profileBlockers = (profile?.issues ?? []).filter((i) => i.severity === 'blocker');
+  const needsYouApps = applications.filter((a) => a.status === 'needs_user' || a.status === 'failed');
+  const readyToSendApps = applications.filter((a) => a.status === 'needs_review');
+  const sentApps = applications.filter(
+    (a) =>
+      a.status === 'submitted_verified' ||
+      a.status === 'submitted_unverified' ||
+      a.status === 'submitted'
+  );
 
-  const profileBlockers = (profile?.issues ?? []).filter((i) => i.severity === 'blocker').length;
-  const needsYouApps = applications.filter((a) => a.status === 'needs_user').length;
-  const readyReviewApps = applications.filter((a) => a.status === 'needs_review').length;
-  const submittedApps = applications.filter(
-    (a) => a.status === 'submitted_verified' || a.status === 'submitted_unverified' || a.status === 'submitted'
-  ).length;
-
-  const nextAction = !profile
+  // Choose ONE hero card by priority order (v3 Today)
+  const hero = !profile
     ? {
-        title: t('home.manageProfile'),
-        description: t('home.noResumeYet'),
-        view: 'profile' as const,
+        eyebrow: 'Your next step',
+        title: 'Upload your résumé to get started',
+        subtitle: 'Everything stays on your computer. Nothing is sent without your click.',
+        cta: 'Upload résumé',
+        tone: 'info' as const,
         icon: UploadCloud,
+        onAction: () => setCurrentView('profile'),
       }
-    : profileBlockers > 0
+    : profileBlockers.length > 0
     ? {
-        title: t('nav.profile'),
-        description: `${formatNumber(profileBlockers, i18n.language)} ${t('common.required')}`,
-        view: 'profile' as const,
+        eyebrow: 'Your next step',
+        title: `Fix ${formatNumber(profileBlockers.length, i18n.language)} things in your profile`,
+        subtitle: profileBlockers[0].suggestedAction,
+        cta: 'Check profile',
+        tone: 'warn' as const,
         icon: AlertCircle,
+        onAction: () => setCurrentView('profile'),
       }
-    : needsYouApps + readyReviewApps > 0
+    : needsYouApps.length > 0
     ? {
-        title: t('home.viewQueue'),
-        description: `${formatNumber(needsYouApps + readyReviewApps, i18n.language)} ${t('common.items')}`,
-        view: 'queue' as const,
+        eyebrow: 'Your next step',
+        title: `${formatNumber(needsYouApps.length, i18n.language)} applications need you`,
+        subtitle: `${needsYouApps[0].company} — ${needsYouApps[0].jobTitle}`,
+        cta: 'Open Applications',
+        tone: 'bad' as const,
         icon: Inbox,
+        onAction: () => setCurrentView('queue'),
+      }
+    : readyToSendApps.length > 0
+    ? {
+        eyebrow: 'Your next step',
+        title: `${formatNumber(readyToSendApps.length, i18n.language)} applications ready to send`,
+        subtitle: 'Review each form and press Send when it looks right.',
+        cta: 'Review & send',
+        tone: 'ok' as const,
+        icon: Send,
+        onAction: () => setCurrentView('queue'),
+      }
+    : jobs.length > 0
+    ? {
+        eyebrow: 'Your next step',
+        title: `Look through ${formatNumber(jobs.length, i18n.language)} matching jobs`,
+        subtitle: 'One at a time — keep the ones you want and skip the rest.',
+        cta: 'Start reviewing jobs',
+        tone: 'info' as const,
+        icon: Briefcase,
+        onAction: () => setCurrentView('jobs'),
       }
     : {
-        title: t('nav.jobs'),
-        description: `${formatNumber(jobs.length, i18n.language)} ${t('common.items')}`,
-        view: 'jobs' as const,
-        icon: Briefcase,
+        eyebrow: 'All caught up',
+        title: 'Nothing waiting for you right now',
+        subtitle: 'Search for new jobs or adjust what you are looking for anytime.',
+        cta: 'Browse jobs',
+        tone: 'ok' as const,
+        icon: CheckCircle2,
+        onAction: () => setCurrentView('jobs'),
       };
 
-  const NextIcon = nextAction.icon;
+  const HeroIcon = hero.icon;
+  const firstName = profile?.contact?.fullName?.split(/\s+/)[0];
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6 max-w-6xl mx-auto w-full text-text">
-      {/* Page Header: Title, one-line subtitle, single primary button */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
-        <div>
-          <h1 className="text-xl font-bold text-text">{t('home.welcome')}</h1>
-          <p className="text-sm text-muted mt-1">{t('home.desc')}</p>
+    <div className="flex-1 overflow-y-auto px-6 py-12 flex flex-col items-center text-text">
+      <div className="w-full max-w-[760px] flex flex-col gap-6">
+        {/* Greeting + one-line status */}
+        <div className="flex flex-col gap-1">
+          <h1 className="text-[30px] font-semibold tracking-tight text-text">
+            {firstName ? `Welcome back, ${firstName}` : t('nav.today', { defaultValue: 'Today' })}
+          </h1>
+          <p className="text-base text-text-2">
+            {profile
+              ? `${formatNumber(readyToSendApps.length, i18n.language)} ready to send · ${formatNumber(sentApps.length, i18n.language)} sent`
+              : t('app.tagline')}
+          </p>
         </div>
-        <Button variant="primary" size="md" onClick={() => setCurrentView(nextAction.view)}>
-          <NextIcon className="w-4 h-4" aria-hidden="true" />
-          <span>{nextAction.title}</span>
-          <DirectionalArrow className="w-4 h-4" aria-hidden="true" />
-        </Button>
-      </div>
 
-      {profileError && (
-        <ErrorState
-          title={t('common.error')}
-          message={profileError instanceof Error ? profileError.message : String(profileError)}
-          retryLabel={t('common.refresh')}
-          onRetry={() => void refetchProfile()}
-        />
-      )}
+        {profileError && (
+          <ErrorState
+            title={t('common.error')}
+            message={profileError instanceof Error ? profileError.message : String(profileError)}
+            retryLabel={t('common.refresh')}
+            onRetry={() => void refetchProfile()}
+          />
+        )}
 
-      {/* What needs you summary */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card
-          className="cursor-pointer hover:border-border-strong transition-colors"
-          onClick={() => setCurrentView('profile')}
-        >
-          <CardContent className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-muted">{t('nav.profile')}</span>
-              <Badge tone={!profile || profileBlockers > 0 ? 'bad' : 'ok'}>
-                {!profile ? t('common.required') : profileBlockers > 0 ? formatNumber(profileBlockers, i18n.language) : t('common.active')}
-              </Badge>
+        {profileLoading || appsLoading ? (
+          <div className="flex flex-col gap-4">
+            <Skeleton className="h-48 w-full rounded-[20px]" />
+            <div className="grid grid-cols-2 gap-3">
+              <Skeleton className="h-20 w-full rounded-[14px]" />
+              <Skeleton className="h-20 w-full rounded-[14px]" />
             </div>
-            <div className="text-base font-semibold text-text truncate">
-              {profile?.contact?.fullName || t('home.newUser')}
-            </div>
-            <div className="text-xs text-muted truncate" dir="ltr">
-              {profile?.contact?.email || t('home.noResumeYet')}
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+        ) : (
+          <>
+            {/* ONE Hero Card ("Your next step") */}
+            <motion.section
+              variants={cardEnterVariants}
+              initial="initial"
+              animate="animate"
+              className="relative overflow-hidden rounded-[20px] border border-border bg-surface p-7 flex flex-col gap-5"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <Badge tone={hero.tone}>{hero.eyebrow}</Badge>
+                <HeroIcon className="w-5 h-5 text-accent-text" aria-hidden="true" />
+              </div>
 
-        <Card
-          className="cursor-pointer hover:border-border-strong transition-colors"
-          onClick={() => setCurrentView('queue')}
-        >
-          <CardContent className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-muted">{t('status.needs_user')}</span>
-              <Badge tone={needsYouApps > 0 ? 'bad' : 'neutral'}>
-                {formatNumber(needsYouApps, i18n.language)}
-              </Badge>
-            </div>
-            <div className="text-2xl font-bold font-mono tabular-nums text-text">
-              {formatNumber(needsYouApps, i18n.language)}
-            </div>
-            <div className="text-xs text-muted">{t('nav.queue')}</div>
-          </CardContent>
-        </Card>
+              <div className="flex flex-col gap-1.5">
+                <h2 className="text-xl font-semibold text-text">{hero.title}</h2>
+                <p className="text-base text-text-2">{hero.subtitle}</p>
+              </div>
 
-        <Card
-          className="cursor-pointer hover:border-border-strong transition-colors"
-          onClick={() => setCurrentView('queue')}
-        >
-          <CardContent className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-muted">{t('status.needs_review')}</span>
-              <Badge tone={readyReviewApps > 0 ? 'info' : 'neutral'}>
-                {formatNumber(readyReviewApps, i18n.language)}
-              </Badge>
-            </div>
-            <div className="text-2xl font-bold font-mono tabular-nums text-text">
-              {formatNumber(readyReviewApps, i18n.language)}
-            </div>
-            <div className="text-xs text-muted">{t('common.review')}</div>
-          </CardContent>
-        </Card>
+              <div>
+                <Button variant="primary" size="lg" onClick={hero.onAction}>
+                  <span>{hero.cta}</span>
+                  <DirectionalArrow className="w-4 h-4" aria-hidden="true" />
+                </Button>
+              </div>
+            </motion.section>
 
-        <Card
-          className="cursor-pointer hover:border-border-strong transition-colors"
-          onClick={() => setCurrentView('applications')}
-        >
-          <CardContent className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-muted">{t('home.submittedApps')}</span>
-              <CheckCircle2 className="w-4 h-4 text-success" aria-hidden="true" />
-            </div>
-            <div className="text-2xl font-bold font-mono tabular-nums text-text">
-              {formatNumber(submittedApps, i18n.language)}
-            </div>
-            <div className="text-xs text-muted">
-              {formatNumber(applications.length, i18n.language)} {t('home.totalApps')}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Recent Activity */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <UserCheck className="w-4 h-4 text-accent" aria-hidden="true" />
-            <span>{t('nav.applications')}</span>
-          </CardTitle>
-          <Button variant="ghost" size="sm" onClick={() => setCurrentView('applications')}>
-            <span>{t('common.view')}</span>
-          </Button>
-        </CardHeader>
-        <CardContent>
-          {profileLoading || appsLoading ? (
-            <div className="flex flex-col gap-3">
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-            </div>
-          ) : applications.length === 0 ? (
-            <EmptyState
-              icon={<Briefcase className="w-8 h-8" aria-hidden="true" />}
-              title={t('home.noResumeYet')}
-              description={nextAction.description}
-              actionLabel={nextAction.title}
-              onAction={() => setCurrentView(nextAction.view)}
-            />
-          ) : (
-            <div className="divide-y divide-border">
-              {applications.slice(0, 6).map((app) => (
-                <div
-                  key={app.id}
-                  className="py-3 flex items-center justify-between gap-3"
-                >
-                  <div className="min-w-0">
-                    <div className="text-sm font-medium text-text truncate">{app.jobTitle}</div>
-                    <div className="text-xs text-muted truncate">
-                      {app.company} · {formatDate(app.updatedAt, i18n.language)}
-                    </div>
-                  </div>
-                  <Badge
-                    tone={
-                      app.status === 'submitted_verified' || app.status === 'submitted'
-                        ? 'ok'
-                        : app.status === 'needs_user' || app.status === 'failed'
-                        ? 'bad'
-                        : app.status === 'needs_review'
-                        ? 'info'
-                        : 'neutral'
-                    }
-                  >
-                    {t(`status.${app.status}`, { defaultValue: app.status })}
-                  </Badge>
+            {/* At most TWO quiet cards below */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setCurrentView('queue')}
+                className="p-4 rounded-[14px] bg-surface border border-border hover:border-border-strong transition-colors flex items-center justify-between gap-3 text-start cursor-pointer"
+              >
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-sm text-muted">Ready to send</span>
+                  <span className="text-[22px] font-bold font-mono tabular-nums text-text">
+                    {formatNumber(readyToSendApps.length, i18n.language)}
+                  </span>
                 </div>
-              ))}
+                <Inbox className="w-5 h-5 text-accent-text" aria-hidden="true" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setCurrentView('applications')}
+                className="p-4 rounded-[14px] bg-surface border border-border hover:border-border-strong transition-colors flex items-center justify-between gap-3 text-start cursor-pointer"
+              >
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-sm text-muted">Sent applications</span>
+                  <span className="text-[22px] font-bold font-mono tabular-nums text-text">
+                    {formatNumber(sentApps.length, i18n.language)}
+                  </span>
+                </div>
+                <CheckCircle2 className="w-5 h-5 text-success" aria-hidden="true" />
+              </button>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </>
+        )}
+      </div>
     </div>
   );
 };

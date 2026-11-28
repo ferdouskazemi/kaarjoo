@@ -68,7 +68,11 @@ function matchesCvProfile(
 
   const rawScore = typeof job.matchScore === 'number' ? Math.round(job.matchScore) : 0;
   const computedScore = rawScore > 0 ? rawScore : Math.min(96, matchedSkills.length * 18 + (titleMatch ? 28 : 0));
-  const matched = matchedSkills.length > 0 || rawScore >= 45 || titleMatch;
+  // Require role-family title match (when targetTitles exist) OR strong skill coverage
+  const hasTargetTitles = titles.length > 0;
+  const matched = hasTargetTitles
+    ? (titleMatch && matchedSkills.length >= 1) || (matchedSkills.length >= 2 && computedScore >= 55)
+    : matchedSkills.length >= 2 || rawScore >= 55;
   return { matched, matchedSkills: matchedSkills.slice(0, 5), score: computedScore };
 }
 
@@ -97,6 +101,8 @@ export const usePipelineStore = create<PipelineState>((set, get) => ({
   },
 
   startDiscoveryStage: async ({ profile, demoMode, onInvalidate }) => {
+    // Single-flight guard: prevent duplicate runs & duplicate cards on double-click
+    if (get().isRunning) return;
     set({
       isVisible: true,
       isRunning: true,
@@ -129,7 +135,15 @@ export const usePipelineStore = create<PipelineState>((set, get) => ({
         if (discRes.status === 'error') {
           throw new Error(discRes.error);
         }
-        const matchedItems: PipelineJobItem[] = discRes.data.slice(0, 5).map((j) => ({
+        const seenIds = new Set<string>();
+        const matchedItems: PipelineJobItem[] = discRes.data
+          .filter((j) => {
+            if (seenIds.has(j.id)) return false;
+            seenIds.add(j.id);
+            return true;
+          })
+          .slice(0, 5)
+          .map((j) => ({
           id: j.id,
           title: j.title,
           company: j.company,

@@ -1,11 +1,17 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { AnimatePresence, motion } from 'motion/react';
 import {
   Briefcase,
   Search,
   RefreshCw,
   Loader2,
   FileText,
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  Undo2,
+  Building2,
   UploadCloud,
 } from 'lucide-react';
 import { JobCard, type DisplayJob } from '../components/jobs/JobCard.js';
@@ -18,8 +24,12 @@ import { useProfileStore } from '../stores/profileStore.js';
 import { useProfile, useJobs, useCreateApplication } from '../queries/index.js';
 import { commands } from '../bindings.js';
 import { formatNumber } from '../utils/formatters.js';
+import { focusSwipeVariants } from '../styles/motion.js';
 import { Tabs } from '../components/ui/Tabs.js';
 import { Button } from '../components/ui/Button.js';
+import { ScoreRing } from '../components/ui/ScoreRing.js';
+import { Badge } from '../components/ui/Badge.js';
+import { KeyboardHint } from '../components/ui/KeyboardHint.js';
 import type { CompanyBoard, AtsType } from '@kaarjoo/shared';
 
 export const JobsView: React.FC = () => {
@@ -46,10 +56,45 @@ export const JobsView: React.FC = () => {
   const [remoteFilter, setRemoteFilter] = useState<'all' | 'remote' | 'hybrid' | 'on-site'>('all');
   const [atsFilter, setAtsFilter] = useState<'all' | AtsType>('all');
   const [stackFilter, setStackFilter] = useState<string>('all');
-  const [activeTab, setActiveTab] = useState<'new' | 'shortlisted' | 'skipped'>('new');
+  const [activeTab, setActiveTab] = useState<'for_you' | 'new' | 'shortlisted' | 'skipped'>('for_you');
   const [shortlistedIds, setShortlistedIds] = useState<Set<string>>(() => new Set());
   const [skippedIds, setSkippedIds] = useState<Set<string>>(() => new Set());
   const [isPreparingShortlist, setIsPreparingShortlist] = useState(false);
+  const [swipeDir, setSwipeDir] = useState<number>(1);
+  const [undoToast, setUndoToast] = useState<{ jobId: string; title: string; action: 'keep' | 'skip' } | null>(null);
+
+  useEffect(() => {
+    if (!undoToast) return;
+    const timer = setTimeout(() => setUndoToast(null), 5000);
+    return () => clearTimeout(timer);
+  }, [undoToast]);
+
+  const handleKeepFocusJob = (job: DisplayJob) => {
+    setSwipeDir(1);
+    setShortlistedIds((prev) => new Set(prev).add(job.id));
+    setSkippedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(job.id);
+      return next;
+    });
+    setUndoToast({ jobId: job.id, title: job.title, action: 'keep' });
+  };
+
+  const handleUndo = () => {
+    if (!undoToast) return;
+    const { jobId } = undoToast;
+    setShortlistedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(jobId);
+      return next;
+    });
+    setSkippedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(jobId);
+      return next;
+    });
+    setUndoToast(null);
+  };
 
   const toggleShortlist = (jobId: string) => {
     setShortlistedIds((prev) => {
@@ -212,7 +257,7 @@ export const JobsView: React.FC = () => {
 
       if (activeTab === 'shortlisted' && !shortlistedIds.has(job.id)) return false;
       if (activeTab === 'skipped' && !skippedIds.has(job.id)) return false;
-      if (activeTab === 'new' && (shortlistedIds.has(job.id) || skippedIds.has(job.id))) return false;
+      if (activeTab === 'for_you' && (shortlistedIds.has(job.id) || skippedIds.has(job.id))) return false;
 
       return true;
     });
@@ -274,14 +319,14 @@ export const JobsView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2.5 self-stretch sm:self-auto">
-          <button
-            onClick={handleSync}
-            disabled={isSyncing}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 disabled:opacity-60 text-xs font-semibold text-white transition-all shadow-md hover:shadow-sky-900/30 cursor-pointer"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+          <Button variant="secondary" size="sm" onClick={() => setIsBoardsModalOpen(true)}>
+            <Building2 className="w-4 h-4" aria-hidden="true" />
+            <span>Sources</span>
+          </Button>
+          <Button variant="primary" size="sm" loading={isSyncing} onClick={handleSync}>
+            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} aria-hidden="true" />
             <span>{isSyncing ? t('jobs.syncing') : t('jobs.syncFeed')}</span>
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -293,11 +338,16 @@ export const JobsView: React.FC = () => {
           ariaLabel="Opportunities tabs"
           items={[
             {
-              id: 'new',
-              label: 'New',
+              id: 'for_you',
+              label: 'For you',
               count: displayJobs.filter((j) => !shortlistedIds.has(j.id) && !skippedIds.has(j.id)).length,
             },
-            { id: 'shortlisted', label: 'Shortlisted', count: shortlistedIds.size },
+            {
+              id: 'new',
+              label: 'All jobs',
+              count: displayJobs.length,
+            },
+            { id: 'shortlisted', label: 'Kept', count: shortlistedIds.size },
             { id: 'skipped', label: 'Skipped', count: skippedIds.size },
           ]}
         />
@@ -441,6 +491,114 @@ export const JobsView: React.FC = () => {
             {t('jobs.syncingDesc')}
           </p>
         </div>
+      ) : activeTab === 'for_you' && filteredJobs.length > 0 ? (
+        (() => {
+          const focusJob = filteredJobs[0];
+          const reasons = [
+            focusJob.requirements?.length
+              ? `Matches key skills: ${focusJob.requirements.slice(0, 3).join(', ')}`
+              : 'Matches your résumé background and core skills',
+            `${focusJob.remoteType === 'remote' ? 'Remote-friendly' : focusJob.location || 'Location listed'} · ${focusJob.company}`,
+            `Form supported (${focusJob.atsType}) — ready for browser review`,
+          ];
+          return (
+            <div className="flex flex-col items-center gap-5 py-4">
+              {/* Top progress bars */}
+              <div className="flex gap-1.5 w-full max-w-[620px]">
+                {filteredJobs.slice(0, 8).map((j, idx) => (
+                  <div
+                    key={j.id}
+                    className={`flex-1 h-1 rounded-full ${idx === 0 ? 'bg-accent' : 'bg-surface-3'}`}
+                  />
+                ))}
+              </div>
+
+              <AnimatePresence mode="wait" custom={swipeDir}>
+                <motion.div
+                  key={focusJob.id}
+                  custom={swipeDir}
+                  variants={focusSwipeVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  className="w-full max-w-[620px] rounded-[22px] bg-surface border border-border p-7 flex flex-col gap-5 shadow-2xl"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 text-sm text-muted">
+                        <span className="font-semibold text-text-2">{focusJob.company}</span>
+                        <span>·</span>
+                        <span>{focusJob.location || focusJob.remoteType}</span>
+                      </div>
+                      <h2 className="text-xl font-bold text-text mt-1">{focusJob.title}</h2>
+                    </div>
+                    {typeof focusJob.matchScore === 'number' && (
+                      <ScoreRing score={focusJob.matchScore} size={60} />
+                    )}
+                  </div>
+
+                  {/* 3 plain-language reasons */}
+                  <div className="flex flex-col gap-2.5 text-sm text-text-2">
+                    {reasons.map((r, i) => (
+                      <div key={i} className="flex items-start gap-2.5">
+                        <Check className="w-4 h-4 text-success shrink-0 mt-0.5" aria-hidden="true" />
+                        <span>{r}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-border">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedJob(focusJob)}
+                      className="text-sm font-medium text-accent-text hover:underline cursor-pointer"
+                    >
+                      See full job &amp; score details
+                    </button>
+                    <Badge tone="neutral">{focusJob.atsType}</Badge>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 pt-1">
+                    <Button
+                      variant="secondary"
+                      size="lg"
+                      onClick={() => {
+                        setSwipeDir(-1);
+                        setUndoToast({ jobId: focusJob.id, title: focusJob.title, action: 'skip' });
+                        void handleSkipJob(focusJob.id);
+                      }}
+                    >
+                      <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+                      <span>Skip</span>
+                      <KeyboardHint keys="←" />
+                    </Button>
+                    <Button
+                      variant="primary"
+                      size="lg"
+                      onClick={() => handleKeepFocusJob(focusJob)}
+                    >
+                      <span>Keep &amp; prepare</span>
+                      <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                      <KeyboardHint keys="→" />
+                    </Button>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+
+              {undoToast && (
+                <div className="flex items-center gap-3 px-4 py-2.5 rounded-[var(--radius-md)] bg-surface-2 border border-border-strong shadow-lg text-sm">
+                  <span className="text-text-2">
+                    {undoToast.action === 'keep' ? 'Kept' : 'Skipped'}: {undoToast.title}
+                  </span>
+                  <Button variant="ghost" size="sm" onClick={handleUndo}>
+                    <Undo2 className="w-3.5 h-3.5" aria-hidden="true" />
+                    <span>Undo</span>
+                  </Button>
+                </div>
+              )}
+            </div>
+          );
+        })()
       ) : filteredJobs.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filteredJobs.map((job) => (

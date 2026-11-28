@@ -55,6 +55,7 @@ export const QueueView: React.FC = () => {
 
   const [previewModalImg, setPreviewModalImg] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [showFullFieldTable, setShowFullFieldTable] = useState(false);
   const [liveChecklists, setLiveChecklists] = useState<Record<string, ReviewChecklistItem[]>>({});
 
   React.useEffect(() => {
@@ -535,65 +536,147 @@ export const QueueView: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Right: Verification Checklist */}
-                <div className="md:col-span-7 flex flex-col gap-2.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-[#d4d4d8] flex items-center gap-1.5">
-                      <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
-                      {t('queue.checklist')}
-                    </span>
-                    <span className="text-[11px] font-mono text-[#71717a]">
-                      {formatNumber(4, i18n.language)} {t('queue.itemsCount')}
-                    </span>
-                  </div>
+                {/* Right: Ready-to-Send Summary & Blocking Items */}
+                <div className="md:col-span-7 flex flex-col gap-3">
+                  {(() => {
+                    const checklist = activeApp.reviewChecklist ?? [];
+                    const blockingItems = checklist.filter(
+                      (c) => c.status === 'empty_required' || c.status === 'failed' || c.status === 'mismatch'
+                    );
+                    const okCount = checklist.filter((c) => c.status === 'ok' || c.status === 'user_edited').length;
 
-                  <div className="rounded-xl border border-[#282828] bg-[#141414] p-3 flex flex-col gap-2 text-xs">
-                    <div className="flex items-center justify-between py-1.5 border-b border-[#222222]">
-                      <span className="text-[11px] text-[#71717a] uppercase font-mono">{t('profile.fullName')}</span>
-                      <span className="text-[11px] font-medium text-white">{profile?.contact?.fullName || '—'}</span>
-                    </div>
+                    return (
+                      <>
+                        {/* Collapsed 3-line summary */}
+                        <div className="rounded-[16px] border border-border bg-surface-2 p-4 flex flex-col gap-2.5 text-sm">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="flex items-center gap-2 text-text">
+                              <CheckCircle2 className="w-4 h-4 text-success shrink-0" aria-hidden="true" />
+                              <span>Profile &amp; contact details</span>
+                            </span>
+                            <span className="text-xs text-muted" dir="ltr">
+                              {profile?.contact?.email || 'Ready'}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="flex items-center gap-2 text-text">
+                              <CheckCircle2 className="w-4 h-4 text-success shrink-0" aria-hidden="true" />
+                              <span>Tailored résumé attached</span>
+                            </span>
+                            <span className="text-xs text-muted truncate max-w-[180px]" dir="ltr">
+                              {activeApp.tailoredResumePath || 'Tailored_Resume.pdf'}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="flex items-center gap-2 text-text">
+                              <CheckCircle2 className="w-4 h-4 text-success shrink-0" aria-hidden="true" />
+                              <span>Form read-back</span>
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setShowFullFieldTable((v) => !v)}
+                              className="text-xs font-medium text-accent-text hover:underline cursor-pointer"
+                            >
+                              {showFullFieldTable
+                                ? 'Hide fields'
+                                : `See all ${formatNumber(checklist.length || okCount, i18n.language)} fields`}
+                            </button>
+                          </div>
+                        </div>
 
-                    <div className="flex items-center justify-between py-1.5 border-b border-[#222222]">
-                      <span className="text-[11px] text-[#71717a] uppercase font-mono">{t('profile.email')}</span>
-                      <span className="text-[11px] font-medium text-sky-400 font-mono">{profile?.contact?.email || '—'}</span>
-                    </div>
+                        {/* ONLY blocking items expanded */}
+                        {blockingItems.length > 0 && (
+                          <div className="rounded-[14px] border border-warning/40 bg-warning-weak p-4 flex flex-col gap-2">
+                            <div className="text-sm font-semibold text-warning flex items-center gap-2">
+                              <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden="true" />
+                              <span>{blockingItems.length} item(s) need your attention before sending</span>
+                            </div>
+                            {blockingItems.map((item) => (
+                              <div
+                                key={item.id}
+                                className="flex items-center justify-between gap-2 text-xs bg-surface p-2.5 rounded-[var(--radius-sm)] border border-border"
+                              >
+                                <div>
+                                  <div className="font-medium text-text">{item.label}</div>
+                                  {item.note && <div className="text-muted">{item.note}</div>}
+                                </div>
+                                <Badge tone="bad">{item.status}</Badge>
+                              </div>
+                            ))}
+                          </div>
+                        )}
 
-                    <div className="flex items-center justify-between py-1.5 border-b border-[#222222]">
-                      <span className="text-[11px] text-[#71717a] uppercase font-mono">{t('profile.phone')}</span>
-                      <span dir="ltr" className="text-[11px] font-medium text-white font-mono">{profile?.contact?.phone || '—'}</span>
-                    </div>
-
-                    <div className="flex items-center justify-between py-1.5">
-                      <span className="text-[11px] text-[#71717a] uppercase font-mono">{t('documents.tailoredResumePdf')}</span>
-                      <span className="text-[11px] font-medium text-emerald-400 flex items-center gap-1">
-                        <FileText className="w-3 h-3" />
-                        <span>{activeApp.tailoredResumePath || 'Tailored_Resume.pdf'}</span>
-                      </span>
-                    </div>
-                  </div>
+                        {showFullFieldTable && checklist.length > 0 && (
+                          <div className="rounded-[var(--radius-md)] border border-border bg-surface max-h-60 overflow-y-auto divide-y divide-border text-xs">
+                            {checklist.map((item) => (
+                              <div key={item.id} className="px-3 py-2 flex items-center justify-between gap-2">
+                                <div className="min-w-0">
+                                  <div className="font-medium text-text truncate">{item.label}</div>
+                                  <div className="text-muted truncate" dir="ltr">
+                                    {item.value || '—'} {item.source ? `· ${item.source}` : ''}
+                                  </div>
+                                </div>
+                                <Badge
+                                  tone={
+                                    item.status === 'ok' || item.status === 'user_edited'
+                                      ? 'ok'
+                                      : item.status === 'empty_required' || item.status === 'failed'
+                                      ? 'bad'
+                                      : 'warn'
+                                  }
+                                >
+                                  {item.status}
+                                </Badge>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#242424]">
+              <div className="flex flex-col items-end gap-2 pt-4 border-t border-border">
                 {activeApp.status === 'queued' || activeApp.status === 'saved' ? (
-                  <button
-                    onClick={() => handleExecute(activeApp.id)}
-                    disabled={isExecuting}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white font-semibold text-xs transition-all shadow-md active:scale-95 cursor-pointer"
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    loading={isExecuting}
+                    onClick={() => void handleExecute(activeApp.id)}
                   >
-                    <Play className="w-4 h-4 fill-white" />
+                    <Play className="w-4 h-4" aria-hidden="true" />
                     <span>{t('queue.startFilling')}</span>
-                  </button>
+                  </Button>
                 ) : activeApp.status === 'needs_review' ? (
-                  <button
-                    onClick={() => handleSubmit(activeApp.id)}
-                    disabled={submitAppMutation.isPending}
-                    className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition-all shadow-md active:scale-95 cursor-pointer"
-                  >
-                    <Send className="w-4 h-4" />
-                    <span>{t('queue.approveSubmit')}</span>
-                  </button>
+                  (() => {
+                    const hasBlockers = (activeApp.reviewChecklist ?? []).some(
+                      (c) => c.status === 'empty_required' || c.status === 'failed'
+                    );
+                    return (
+                      <>
+                        <Button
+                          variant="success"
+                          size="lg"
+                          loading={submitAppMutation.isPending}
+                          disabled={hasBlockers}
+                          disabledReason={
+                            hasBlockers ? 'Fill required fields in Chrome before sending' : undefined
+                          }
+                          onClick={() => void handleSubmit(activeApp.id)}
+                        >
+                          <Send className="w-4 h-4" aria-hidden="true" />
+                          <span>{t('queue.approveSubmit')}</span>
+                        </Button>
+                        {hasBlockers && (
+                          <span className="text-xs text-warning">
+                            Fill the required fields above in Chrome to enable Send.
+                          </span>
+                        )}
+                      </>
+                    );
+                  })()
                 ) : null}
               </div>
             </div>

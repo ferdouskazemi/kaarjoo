@@ -1,7 +1,15 @@
 import { create } from 'zustand';
 import { setAppLanguage } from '../i18n';
 
-export type AppView = 'home' | 'profile' | 'jobs' | 'queue' | 'applications' | 'settings';
+export type AppView =
+  | 'home'
+  | 'profile'
+  | 'preferences'
+  | 'jobs'
+  | 'queue'
+  | 'applications'
+  | 'answers'
+  | 'settings';
 export type AppTheme = 'dark' | 'light' | 'system';
 export type AppLanguage = 'fa' | 'en';
 

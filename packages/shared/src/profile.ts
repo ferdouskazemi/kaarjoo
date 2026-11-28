@@ -34,7 +34,7 @@ export type ExtractionMethod = z.infer<typeof ExtractionMethodSchema>;
 export const ExtractedFactProvenanceSchema = z.object({
   value: z.string(),
   confidence: z.number().min(0).max(1),
-  evidence: FactEvidenceSchema.nullable(),
+  evidence: FactEvidenceSchema.nullish(),
   method: ExtractionMethodSchema,
 });
 export type ExtractedFactProvenance = z.infer<typeof ExtractedFactProvenanceSchema>;
@@ -151,8 +151,8 @@ export const UserProfileSchema = z.object({
   certifications: z.array(z.string()).default([]),
   targetTitles: z.array(z.string()).default([]),
   workAuthorization: z.array(z.string()).default([]),
-  preferences: UserPreferencesSchema.optional(),
-  fieldProvenance: z.record(ExtractedFactProvenanceSchema).optional(),
-  issues: z.array(ProfileIssueSchema).optional(),
+  preferences: UserPreferencesSchema.nullish(),
+  fieldProvenance: z.record(ExtractedFactProvenanceSchema).nullish(),
+  issues: z.array(ProfileIssueSchema).nullish(),
 });
 export type UserProfile = z.infer<typeof UserProfileSchema>;

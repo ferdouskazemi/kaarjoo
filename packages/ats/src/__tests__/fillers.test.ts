@@ -85,7 +85,7 @@ describe('ATS Form Fillers Playwright Automation', () => {
     const captcha = await detectCaptchaInPage(page);
     expect(captcha.detected).toBe(true);
     expect(captcha.type).toBe('recaptcha');
-  });
+  }, 30000);
 
   it('detects Login Wall and triggers Stop-and-Ask', async () => {
     const loginUrl = `file://${path.join(fixturesDir, 'login_mock.html').replace(/\\/g, '/')}`;

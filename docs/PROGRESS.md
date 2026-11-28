@@ -223,3 +223,11 @@
   - `scripts/stage-engine-resources.mjs`: Filtered `@node-llama-cpp/*` optional prebuilts to the target platform/arch only (excluding CUDA and cross-OS binaries).
   - `.github/workflows/ci.yml`: Added `pnpm lint`, `pnpm eval`, `cargo fmt --check`, `cargo clippy -- -D warnings`, `cargo test`, bindings sync check, and removed `|| true` from Playwright install.
   - `packages/engine/src/__tests__/sidecar_e2e.test.ts`: Added real sidecar stdio JSON-RPC E2E test against local fixture server.
+
+### Prompt 10 & 11: Calm v3 UI/UX Refactor, Flash-Rive Motion & Bug Fixes (`chore/p9-quality-ci-packaging`)
+- **Status:** COMPLETED & VERIFIED
+- **Changes:**
+  - **Bug Fixes:** Fixed `stripNulls` / `ExtractedFactProvenanceSchema.evidence` (`nullish()`) with Rust-null contract test in `packages/engine/src/__tests__/rpc.test.ts`; added single-flight `isRunning` guard + `jobId` deduplication and role-family hard filter in `apps/desktop/src/stores/pipelineStore.ts`.
+  - **v3 Tokens & Flash-Rive Motion (`apps/desktop/src/styles/tokens.css`, `motion.ts`):** Aligned color tokens to `docs/design/v3/_base.css` (`#0E1013`/`#15191E`/`#5B93FF`/`#3FC48F`/`#F3B84B`/`#F26B5E`) with WCAG AA contrast (`>= 4.5:1`), 16px Persian / 15px English body, and `flash-rive` spring/swipe/drawer/pill motion presets.
+  - **v3 Shell & Floating Activity Pill (`Sidebar.tsx`, `AppShell.tsx`, `ActivityPill.tsx`):** Replaced 232px sidebar and page-top `AutoPipelineBar` with a 76px 3-item icon rail (`Today`, `Jobs`, `Apps`) + bottom avatar menu + floating bottom-end `ActivityPill` and 440px drawer.
+  - **v3 Views (`HomeView.tsx`, `JobsView.tsx`, `QueueView.tsx`):** Rebuilt Today with one priority hero card + 2 quiet cards; Jobs with default "For you" 620px Focus Card (spring swipe, 3 reasons, 5s Undo, Sources modal); Review Inbox with collapsed 3-line summary, expanded blockers only, and Send gate.

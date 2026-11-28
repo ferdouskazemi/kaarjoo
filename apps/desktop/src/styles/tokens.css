@@ -1,34 +1,41 @@
-/* Kaarjoo Design System Tokens (Dark + Light, RTL + LTR) */
+/* Kaarjoo v3 Design System Tokens + Flash-Rive Motion Tokens (Dark + Light, RTL + LTR) */
 
 :root,
 .dark {
-  --bg: #111111;
-  --surface: #171717;
-  --surface-2: #1e1e1e;
-  --surface-3: #262626;
-  --border: #2e2e2e;
-  --border-strong: #424242;
+  --bg: #0e1013;
+  --surface: #15191e;
+  --surface-2: #1c2127;
+  --surface-3: #252b33;
+  --border: #2a313a;
+  --border-strong: #38414c;
 
-  --text: #f4f4f5;
-  --text-2: #d4d4d8;
-  --muted: #a1a1aa;
+  --text: #eceef1;
+  --text-2: #b4bbc5;
+  --muted: #8b94a0;
 
-  --accent: #38bdf8;
-  --accent-weak: rgba(56, 189, 248, 0.14);
-  --accent-text: #7dd3fc;
+  --accent: #5b93ff;
+  --accent-weak: rgba(91, 147, 255, 0.14);
+  --accent-text: #8db4ff;
 
-  --success: #34d399;
-  --success-weak: rgba(52, 211, 153, 0.14);
+  --success: #3fc48f;
+  --success-weak: rgba(63, 196, 143, 0.13);
 
-  --warning: #fbbf24;
-  --warning-weak: rgba(251, 191, 36, 0.14);
+  --warning: #f3b84b;
+  --warning-weak: rgba(243, 184, 75, 0.13);
 
-  --danger: #fb7185;
-  --danger-weak: rgba(251, 113, 133, 0.14);
+  --danger: #f26b5e;
+  --danger-weak: rgba(242, 107, 94, 0.13);
 
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
+
+  /* Flash-Rive Motion Tokens */
+  --dur-fast: 150ms;
+  --dur-base: 250ms;
+  --dur-slow: 400ms;
+  --ease-studio: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-out-cubic: cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 
 .light {
@@ -59,6 +66,12 @@
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
+
+  --dur-fast: 150ms;
+  --dur-base: 250ms;
+  --dur-slow: 400ms;
+  --ease-studio: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-out-cubic: cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 
 @theme {
@@ -94,15 +107,15 @@
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
-/* Persian body minimum 15px for crisp readability */
+/* Persian body minimum 16px, English 15px per v3 */
 html[lang='fa'] body {
   font-family: 'Vazirmatn', 'Inter', system-ui, sans-serif;
-  font-size: 15px;
+  font-size: 16px;
 }
 
 html[lang='en'] body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 /* Respect prefers-reduced-motion */
